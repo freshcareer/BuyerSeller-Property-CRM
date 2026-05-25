@@ -15,40 +15,43 @@ export default function MatchesPage() {
       try {
         const { data: buyers, error: buyersError } = await supabase
           .from('buyers_demand')
-          .select('id, name, phone, property_type, city, area')
-          .neq('status', 'closed_won')
-          .neq('status', 'closed_lost');
+          .select('id, name, phone, property_type, city, area, status');
 
         const { data: sellers, error: sellersError } = await supabase
           .from('sellers_inventory')
-          .select('id, name, phone, property_type, city, area')
-          .neq('status', 'closed_won')
-          .neq('status', 'closed_lost');
+          .select('id, name, phone, property_type, city, area, status');
 
         if (buyersError) throw buyersError;
         if (sellersError) throw sellersError;
 
+        // Helper: normalize strings for comparison (lowercase + trim)
+        const norm = (s: string) => (s || '').toLowerCase().trim();
+
+        // Extract just the area name (first part before comma)
+        const getAreaSlug = (area: string) => norm(area).split(',')[0].trim().replace(/\s+/g, '_').replace(/-/g, '_');
+
+        const activeBuyers = (buyers || []).filter(b => b.status !== 'closed_won' && b.status !== 'closed_lost');
+        const activeSellers = (sellers || []).filter(s => s.status !== 'closed_won' && s.status !== 'closed_lost');
+
         let computedMatches: any[] = [];
-        if (buyers && sellers) {
-          buyers.forEach(buyer => {
-            sellers.forEach(seller => {
-              if (
-                buyer.property_type === seller.property_type &&
-                buyer.city === seller.city &&
-                buyer.area === seller.area
-              ) {
-                computedMatches.push({
-                  buyer_name: buyer.name,
-                  buyer_phone: buyer.phone,
-                  property_type: buyer.property_type,
-                  area: buyer.area,
-                  seller_name: seller.name,
-                  seller_phone: seller.phone
-                });
-              }
-            });
+        activeBuyers.forEach(buyer => {
+          activeSellers.forEach(seller => {
+            const typeMatch = norm(buyer.property_type) === norm(seller.property_type);
+            const cityMatch = norm(buyer.city) === norm(seller.city);
+            const areaMatch = getAreaSlug(buyer.area) === getAreaSlug(seller.area);
+
+            if (typeMatch && cityMatch && areaMatch) {
+              computedMatches.push({
+                buyer_name: buyer.name,
+                buyer_phone: buyer.phone,
+                property_type: buyer.property_type,
+                area: buyer.area,
+                seller_name: seller.name,
+                seller_phone: seller.phone
+              });
+            }
           });
-        }
+        });
         setMatches(computedMatches);
       } catch (err: any) {
         setError(err.message || 'An error occurred while fetching matches');
