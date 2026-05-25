@@ -42,6 +42,8 @@ export default function MatchesPage() {
 
             if (typeMatch && cityMatch && areaMatch) {
               computedMatches.push({
+                buyer_id: buyer.id,
+                seller_id: seller.id,
                 buyer_name: buyer.name,
                 buyer_phone: buyer.phone,
                 property_type: buyer.property_type,
