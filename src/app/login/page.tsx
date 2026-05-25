@@ -78,35 +78,32 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 selection:bg-indigo-500/30 relative">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col items-center justify-center p-6 selection:bg-blue-500/30 relative">
       {/* Background Gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[20%] left-[20%] w-[40%] h-[40%] rounded-full bg-indigo-500/5 blur-[120px]" />
-        <div className="absolute bottom-[20%] right-[20%] w-[40%] h-[40%] rounded-full bg-violet-500/5 blur-[120px]" />
-      </div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/50 via-slate-50 to-slate-50" />
 
       <div className="w-full max-w-md relative z-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* logo */}
         <div className="flex flex-col items-center text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors mb-6 text-sm">
-            <ArrowLeft className="w-4 h-4" /> Back to Landing Page
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors mb-6 text-sm font-semibold">
+            <ArrowLeft className="w-4 h-4" /> Back to Website
           </Link>
 
-          <div className="p-3 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-xl mb-4">
+          <div className="p-3 bg-blue-600 rounded-2xl shadow-md shadow-blue-600/20 mb-4">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-white">
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
             Admin Portal
           </h2>
-          <p className="text-slate-400 mt-2 text-sm max-w-xs">
+          <p className="text-slate-500 mt-2 text-sm max-w-xs">
             Sign in to BuyerSeller CRM with your Super Admin credentials.
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl space-y-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl space-y-6">
           {error && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-sm">
+            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium">
               {error}
             </div>
           )}
@@ -114,7 +111,7 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Field */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5" /> Email Address
               </label>
               <input
@@ -123,13 +120,13 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white rounded-lg px-4 py-3 placeholder-slate-600 outline-none transition-all duration-300"
+                className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-300"
               />
             </div>
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5" /> Password
               </label>
               <input
@@ -138,7 +135,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white rounded-lg px-4 py-3 placeholder-slate-600 outline-none transition-all duration-300"
+                className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-300"
               />
             </div>
 
@@ -146,7 +143,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-indigo-500/20 mt-2"
+              className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-blue-600/20 mt-2"
             >
               {loading ? (
                 <>

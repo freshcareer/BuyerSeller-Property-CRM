@@ -13,7 +13,6 @@ import {
   X, 
   ShieldAlert, 
   Loader2,
-  GitCompare
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -79,19 +78,19 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
-        <p className="text-slate-400 font-medium animate-pulse">Verifying secure admin session...</p>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-900">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+        <p className="text-slate-500 font-medium animate-pulse">Verifying secure admin session...</p>
       </div>
     );
   }
 
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 p-6">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-900 p-6">
         <ShieldAlert className="w-16 h-16 text-rose-500 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-        <p className="text-slate-400 max-w-sm text-center mb-6">
+        <h2 className="text-2xl font-bold mb-2 text-slate-900">Access Denied</h2>
+        <p className="text-slate-500 max-w-sm text-center mb-6">
           You are not authorized to view this page. Redirecting to login...
         </p>
       </div>
@@ -99,14 +98,14 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800/80 p-5 space-y-6">
-        <div className="flex items-center gap-2.5 px-2 py-3 border-b border-slate-800/60">
-          <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 space-y-6 shadow-sm z-10">
+        <div className="flex items-center gap-2.5 px-2 py-3 border-b border-slate-100">
+          <div className="p-2 bg-blue-600 rounded-xl shadow-md shadow-blue-600/20">
             <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg text-white">CRM Control</span>
+          <span className="font-bold text-lg text-slate-900">CRM Control</span>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -117,10 +116,10 @@ export default function AdminLayout({
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium text-sm transition-all duration-300 ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg font-bold text-sm transition-all duration-300 ${
                   isActive
-                    ? 'bg-indigo-500/10 text-indigo-400 border-l-2 border-indigo-500'
-                    : 'text-slate-455 hover:bg-slate-800/50 hover:text-slate-200'
+                    ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -130,30 +129,16 @@ export default function AdminLayout({
           })}
         </nav>
 
-        {/* Footer Admin Card */}
-        <div className="pt-4 border-t border-slate-800/60 flex flex-col gap-3">
-          <div className="px-2">
-            <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Logged in as</p>
-            <p className="text-sm text-slate-350 truncate font-medium mt-0.5">{adminEmail}</p>
-          </div>
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-400 hover:bg-rose-500/10 font-medium text-sm transition-all duration-300"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </div>
       </aside>
 
       {/* Mobile Sidebar / Drawer */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-64 bg-slate-900 border-r border-slate-800 p-5 flex flex-col space-y-6 animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
-              <span className="font-bold text-lg text-white">CRM Control</span>
-              <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-slate-800 rounded-lg">
-                <X className="w-5 h-5 text-slate-400" />
+        <div className="fixed inset-0 z-50 flex md:hidden bg-slate-900/50 backdrop-blur-sm">
+          <div className="w-64 bg-white border-r border-slate-200 p-5 flex flex-col space-y-6 animate-in slide-in-from-left duration-300 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="font-bold text-lg text-slate-900">CRM Control</span>
+              <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
               </button>
             </div>
 
@@ -166,10 +151,10 @@ export default function AdminLayout({
                     key={item.name}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium text-sm transition-all duration-300 ${
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg font-bold text-sm transition-all duration-300 ${
                       isActive
-                        ? 'bg-indigo-500/10 text-indigo-400 border-l-2 border-indigo-500'
-                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-transparent'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -179,38 +164,42 @@ export default function AdminLayout({
               })}
             </nav>
 
-            <div className="pt-4 border-t border-slate-800 flex flex-col gap-3">
-              <div className="px-2">
-                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Logged in as</p>
-                <p className="text-sm text-slate-300 truncate font-medium mt-0.5">{adminEmail}</p>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-450 hover:bg-rose-500/10 font-medium text-sm transition-all duration-300"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
           </div>
         </div>
       )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800">
-          <span className="font-bold text-lg text-white">CRM Control</span>
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-slate-800 rounded-lg text-slate-450"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+        {/* Top Header */}
+        <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shadow-sm z-10 sticky top-0">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 hover:bg-slate-50 rounded-lg text-slate-600"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <span className="md:hidden font-bold text-lg text-slate-900">CRM Control</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block text-right">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Logged in as</p>
+              <p className="text-sm text-slate-700 font-bold">{adminEmail}</p>
+            </div>
+            <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-sm transition-all duration-300"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
         </header>
 
         {/* Content Wrapper */}
-        <main className="flex-1 p-6 md:p-10 overflow-y-auto max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 md:p-10 overflow-y-auto w-full">
           {children}
         </main>
       </div>

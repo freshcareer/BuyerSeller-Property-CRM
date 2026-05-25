@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Enable RLS on Profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow users to view their own profile" ON public.profiles;
 CREATE POLICY "Allow users to view their own profile"
     ON public.profiles FOR SELECT
     USING (auth.uid() = id);
@@ -32,11 +33,13 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
 ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone (public/anon) to read dropdown settings
+DROP POLICY IF EXISTS "Allow public read-only access to system_settings" ON public.system_settings;
 CREATE POLICY "Allow public read-only access to system_settings"
     ON public.system_settings FOR SELECT
     USING (true);
 
 -- Allow only Super Admins to modify system settings
+DROP POLICY IF EXISTS "Allow super admin modify system_settings" ON public.system_settings;
 CREATE POLICY "Allow super admin modify system_settings"
     ON public.system_settings FOR ALL
     USING (
@@ -52,10 +55,12 @@ CREATE TABLE IF NOT EXISTS public.buyers_demand (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     email VARCHAR(255),
-    property_type VARCHAR(100) NOT NULL, -- value from system_settings where category='property_type'
-    area VARCHAR(100) NOT NULL, -- value from system_settings where category='city_area'
-    budget VARCHAR(100) NOT NULL, -- value from system_settings where category='budget_range'
-    status VARCHAR(50) DEFAULT 'New Lead' NOT NULL, -- value from system_settings where category='lead_status'
+    property_type VARCHAR(100) NOT NULL,  -- value from system_settings where category='property_type'
+    state VARCHAR(100) NOT NULL,          -- e.g. 'gujarat'
+    city VARCHAR(100) NOT NULL,           -- e.g. 'ahmedabad'
+    area VARCHAR(200) NOT NULL,           -- full location string e.g. 'Bopal, Ahmedabad, Gujarat'
+    budget VARCHAR(100) NOT NULL,         -- value from system_settings where category='budget_range'
+    status VARCHAR(50) DEFAULT 'New Lead' NOT NULL,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -64,11 +69,13 @@ CREATE TABLE IF NOT EXISTS public.buyers_demand (
 ALTER TABLE public.buyers_demand ENABLE ROW LEVEL SECURITY;
 
 -- Allow public frontend to insert new demands/leads
+DROP POLICY IF EXISTS "Allow public inserts for buyers_demand" ON public.buyers_demand;
 CREATE POLICY "Allow public inserts for buyers_demand"
     ON public.buyers_demand FOR INSERT
     WITH CHECK (true);
 
 -- Allow only Super Admins to select, update, or delete buyers demand
+DROP POLICY IF EXISTS "Allow super admin full control on buyers_demand" ON public.buyers_demand;
 CREATE POLICY "Allow super admin full control on buyers_demand"
     ON public.buyers_demand FOR ALL
     USING (
@@ -84,10 +91,12 @@ CREATE TABLE IF NOT EXISTS public.sellers_inventory (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     email VARCHAR(255),
-    property_type VARCHAR(100) NOT NULL, -- value from system_settings where category='property_type'
-    area VARCHAR(100) NOT NULL, -- value from system_settings where category='city_area'
-    price VARCHAR(100) NOT NULL, -- price range/value referencing system_settings
-    status VARCHAR(50) DEFAULT 'New Lead' NOT NULL, -- value from system_settings where category='lead_status'
+    property_type VARCHAR(100) NOT NULL,  -- value from system_settings where category='property_type'
+    state VARCHAR(100) NOT NULL,          -- e.g. 'gujarat'
+    city VARCHAR(100) NOT NULL,           -- e.g. 'surat'
+    area VARCHAR(200) NOT NULL,           -- full location string e.g. 'Adajan, Surat, Gujarat'
+    price VARCHAR(100) NOT NULL,          -- value from system_settings where category='budget_range'
+    status VARCHAR(50) DEFAULT 'New Lead' NOT NULL,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -96,11 +105,13 @@ CREATE TABLE IF NOT EXISTS public.sellers_inventory (
 ALTER TABLE public.sellers_inventory ENABLE ROW LEVEL SECURITY;
 
 -- Allow public frontend to insert new inventory/leads
+DROP POLICY IF EXISTS "Allow public inserts for sellers_inventory" ON public.sellers_inventory;
 CREATE POLICY "Allow public inserts for sellers_inventory"
     ON public.sellers_inventory FOR INSERT
     WITH CHECK (true);
 
 -- Allow only Super Admins to select, update, or delete sellers inventory
+DROP POLICY IF EXISTS "Allow super admin full control on sellers_inventory" ON public.sellers_inventory;
 CREATE POLICY "Allow super admin full control on sellers_inventory"
     ON public.sellers_inventory FOR ALL
     USING (
@@ -132,35 +143,63 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 -- SEED DATA (DYNAMIC DROPDOWN OPTIONS)
 -- ==========================================
 
--- Seed Property Types
+-- Seed Property Types (India-specific)
 INSERT INTO public.system_settings (category, value, display_name, sort_order) VALUES
-('property_type', 'apartment', 'Apartment / Flat', 1),
-('property_type', 'villa', 'Villa / Independent House', 2),
-('property_type', 'plot', 'Residential Plot / Land', 3),
-('property_type', 'commercial_shop', 'Commercial Shop', 4),
-('property_type', 'office_space', 'Office Space', 5),
-('property_type', 'warehouse', 'Warehouse / Godown', 6)
+('property_type', 'apartment',        'Apartment / Flat',           1),
+('property_type', 'villa',            'Villa / Bungalow',            2),
+('property_type', 'row_house',        'Row House / Duplex',          3),
+('property_type', 'plot',             'Residential Plot / NA Land',  4),
+('property_type', 'commercial_shop',  'Commercial Shop',             5),
+('property_type', 'office_space',     'Office Space',                6),
+('property_type', 'warehouse',        'Warehouse / Godown',          7)
 ON CONFLICT (category, value) DO UPDATE SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order;
 
--- Seed City Areas
+-- Seed Ahmedabad Areas
 INSERT INTO public.system_settings (category, value, display_name, sort_order) VALUES
-('city_area', 'downtown', 'Downtown / City Center', 1),
-('city_area', 'uptown', 'Uptown Heights', 2),
-('city_area', 'airport_road', 'Airport Road Bypass', 3),
-('city_area', 'west_end', 'West End Residency', 4),
-('city_area', 'suburbs', 'Green Suburbs', 5),
-('city_area', 'north_side', 'North Side Industrial', 6),
-('city_area', 'south_end', 'South End Coast', 7)
+-- West / SG Highway (Premium)
+('city_area', 'satellite',     'Satellite',              1),
+('city_area', 'prahlad_nagar', 'Prahlad Nagar',          2),
+('city_area', 'bodakdev',      'Bodakdev',               3),
+('city_area', 'vastrapur',     'Vastrapur',              4),
+('city_area', 'thaltej',       'Thaltej',                5),
+('city_area', 'bopal',         'Bopal',                  6),
+('city_area', 'south_bopal',   'South Bopal (SoBo)',     7),
+('city_area', 'ambli',         'Ambli',                  8),
+('city_area', 'shela',         'Shela',                  9),
+('city_area', 'sg_highway',    'S.G. Highway',           10),
+-- North
+('city_area', 'gota',          'Gota',                   11),
+('city_area', 'chandkheda',    'Chandkheda',             12),
+('city_area', 'motera',        'Motera',                 13),
+('city_area', 'sabarmati',     'Sabarmati',              14),
+('city_area', 'sola',          'Sola',                   15),
+('city_area', 'ghatlodia',     'Ghatlodia',              16),
+-- Central
+('city_area', 'navrangpura',   'Navrangpura',            17),
+('city_area', 'naranpura',     'Naranpura',              18),
+('city_area', 'cg_road',       'C.G. Road',              19),
+('city_area', 'paldi',         'Paldi',                  20),
+('city_area', 'vejalpur',      'Vejalpur',               21),
+-- South / East (Affordable)
+('city_area', 'maninagar',     'Maninagar',              22),
+('city_area', 'narol',         'Narol',                  23),
+('city_area', 'vastral',       'Vastral',                24),
+('city_area', 'nikol',         'Nikol',                  25),
+('city_area', 'naroda',        'Naroda',                 26),
+('city_area', 'vatva',         'Vatva',                  27),
+('city_area', 'odhav',         'Odhav',                  28)
 ON CONFLICT (category, value) DO UPDATE SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order;
 
--- Seed Budget / Price Ranges
+-- Seed Budget / Price Ranges (INR - Indian Rupees)
 INSERT INTO public.system_settings (category, value, display_name, sort_order) VALUES
-('budget_range', 'under_50k', 'Under $50,000', 1),
-('budget_range', '50k_100k', '$50,000 - $100,000', 2),
-('budget_range', '100k_250k', '$100,000 - $250,000', 3),
-('budget_range', '250k_500k', '$250,000 - $500,000', 4),
-('budget_range', '500k_1m', '$500,000 - $1,000,000', 5),
-('budget_range', '1m_plus', '$1,000,000+', 6)
+('budget_range', 'under_20l',   'Under ₹20 Lakh',          1),
+('budget_range', '20l_40l',     '₹20 Lakh – ₹40 Lakh',    2),
+('budget_range', '40l_60l',     '₹40 Lakh – ₹60 Lakh',    3),
+('budget_range', '60l_80l',     '₹60 Lakh – ₹80 Lakh',    4),
+('budget_range', '80l_1cr',     '₹80 Lakh – ₹1 Crore',    5),
+('budget_range', '1cr_1_5cr',   '₹1 Crore – ₹1.5 Crore',  6),
+('budget_range', '1_5cr_2cr',   '₹1.5 Crore – ₹2 Crore',  7),
+('budget_range', '2cr_plus',    '₹2 Crore & Above',        8)
 ON CONFLICT (category, value) DO UPDATE SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order;
 
 -- Seed Lead Statuses

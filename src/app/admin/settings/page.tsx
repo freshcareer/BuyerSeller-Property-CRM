@@ -153,19 +153,19 @@ export default function SettingsManager() {
   const categories = ['property_type', 'city_area', 'budget_range', 'lead_status'];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full pb-16">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-          <Settings className="w-8 h-8 text-indigo-400" /> Settings Manager
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+          <Settings className="w-8 h-8 text-blue-600" /> Settings Manager
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-slate-500 text-sm mt-1 font-medium">
           Dynamically configure dropdown lists, forms, and lead status categories. No hardcoded choices.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 bg-slate-900/10 p-1.5 rounded-xl gap-2 max-w-2xl">
+      <div className="flex bg-slate-100 p-1.5 rounded-xl gap-2 max-w-3xl shadow-inner border border-slate-200/60">
         {categories.map((cat) => {
           const Icon = getCategoryIcon(cat);
           const isActive = activeTab === cat;
@@ -177,13 +177,13 @@ export default function SettingsManager() {
                 setError(null);
                 setSuccess(null);
               }}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 px-3 rounded-lg text-xs md:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 isActive
-                  ? 'bg-indigo-650 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                  ? 'bg-white text-blue-700 shadow-sm border border-slate-200'
+                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : ''}`} />
               <span className="hidden sm:inline">{getCategoryLabel(cat)}</span>
               <span className="sm:hidden capitalize">{cat.split('_')[0]}</span>
             </button>
@@ -193,52 +193,53 @@ export default function SettingsManager() {
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-sm max-w-3xl">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 font-medium rounded-lg text-sm max-w-3xl flex items-start gap-2">
+           <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
           {error}
         </div>
       )}
       {success && (
-        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-sm max-w-3xl flex items-center gap-2">
-          <Check className="w-4 h-4" /> {success}
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium rounded-lg text-sm max-w-3xl flex items-center gap-2">
+          <Check className="w-5 h-5 text-emerald-600 shrink-0" /> {success}
         </div>
       )}
 
       {/* Main settings manager interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-6xl items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Side: Options List */}
-        <div className="lg:col-span-7 bg-slate-900/30 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h3 className="font-bold text-white text-base">Active {getCategoryLabel(activeTab)}</h3>
-            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
+        <div className="lg:col-span-7 bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 className="font-extrabold text-slate-900 text-base">Active {getCategoryLabel(activeTab)}</h3>
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
               {filteredSettings.length} Options
             </span>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
-              <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-3" />
-              <p className="text-slate-400 text-sm">Loading options...</p>
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
+              <p className="text-slate-500 font-medium text-sm">Loading options...</p>
             </div>
           ) : filteredSettings.length === 0 ? (
             <div className="text-center py-10 text-slate-500">
-              <p className="font-semibold text-sm">No options configured in this category.</p>
-              <p className="text-xs mt-1">Use the panel on the right to add options.</p>
+              <p className="font-bold text-sm">No options configured in this category.</p>
+              <p className="text-xs mt-1 font-medium">Use the panel on the right to add options.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-850 max-h-[450px] overflow-y-auto pr-2 space-y-1">
+            <div className="divide-y divide-slate-100 max-h-[450px] overflow-y-auto pr-2 space-y-1">
               {filteredSettings.map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-3 hover:bg-slate-900/20 rounded px-2 transition-all group">
+                <div key={item.id} className="flex items-center justify-between py-3 hover:bg-slate-50 rounded-lg px-3 transition-colors group border border-transparent hover:border-slate-100">
                   <div className="space-y-1">
-                    <span className="text-slate-200 font-semibold">{item.display_name}</span>
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                      <span>Value key: <code className="text-indigo-400/80 bg-slate-900/60 px-1 py-0.5 rounded">{item.value}</code></span>
-                      <span>Order: <code className="text-slate-400">{item.sort_order}</code></span>
+                    <span className="text-slate-900 font-bold block">{item.display_name}</span>
+                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                      <span className="flex items-center gap-1">Value key: <code className="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{item.value}</code></span>
+                      <span className="flex items-center gap-1">Order: <code className="text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded">{item.sort_order}</code></span>
                     </div>
                   </div>
                   <button
                     onClick={() => handleDeleteSetting(item.id, item.display_name)}
-                    className="p-2 hover:bg-rose-500/10 text-slate-500 hover:text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300"
+                    className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 border border-transparent hover:border-rose-100"
                     title="Delete Option"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -250,10 +251,10 @@ export default function SettingsManager() {
         </div>
 
         {/* Right Side: Add New Option Form */}
-        <div className="lg:col-span-5 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-6">
-          <div className="border-b border-slate-800 pb-3">
-            <h3 className="font-bold text-white text-base">Add New Option</h3>
-            <p className="text-xs text-slate-500 mt-1">
+        <div className="lg:col-span-5 bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-6">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="font-extrabold text-slate-900 text-base">Add New Option</h3>
+            <p className="text-xs text-slate-500 mt-1 font-medium">
               This choice will instantly show up in the public forms and admin drop-downs.
             </p>
           </div>
@@ -261,7 +262,7 @@ export default function SettingsManager() {
           <form onSubmit={handleAddSetting} className="space-y-4">
             {/* Display Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Display Name <span className="text-rose-500">*</span>
               </label>
               <input
@@ -270,13 +271,13 @@ export default function SettingsManager() {
                 value={newDisplayName}
                 onChange={(e) => setNewDisplayName(e.target.value)}
                 placeholder="e.g. Waterfront Apartment"
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white rounded-lg px-4 py-2.5 placeholder-slate-655 text-sm outline-none transition-all duration-300"
+                className="w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-300"
               />
             </div>
 
             {/* Custom Value Key */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Value Key (Optional)
               </label>
               <input
@@ -284,13 +285,13 @@ export default function SettingsManager() {
                 value={newValue}
                 onChange={(e) => setNewValue(e.target.value)}
                 placeholder="e.g. waterfront_apt (auto-generated if empty)"
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white rounded-lg px-4 py-2.5 placeholder-slate-650 text-sm outline-none transition-all duration-300"
+                className="w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-300"
               />
             </div>
 
             {/* Sort Order */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                 Sort Order (Index)
               </label>
               <input
@@ -298,13 +299,13 @@ export default function SettingsManager() {
                 value={newSortOrder}
                 onChange={(e) => setNewSortOrder(parseInt(e.target.value) || 0)}
                 placeholder="e.g. 1"
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white rounded-lg px-4 py-2.5 placeholder-slate-650 text-sm outline-none transition-all duration-300"
+                className="w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-300"
               />
             </div>
 
             {/* Warn message */}
-            <div className="p-3 bg-indigo-950/20 border border-indigo-500/10 rounded-lg flex items-start gap-2.5 text-xs text-indigo-300">
-              <AlertTriangle className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5 text-xs text-amber-800 font-medium">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <span>Ensure values are spelled correctly. Deleting settings while active leads use them can lead to display issues.</span>
             </div>
 
@@ -312,7 +313,7 @@ export default function SettingsManager() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-605 hover:from-indigo-600 hover:to-violet-700 text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
             >
               {saving ? (
                 <>
