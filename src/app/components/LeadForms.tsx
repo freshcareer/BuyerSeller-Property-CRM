@@ -71,6 +71,30 @@ export default function LeadForms({ options }: LeadFormsProps) {
       return;
     }
 
+    if (formData.name.length > 255) {
+      setError('Full Name must be less than 255 characters.');
+      setLoading(false);
+      return;
+    }
+
+    // Exact length validation based on Indian standard (10 digits)
+    const phoneClean = formData.phone.replace(/\D/g, ''); // strip non-digits
+    // We expect exactly 10 digits, or 12 digits starting with 91.
+    const isValidPhone = phoneClean.length === 10 || (phoneClean.length === 12 && phoneClean.startsWith('91'));
+    if (!isValidPhone) {
+      setError('Please enter a valid 10-digit phone number (e.g., 9876543210).');
+      setLoading(false);
+      return;
+    }
+
+    // Email validation
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+
+
     const locationString = `${formData.area}, ${formData.city}, ${formData.state}`;
 
     try {

@@ -14,6 +14,7 @@ import {
   ShieldAlert, 
   Loader2,
   CalendarDays,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -72,6 +73,7 @@ export default function AdminLayout({
 
   const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Smart Matches', href: '/admin/matches', icon: Zap },
     { name: 'Buyers Demand', href: '/admin/buyers', icon: Users },
     { name: 'Sellers Inventory', href: '/admin/sellers', icon: Building2 },
     { name: 'Operations Calendar', href: '/admin/calendar', icon: CalendarDays },

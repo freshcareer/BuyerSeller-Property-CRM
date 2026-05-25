@@ -201,7 +201,8 @@ INSERT INTO public.system_settings (category, value, display_name, sort_order) V
 ('budget_range', '80l_1cr',     '₹80 Lakh – ₹1 Crore',    5),
 ('budget_range', '1cr_1_5cr',   '₹1 Crore – ₹1.5 Crore',  6),
 ('budget_range', '1_5cr_2cr',   '₹1.5 Crore – ₹2 Crore',  7),
-('budget_range', '2cr_plus',    '₹2 Crore & Above',        8)
+('budget_range', '2cr_5cr',     '₹2 Crore – ₹5 Crore',    8),
+('budget_range', '5cr_plus',    '₹5 Crore & Above',        9)
 ON CONFLICT (category, value) DO UPDATE SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order;
 
 -- Seed Lead Statuses
@@ -215,3 +216,27 @@ INSERT INTO public.system_settings (category, value, display_name, sort_order) V
 ('lead_status', 'closed_won', 'Closed Deal (Won)', 7),
 ('lead_status', 'closed_lost', 'Lost / Inactive', 8)
 ON CONFLICT (category, value) DO UPDATE SET display_name = EXCLUDED.display_name, sort_order = EXCLUDED.sort_order;
+
+-- ==========================================
+-- SMART MATCHES VIEW
+-- ==========================================
+-- This view automatically pairs buyers and sellers based on matching property_type, city, and area.
+-- It excludes records that are closed.
+CREATE OR REPLACE VIEW public.smart_matches AS
+SELECT 
+    b.id AS buyer_id,
+    b.name AS buyer_name,
+    b.phone AS buyer_phone,
+    b.property_type,
+    b.city,
+    b.area,
+    s.id AS seller_id,
+    s.name AS seller_name,
+    s.phone AS seller_phone
+FROM public.buyers_demand b
+JOIN public.sellers_inventory s 
+  ON b.property_type = s.property_type 
+ AND b.city = s.city 
+ AND b.area = s.area
+WHERE b.status NOT IN ('closed_won', 'closed_lost')
+  AND s.status NOT IN ('closed_won', 'closed_lost');
