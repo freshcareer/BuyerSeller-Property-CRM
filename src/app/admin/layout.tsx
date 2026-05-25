@@ -13,6 +13,7 @@ import {
   X, 
   ShieldAlert, 
   Loader2,
+  CalendarDays,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -73,6 +74,7 @@ export default function AdminLayout({
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Buyers Demand', href: '/admin/buyers', icon: Users },
     { name: 'Sellers Inventory', href: '/admin/sellers', icon: Building2 },
+    { name: 'Operations Calendar', href: '/admin/calendar', icon: CalendarDays },
     { name: 'Settings Manager', href: '/admin/settings', icon: SettingsIcon },
   ];
 

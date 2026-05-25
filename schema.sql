@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS public.buyers_demand (
     budget VARCHAR(100) NOT NULL,         -- value from system_settings where category='budget_range'
     status VARCHAR(50) DEFAULT 'New Lead' NOT NULL,
     notes TEXT,
+    follow_up_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS public.sellers_inventory (
     price VARCHAR(100) NOT NULL,          -- value from system_settings where category='budget_range'
     status VARCHAR(50) DEFAULT 'New Lead' NOT NULL,
     notes TEXT,
+    follow_up_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 

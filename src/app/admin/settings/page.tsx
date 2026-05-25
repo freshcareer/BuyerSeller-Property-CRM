@@ -211,9 +211,17 @@ export default function SettingsManager() {
         
         {/* Left Side: Options List */}
         <div className="lg:col-span-7 bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 className="font-extrabold text-slate-900 text-base">Active {getCategoryLabel(activeTab)}</h3>
-            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-xl text-blue-600 border border-blue-100">
+                {activeTab === 'property_type' && <Building className="w-5 h-5" />}
+                {activeTab === 'city_area' && <MapPin className="w-5 h-5" />}
+                {activeTab === 'budget_range' && <DollarSign className="w-5 h-5" />}
+                {activeTab === 'lead_status' && <Activity className="w-5 h-5" />}
+              </div>
+              <h3 className="font-extrabold text-slate-900 text-lg">Active {getCategoryLabel(activeTab)}</h3>
+            </div>
+            <span className="text-xs text-blue-700 bg-blue-50 px-3 py-1 rounded-full font-extrabold uppercase tracking-wider border border-blue-100 shadow-sm">
               {filteredSettings.length} Options
             </span>
           </div>
@@ -229,23 +237,28 @@ export default function SettingsManager() {
               <p className="text-xs mt-1 font-medium">Use the panel on the right to add options.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100 max-h-[450px] overflow-y-auto pr-2 space-y-1">
+            <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3 pt-2">
               {filteredSettings.map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-3 hover:bg-slate-50 rounded-lg px-3 transition-colors group border border-transparent hover:border-slate-100">
-                  <div className="space-y-1">
-                    <span className="text-slate-900 font-bold block">{item.display_name}</span>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
-                      <span className="flex items-center gap-1">Value key: <code className="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{item.value}</code></span>
-                      <span className="flex items-center gap-1">Order: <code className="text-slate-600 font-bold bg-slate-100 px-1.5 py-0.5 rounded">{item.sort_order}</code></span>
+                <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-200 rounded-xl transition-all duration-300 group shadow-sm hover:shadow-md">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-200"></div>
+                      <span className="text-slate-900 font-extrabold text-base">{item.display_name}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium pl-5">
+                      <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-md text-slate-700 border border-slate-200">Value key: <code className="text-blue-700 font-bold">{item.value}</code></span>
+                      <span className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-md text-slate-700 border border-slate-200">Order: <code className="text-slate-900 font-bold">{item.sort_order}</code></span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeleteSetting(item.id, item.display_name)}
-                    className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-lg opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 border border-transparent hover:border-rose-100"
-                    title="Delete Option"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="mt-3 sm:mt-0 flex items-center justify-end">
+                    <button
+                      onClick={() => handleDeleteSetting(item.id, item.display_name)}
+                      className="p-2 sm:px-3 sm:py-2 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 rounded-lg shadow-sm transition-all flex items-center gap-1.5 text-xs font-bold group-hover:text-rose-500 sm:opacity-60 sm:group-hover:opacity-100 focus:opacity-100"
+                      title="Delete Option"
+                    >
+                      <Trash2 className="w-4 h-4" /> <span className="hidden sm:inline">Delete</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

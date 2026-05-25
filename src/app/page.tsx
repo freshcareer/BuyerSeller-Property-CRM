@@ -65,7 +65,7 @@ export default async function Home() {
           </h1>
 
           <p className="text-slate-600 text-lg md:text-xl font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
-            Property khareedni ya bechni hai? Ahmedabad, Surat, Vadodara aur dusre cities mein apni requirement submit karein. Humare admin aapko verified matches se connect karenge.
+            Property khareedni ya bechni hai? <span className="text-blue-600 font-bold">Ahmedabad</span>, Surat, Vadodara aur dusre cities mein apni requirement submit karein. Humare admin aapko verified matches se connect karenge.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto lg:mx-0 pt-4">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -135,12 +136,12 @@ export default function AdminDashboard() {
               <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">Total</span>
               <span className="text-2xl font-extrabold text-slate-900 block mt-1">{stats.totalBuyers}</span>
             </div>
-            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+            <div className={`p-4 rounded-xl border ${stats.newBuyers > 0 ? 'bg-rose-50 border-rose-200 shadow-sm shadow-rose-100' : 'bg-blue-50/50 border-blue-100'}`}>
               <div className="flex items-center gap-1">
-                <span className="text-xs text-blue-600 font-bold uppercase tracking-wide block">New</span>
-                <AlertCircle className="w-3.5 h-3.5 text-blue-600" />
+                <span className={`text-xs font-bold uppercase tracking-wide block ${stats.newBuyers > 0 ? 'text-rose-600' : 'text-blue-600'}`}>New Leads</span>
+                {stats.newBuyers > 0 && <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-bounce" />}
               </div>
-              <span className="text-2xl font-extrabold text-blue-700 block mt-1">{stats.newBuyers}</span>
+              <span className={`text-2xl font-extrabold block mt-1 ${stats.newBuyers > 0 ? 'text-rose-700' : 'text-blue-700'}`}>{stats.newBuyers}</span>
             </div>
             <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
               <span className="text-xs text-amber-600 font-bold uppercase tracking-wide block">Contacted</span>
@@ -149,6 +150,20 @@ export default function AdminDashboard() {
             <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
               <span className="text-xs text-emerald-600 font-bold uppercase tracking-wide block">Visits</span>
               <span className="text-2xl font-extrabold text-emerald-700 block mt-1">{stats.visitsBuyers}</span>
+            </div>
+          </div>
+
+          {/* Conversion Funnel Bar */}
+          <div className="pt-2">
+            <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
+              <span>Lead Conversion (Site Visits)</span>
+              <span className="text-emerald-600">{stats.totalBuyers > 0 ? Math.round((stats.visitsBuyers / stats.totalBuyers) * 100) : 0}%</span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
+              <div 
+                className="bg-emerald-500 h-2.5 rounded-full transition-all duration-1000" 
+                style={{ width: `${stats.totalBuyers > 0 ? Math.round((stats.visitsBuyers / stats.totalBuyers) * 100) : 0}%` }}
+              />
             </div>
           </div>
         </div>
@@ -175,12 +190,12 @@ export default function AdminDashboard() {
               <span className="text-xs text-slate-500 font-bold uppercase tracking-wide block">Total</span>
               <span className="text-2xl font-extrabold text-slate-900 block mt-1">{stats.totalSellers}</span>
             </div>
-            <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+            <div className={`p-4 rounded-xl border ${stats.newSellers > 0 ? 'bg-rose-50 border-rose-200 shadow-sm shadow-rose-100' : 'bg-indigo-50/50 border-indigo-100'}`}>
               <div className="flex items-center gap-1">
-                <span className="text-xs text-indigo-600 font-bold uppercase tracking-wide block">New</span>
-                <AlertCircle className="w-3.5 h-3.5 text-indigo-600" />
+                <span className={`text-xs font-bold uppercase tracking-wide block ${stats.newSellers > 0 ? 'text-rose-600' : 'text-indigo-600'}`}>New Leads</span>
+                {stats.newSellers > 0 && <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-bounce" />}
               </div>
-              <span className="text-2xl font-extrabold text-indigo-700 block mt-1">{stats.newSellers}</span>
+              <span className={`text-2xl font-extrabold block mt-1 ${stats.newSellers > 0 ? 'text-rose-700' : 'text-indigo-700'}`}>{stats.newSellers}</span>
             </div>
             <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
               <span className="text-xs text-amber-600 font-bold uppercase tracking-wide block">Contacted</span>
@@ -189,6 +204,20 @@ export default function AdminDashboard() {
             <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
               <span className="text-xs text-emerald-600 font-bold uppercase tracking-wide block">Visits</span>
               <span className="text-2xl font-extrabold text-emerald-700 block mt-1">{stats.visitsSellers}</span>
+            </div>
+          </div>
+
+          {/* Conversion Funnel Bar */}
+          <div className="pt-2">
+            <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
+              <span>Lead Conversion (Site Visits)</span>
+              <span className="text-emerald-600">{stats.totalSellers > 0 ? Math.round((stats.visitsSellers / stats.totalSellers) * 100) : 0}%</span>
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
+              <div 
+                className="bg-emerald-500 h-2.5 rounded-full transition-all duration-1000" 
+                style={{ width: `${stats.totalSellers > 0 ? Math.round((stats.visitsSellers / stats.totalSellers) * 100) : 0}%` }}
+              />
             </div>
           </div>
         </div>
