@@ -16,6 +16,8 @@ interface SettingOption {
 
 interface LeadFormsProps {
   options: SettingOption[];
+  defaultTab?: 'buy' | 'sell';
+  hideTabs?: boolean;
 }
 
 // ── Validation Rules ──────────────────────────────────────────────────────────
@@ -49,8 +51,8 @@ const validators = {
 
 type FieldKey = keyof typeof validators;
 
-export default function LeadForms({ options }: LeadFormsProps) {
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
+export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsProps) {
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>(defaultTab || 'buy');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -241,30 +243,32 @@ export default function LeadForms({ options }: LeadFormsProps) {
     <div className="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
 
       {/* Tab Headers */}
-      <div className="flex border-b border-slate-200 bg-slate-50/50">
-        <button
-          type="button"
-          onClick={() => { setActiveTab('buy'); setSubmitError(null); setTouched({}); }}
-          className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
-            activeTab === 'buy'
-              ? 'text-blue-600 border-blue-600 bg-blue-50/30'
-              : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
-          }`}
-        >
-          <Building className="w-5 h-5" /> I Want to Buy
-        </button>
-        <button
-          type="button"
-          onClick={() => { setActiveTab('sell'); setSubmitError(null); setTouched({}); }}
-          className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
-            activeTab === 'sell'
-              ? 'text-blue-600 border-blue-600 bg-blue-50/30'
-              : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
-          }`}
-        >
-          <MapPin className="w-5 h-5" /> I Want to Sell
-        </button>
-      </div>
+      {!hideTabs && (
+        <div className="flex border-b border-slate-200 bg-slate-50/50">
+          <button
+            type="button"
+            onClick={() => { setActiveTab('buy'); setSubmitError(null); setTouched({}); }}
+            className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
+              activeTab === 'buy'
+                ? 'text-blue-600 border-blue-600 bg-blue-50/30'
+                : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
+            }`}
+          >
+            <Building className="w-5 h-5" /> I Want to Buy
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab('sell'); setSubmitError(null); setTouched({}); }}
+            className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
+              activeTab === 'sell'
+                ? 'text-blue-600 border-blue-600 bg-blue-50/30'
+                : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
+            }`}
+          >
+            <MapPin className="w-5 h-5" /> I Want to Sell
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5" noValidate>
         <h3 className="text-xl font-bold text-slate-900">

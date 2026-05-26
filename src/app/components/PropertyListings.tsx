@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import {
-  MapPin, Building, DollarSign, Search, Filter,
-  CheckCircle2, X, Loader2, Phone, ChevronRight,
-  Home, Layers, Tag,
+  MapPin, Building, DollarSign, Search, Filter, X,
+  CheckCircle2, Loader2, Phone, ChevronRight, Home,
+  Layers, ArrowDown, User,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -19,71 +19,60 @@ interface Listing {
   created_at: string;
 }
 
+interface SettingOption { category: string; value: string; display_name: string; }
+
 interface Props {
   listings: Listing[];
+  dbOptions: SettingOption[];
 }
 
-// Property type → icon color mapping
-const propTypeColor: Record<string, string> = {
-  apartment:     'bg-blue-100 text-blue-700 border-blue-200',
-  villa:         'bg-purple-100 text-purple-700 border-purple-200',
-  plot:          'bg-amber-100 text-amber-700 border-amber-200',
-  commercial:    'bg-slate-100 text-slate-700 border-slate-200',
-  farmhouse:     'bg-emerald-100 text-emerald-700 border-emerald-200',
-  bungalow:      'bg-rose-100 text-rose-700 border-rose-200',
-};
-const defaultChip = 'bg-indigo-100 text-indigo-700 border-indigo-200';
+// ── Formatters ────────────────────────────────────────────────────────────────
 
-function formatArea(area: string) {
-  // area is stored as "locality, city, state" — show only locality + city
-  const parts = area.split(',').map(p => p.trim());
-  if (parts.length >= 2) return `${parts[0]}, ${parts[1]}`;
-  return area;
-}
-
-function formatPrice(price: string) {
-  return price.replace(/_/g, ' ').replace('under ', 'Under ').replace('plus', '+').replace('cr', ' Cr').replace('lakh', ' Lakh');
-}
-
-function formatPropType(pt: string) {
+function fmtPropType(pt: string) {
   return pt.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
-
-// ── Interest Modal ───────────────────────────────────────────────────────────
-
-interface ModalProps {
-  listing: Listing;
-  onClose: () => void;
+function fmtPrice(p: string) {
+  return p.replace(/_/g, ' ').replace('under ', 'Under ').replace('plus', '+');
+}
+function fmtArea(area: string) {
+  // "locality, city, state" → show "locality, city" only
+  const parts = area.split(',').map(s => s.trim());
+  return parts.length >= 2 ? `${parts[0]}, ${parts[1]}` : area;
 }
 
-function InterestedModal({ listing, onClose }: ModalProps) {
+const typeColors: Record<string, { bg: string; text: string; dot: string }> = {
+  apartment:  { bg: 'bg-blue-50',    text: 'text-blue-700',   dot: 'bg-blue-500'   },
+  villa:      { bg: 'bg-purple-50',  text: 'text-purple-700', dot: 'bg-purple-500' },
+  plot:       { bg: 'bg-amber-50',   text: 'text-amber-700',  dot: 'bg-amber-500'  },
+  commercial: { bg: 'bg-slate-100',  text: 'text-slate-700',  dot: 'bg-slate-500'  },
+  farmhouse:  { bg: 'bg-emerald-50', text: 'text-emerald-700',dot: 'bg-emerald-500'},
+  bungalow:   { bg: 'bg-rose-50',    text: 'text-rose-700',   dot: 'bg-rose-500'   },
+};
+const defaultColor = { bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-500' };
+
+// ── Interest Modal (auto-filled, only name + phone) ───────────────────────────
+
+function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => void }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [phoneError, setPhoneError] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState('');
+  const [phoneErr, setPhoneErr] = useState('');
 
-  const validate = () => {
-    const digits = phone.replace(/\D/g, '');
-    if (!name.trim()) { setErr('Name is required.'); return false; }
-    if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
-      setPhoneError('Enter a valid 10-digit mobile number.');
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErr('');
-    setPhoneError('');
-    if (!validate()) return;
+    setErr(''); setPhoneErr('');
+
+    if (!name.trim()) { setErr('Apna naam likhein.'); return; }
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
+      setPhoneErr('Valid 10-digit number likhein.'); return;
+    }
 
     setLoading(true);
     try {
-      // Store buyer interest as a new buyer_demand lead referencing the listing
-      const { error: insertError } = await supabase.from('buyers_demand').insert({
+      const { error } = await supabase.from('buyers_demand').insert({
         name: name.trim(),
         phone: phone.trim(),
         property_type: listing.property_type,
@@ -91,133 +80,136 @@ function InterestedModal({ listing, onClose }: ModalProps) {
         city: listing.city,
         area: listing.area,
         budget: listing.price,
-        notes: `Interested in seller listing ID: ${listing.id}. Area: ${listing.area}.`,
+        notes: `Interested in listing: ${fmtPropType(listing.property_type)} at ${fmtArea(listing.area)}. Listing ID: ${listing.id}`,
         status: 'new_lead',
       });
-      if (insertError) throw insertError;
+      if (error) throw error;
       setDone(true);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+      setErr(e instanceof Error ? e.message : 'Kuch galat hua, dobara try karein.');
     } finally {
       setLoading(false);
     }
   };
 
+  const color = typeColors[listing.property_type] || defaultColor;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200">
-          <div>
-            <h3 className="font-extrabold text-slate-900">I&apos;m Interested</h3>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              {formatPropType(listing.property_type)} · {formatArea(listing.area)}
-            </p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg text-slate-400 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
+      <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+
+        {/* Drag handle (mobile) */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="w-10 h-1 bg-slate-300 rounded-full" />
         </div>
 
-        <div className="p-6">
-          {done ? (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-9 h-9 text-emerald-500" />
-              </div>
-              <h4 className="text-xl font-extrabold text-slate-900">Request Sent!</h4>
-              <p className="text-slate-600 text-sm font-medium max-w-sm mx-auto">
-                Hamari team aapko jald hi contact karegi. Property ka poora detail aur seller se connect kiya jayega.
-              </p>
-              <button
-                onClick={onClose}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors mt-2"
-              >
-                Close
-              </button>
+        {done ? (
+          /* ── Success ── */
+          <div className="p-8 text-center space-y-4">
+            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-9 h-9 text-emerald-500" />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Property summary */}
-              <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm space-y-1">
-                <p className="font-bold text-slate-800">
-                  🏠 {formatPropType(listing.property_type)}
-                </p>
-                <p className="text-slate-600 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                  {formatArea(listing.area)}
-                </p>
-                <p className="text-emerald-700 font-bold flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 shrink-0" />
-                  {formatPrice(listing.price)}
-                </p>
-              </div>
-
-              <p className="text-xs text-slate-500 font-medium bg-amber-50 border border-amber-100 rounded-lg p-2.5">
-                📞 Seller ka contact directly nahi milega — admin verify karke aapko connect karega.
+            <div>
+              <h3 className="text-xl font-extrabold text-slate-900">Request Sent! ✅</h3>
+              <p className="text-slate-500 text-sm mt-2 font-medium">
+                Hamari team aapko jald contact karegi. Seller se verified match hone par connect kiya jayega.
               </p>
-
-              {err && (
-                <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">
-                  {err}
-                </p>
-              )}
-
-              {/* Name */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                  Your Full Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Rajesh Patel"
-                  className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
-                />
+            </div>
+            <button onClick={onClose} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
+              Theek Hai
+            </button>
+          </div>
+        ) : (
+          /* ── Form ── */
+          <form onSubmit={submit} className="p-5 space-y-4">
+            {/* Property summary chip */}
+            <div className={`${color.bg} rounded-2xl p-4 space-y-2`}>
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${color.dot}`} />
+                <span className={`font-extrabold text-sm ${color.text}`}>
+                  {fmtPropType(listing.property_type)}
+                </span>
+                <span className="ml-auto text-xs text-slate-400 font-medium">Auto-filled ✓</span>
               </div>
-
-              {/* Phone */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-                  Mobile Number <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneError(''); }}
-                    placeholder="e.g. 9876543210"
-                    inputMode="numeric"
-                    maxLength={15}
-                    className={`w-full border rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none transition-all focus:ring-2 ${
-                      phoneError ? 'border-rose-400 focus:ring-rose-100 bg-rose-50/30' : 'border-slate-300 focus:border-blue-500 focus:ring-blue-100'
-                    }`}
-                  />
-                </div>
-                {phoneError && <p className="text-xs text-rose-600 font-medium">{phoneError}</p>}
+              <div className="flex items-center gap-1.5 text-sm text-slate-700 font-medium">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                {fmtArea(listing.area)}
               </div>
+              <div className="flex items-center gap-1.5 text-sm font-extrabold text-emerald-700">
+                <DollarSign className="w-3.5 h-3.5 shrink-0" />
+                {fmtPrice(listing.price)}
+              </div>
+            </div>
 
+            <p className="text-xs text-slate-500 font-medium text-center">
+              Sirf apna naam aur number dein — baaki sab auto-fill ho gaya ✅
+            </p>
+
+            {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{err}</p>}
+
+            {/* Name */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
+                <User className="w-3 h-3" /> Aapka Naam <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                autoFocus
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="e.g. Rajesh Patel"
+                className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium"
+              />
+            </div>
+
+            {/* Phone */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
+                <Phone className="w-3 h-3" /> Mobile Number <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneErr(''); }}
+                placeholder="e.g. 9876543210"
+                inputMode="numeric"
+                maxLength={15}
+                className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium ${
+                  phoneErr ? 'border-rose-400 bg-rose-50/30 focus:ring-2 focus:ring-rose-100' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+                }`}
+              />
+              {phoneErr && <p className="text-xs text-rose-600 font-medium">{phoneErr}</p>}
+            </div>
+
+            <div className="flex gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-none px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-sm transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
               >
-                {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
-                ) : (
-                  <>Send Interest Request <ChevronRight className="w-4 h-4" /></>
-                )}
+                {loading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
+                  : <>Hamse Connect Karo <ChevronRight className="w-4 h-4" /></>}
               </button>
-            </form>
-          )}
-        </div>
+            </div>
+
+            <p className="text-center text-xs text-slate-400 font-medium">
+              🔒 Seller ka number directly nahi milega. Admin verify karke connect karega.
+            </p>
+          </form>
+        )}
       </div>
     </div>
   );
@@ -226,222 +218,328 @@ function InterestedModal({ listing, onClose }: ModalProps) {
 // ── Property Card ─────────────────────────────────────────────────────────────
 
 function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: () => void }) {
-  const chipCls = propTypeColor[listing.property_type] || defaultChip;
+  const color = typeColors[listing.property_type] || defaultColor;
 
   return (
-    <div className="group bg-white border border-slate-200 hover:border-blue-300 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col">
-      {/* Card Top — colored strip with property type */}
-      <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500 group-hover:from-blue-600 group-hover:to-indigo-600 transition-all duration-300" />
+    <button
+      onClick={onInterest}
+      className="group w-full text-left bg-white border border-slate-200 hover:border-blue-400 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      {/* Color top bar */}
+      <div className={`h-1.5 w-full ${color.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
 
-      <div className="p-5 flex flex-col flex-1 gap-4">
-        {/* Property Type Chip + Privacy Badge */}
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
+        {/* Type badge */}
         <div className="flex items-center justify-between gap-2">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${chipCls}`}>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color.bg} ${color.text}`}>
             <Building className="w-3 h-3" />
-            {formatPropType(listing.property_type)}
+            {fmtPropType(listing.property_type)}
           </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-full border border-slate-200">
-            🔒 Contact Hidden
-          </span>
+          <span className="text-xs text-slate-400 font-medium">🔒 Private</span>
         </div>
 
         {/* Location */}
-        <div className="space-y-1">
-          <div className="flex items-start gap-2 text-slate-800">
-            <MapPin className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold text-sm leading-snug">{formatArea(listing.area)}</p>
-              <p className="text-xs text-slate-400 font-medium">{listing.city}, {listing.state}</p>
-            </div>
+        <div className="flex items-start gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-slate-800 text-sm leading-snug">{fmtArea(listing.area)}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{listing.city}, {listing.state}</p>
           </div>
         </div>
 
         {/* Price */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
-          <DollarSign className="w-4 h-4 text-emerald-600 shrink-0" />
-          <p className="font-extrabold text-emerald-700 text-sm">{formatPrice(listing.price)}</p>
+        <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+          <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span className="font-extrabold text-emerald-700 text-sm">{fmtPrice(listing.price)}</span>
         </div>
 
-        {/* Notes preview (if any, truncated) */}
+        {/* Notes preview */}
         {listing.notes && (
-          <p className="text-xs text-slate-500 italic line-clamp-2 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 font-medium">
-            📝 {listing.notes}
+          <p className="text-xs text-slate-500 line-clamp-2 italic font-medium flex-1">
+            {listing.notes}
           </p>
         )}
 
         {/* CTA */}
-        <button
-          onClick={onInterest}
-          className="mt-auto w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm group-hover:shadow-md group-hover:shadow-blue-200"
-        >
-          I&apos;m Interested <ChevronRight className="w-4 h-4" />
-        </button>
+        <div className="mt-auto pt-2">
+          <div className="w-full py-2.5 bg-blue-600 group-hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm group-hover:shadow-md group-hover:shadow-blue-600/20">
+            Mujhe Chahiye <ChevronRight className="w-4 h-4" />
+          </div>
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-// ── Main PropertyListings Component ─────────────────────────────────────────
+// ── "Can't Find" Request Form ─────────────────────────────────────────────────
 
-export default function PropertyListings({ listings }: Props) {
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [filterCity, setFilterCity] = useState('all');
-  const [filterPrice, setFilterPrice] = useState('all');
-  const [interestedListing, setInterestedListing] = useState<Listing | null>(null);
+function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [location, setLocation] = useState('');
+  const [propType, setPropType] = useState('');
+  const [budget, setBudget] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [err, setErr] = useState('');
+  const [phoneErr, setPhoneErr] = useState('');
 
-  // Derive unique filter options from listings
-  const allTypes = useMemo(() => [...new Set(listings.map(l => l.property_type))].sort(), [listings]);
-  const allCities = useMemo(() => [...new Set(listings.map(l => l.city))].sort(), [listings]);
-  const allPrices = useMemo(() => [...new Set(listings.map(l => l.price))].sort(), [listings]);
+  const propertyTypes = dbOptions.filter(o => o.category === 'property_type');
+  const budgetRanges = dbOptions.filter(o => o.category === 'budget_range');
 
-  const filtered = useMemo(() => {
-    return listings.filter(l => {
-      const matchSearch = !search.trim() ||
-        l.property_type.toLowerCase().includes(search.toLowerCase()) ||
-        l.area.toLowerCase().includes(search.toLowerCase()) ||
-        l.city.toLowerCase().includes(search.toLowerCase()) ||
-        l.price.toLowerCase().includes(search.toLowerCase());
-      const matchType = filterType === 'all' || l.property_type === filterType;
-      const matchCity = filterCity === 'all' || l.city === filterCity;
-      const matchPrice = filterPrice === 'all' || l.price === filterPrice;
-      return matchSearch && matchType && matchCity && matchPrice;
-    });
-  }, [listings, search, filterType, filterCity, filterPrice]);
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(''); setPhoneErr('');
 
-  if (listings.length === 0) {
+    if (!name.trim()) { setErr('Naam zaroori hai.'); return; }
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
+      setPhoneErr('Valid 10-digit number chahiye.'); return;
+    }
+    if (!location.trim()) { setErr('Location batayein.'); return; }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('buyers_demand').insert({
+        name: name.trim(),
+        phone: phone.trim(),
+        property_type: propType || 'any',
+        state: 'Gujarat',
+        city: location.trim(),
+        area: location.trim(),
+        budget: budget || 'any',
+        notes: `Help needed: Looking for ${propType || 'any'} in ${location}. Budget: ${budget || 'flexible'}.`,
+        status: 'new_lead',
+      });
+      if (error) throw error;
+      setDone(true);
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : 'Kuch galat hua.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
     return (
-      <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Home className="w-7 h-7 text-slate-400" />
-        </div>
-        <h3 className="text-xl font-extrabold text-slate-900 mb-2">No Listings Yet</h3>
-        <p className="text-slate-500 text-sm font-medium max-w-sm mx-auto">
-          Abhi koi seller listing available nahi hai. &quot;I Want to Sell&quot; form bhar ke pehle seller bano!
+      <div className="text-center py-8 space-y-3">
+        <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+        <h4 className="font-extrabold text-slate-900 text-lg">Request Mil Gayi! ✅</h4>
+        <p className="text-slate-500 text-sm font-medium">
+          Hamari team aapke liye {location} mein property dhundh karegi aur jald contact karegi.
         </p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Filters Bar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6 shadow-sm space-y-3">
-        {/* Search */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+    <form onSubmit={submit} className="space-y-4 max-w-lg mx-auto">
+      {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{err}</p>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Name */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Aapka Naam <span className="text-rose-500">*</span>
+          </label>
           <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by area, property type, city..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 outline-none transition-all"
+            type="text" required value={name} onChange={e => setName(e.target.value)}
+            placeholder="e.g. Amit Shah"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white"
           />
         </div>
 
-        {/* Filter Dropdowns */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
-          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+        {/* Phone */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Mobile Number <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="tel" required value={phone}
+            onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneErr(''); }}
+            placeholder="9876543210"
+            inputMode="numeric" maxLength={15}
+            className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white ${
+              phoneErr ? 'border-rose-400' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+            }`}
+          />
+          {phoneErr && <p className="text-xs text-rose-600 font-medium">{phoneErr}</p>}
+        </div>
+      </div>
 
+      {/* Location */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+          Kahan Chahiye Property? <span className="text-rose-500">*</span>
+        </label>
+        <input
+          type="text" required value={location} onChange={e => setLocation(e.target.value)}
+          placeholder="e.g. Bopal Ahmedabad, Surat City, Vadodara..."
+          className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white"
+        />
+        <p className="text-xs text-slate-400 font-medium">Area, city ya locality — jo bhi ho likhein</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Property Type */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Property Type <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
           <select
-            value={filterType}
-            onChange={e => setFilterType(e.target.value)}
-            className="bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer shrink-0 transition-all"
+            value={propType} onChange={e => setPropType(e.target.value)}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="all">All Types</option>
-            {allTypes.map(t => (
-              <option key={t} value={t}>{formatPropType(t)}</option>
-            ))}
+            <option value="">Koi bhi type</option>
+            {propertyTypes.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
+        </div>
 
+        {/* Budget */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Budget <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
           <select
-            value={filterCity}
-            onChange={e => setFilterCity(e.target.value)}
-            className="bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer shrink-0 transition-all"
+            value={budget} onChange={e => setBudget(e.target.value)}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="all">All Cities</option>
-            {allCities.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            <option value="">Flexible hai</option>
+            {budgetRanges.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
+        </div>
+      </div>
 
-          <select
-            value={filterPrice}
-            onChange={e => setFilterPrice(e.target.value)}
-            className="bg-slate-50 border border-slate-200 hover:border-blue-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer shrink-0 transition-all"
-          >
-            <option value="all">All Prices</option>
-            {allPrices.map(p => (
-              <option key={p} value={p}>{formatPrice(p)}</option>
-            ))}
-          </select>
+      <button
+        type="submit" disabled={loading}
+        className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm"
+      >
+        {loading
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
+          : <>Property Dhundne Mein Help Karo <ChevronRight className="w-4 h-4" /></>}
+      </button>
+    </form>
+  );
+}
 
-          {/* Clear filters */}
-          {(search || filterType !== 'all' || filterCity !== 'all' || filterPrice !== 'all') && (
-            <button
-              onClick={() => { setSearch(''); setFilterType('all'); setFilterCity('all'); setFilterPrice('all'); }}
-              className="flex items-center gap-1 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all shrink-0"
+// ── Main Component ────────────────────────────────────────────────────────────
+
+export default function PropertyListings({ listings, dbOptions }: Props) {
+  const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('all');
+  const [filterCity, setFilterCity] = useState('all');
+  const [filterPrice, setFilterPrice] = useState('all');
+  const [activeListing, setActiveListing] = useState<Listing | null>(null);
+
+  const allTypes = useMemo(() => [...new Set(listings.map(l => l.property_type))].sort(), [listings]);
+  const allCities = useMemo(() => [...new Set(listings.map(l => l.city))].sort(), [listings]);
+  const allPrices = useMemo(() => [...new Set(listings.map(l => l.price))].sort(), [listings]);
+
+  const filtered = useMemo(() => listings.filter(l => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || l.property_type.includes(q) || l.area.toLowerCase().includes(q) || l.city.toLowerCase().includes(q) || l.price.includes(q);
+    return matchSearch
+      && (filterType === 'all' || l.property_type === filterType)
+      && (filterCity === 'all' || l.city === filterCity)
+      && (filterPrice === 'all' || l.price === filterPrice);
+  }), [listings, search, filterType, filterCity, filterPrice]);
+
+  const hasFilters = search || filterType !== 'all' || filterCity !== 'all' || filterPrice !== 'all';
+  const clearFilters = () => { setSearch(''); setFilterType('all'); setFilterCity('all'); setFilterPrice('all'); };
+
+  return (
+    <>
+      {/* Filters */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 mb-5 shadow-sm space-y-3">
+        <div className="relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Area, city ya property type search karein..."
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 outline-none transition-all"
+          />
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          {[
+            { label: 'Type', val: filterType, set: setFilterType, opts: allTypes.map(t => ({ v: t, l: fmtPropType(t) })) },
+            { label: 'City', val: filterCity, set: setFilterCity, opts: allCities.map(c => ({ v: c, l: c })) },
+            { label: 'Price', val: filterPrice, set: setFilterPrice, opts: allPrices.map(p => ({ v: p, l: fmtPrice(p) })) },
+          ].map(({ label, val, set, opts }) => (
+            <select key={label} value={val} onChange={e => set(e.target.value)}
+              className="bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer shrink-0 transition-all appearance-none"
             >
+              <option value="all">All {label}s</option>
+              {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
+            </select>
+          ))}
+          {hasFilters && (
+            <button onClick={clearFilters} className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all shrink-0">
               <X className="w-3 h-3" /> Clear
             </button>
           )}
-
-          {/* Result count */}
-          <span className="ml-auto shrink-0 text-xs text-slate-500 font-bold whitespace-nowrap">
-            {filtered.length} / {listings.length}
+          <span className="ml-auto text-xs text-slate-400 font-bold shrink-0 whitespace-nowrap">
+            {filtered.length} properties
           </span>
         </div>
       </div>
 
-      {/* Listings Grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-14 bg-white rounded-2xl border border-slate-200">
+      {/* Grid */}
+      {listings.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <Home className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <h3 className="text-xl font-extrabold text-slate-900 mb-2">Abhi Koi Listing Nahi</h3>
+          <p className="text-slate-500 text-sm font-medium">Neeche apni requirement bhejein — hum dhundh karenge!</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 mb-6">
           <Layers className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 font-bold">Koi listing match nahi mili.</p>
-          <button
-            onClick={() => { setSearch(''); setFilterType('all'); setFilterCity('all'); setFilterPrice('all'); }}
-            className="mt-3 text-blue-600 text-sm font-bold underline underline-offset-2"
-          >
-            Clear filters
+          <p className="text-slate-600 font-bold mb-1">Is area mein abhi koi listing nahi mili.</p>
+          <p className="text-slate-400 text-sm font-medium mb-4">Neeche request bhejein — hum aapke liye dhundhenge!</p>
+          <button onClick={clearFilters} className="text-blue-600 text-sm font-bold underline underline-offset-2">
+            Saari properties dekhein
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {filtered.map(listing => (
-            <PropertyCard
-              key={listing.id}
-              listing={listing}
-              onInterest={() => setInterestedListing(listing)}
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+          {filtered.map(l => (
+            <PropertyCard key={l.id} listing={l} onInterest={() => setActiveListing(l)} />
           ))}
         </div>
       )}
 
-      {/* Privacy notice */}
-      <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
-        <p className="text-xs text-slate-500 font-medium">
-          <span className="font-bold text-slate-700">🔒 Privacy Policy:</span> Seller ka naam, phone number, email aur exact address 
-          kabhi bhi publicly nahi dikhaya jata. Hamare admin ke through hi verified buyers se connect kiya jata hai.
-        </p>
+      {/* Divider with arrow */}
+      <div className="flex items-center gap-4 my-8">
+        <div className="flex-1 h-px bg-slate-200" />
+        <div className="flex flex-col items-center gap-1 text-slate-400">
+          <ArrowDown className="w-4 h-4 animate-bounce" />
+          <span className="text-xs font-bold whitespace-nowrap">Nahi mila jo chahiye?</span>
+        </div>
+        <div className="flex-1 h-px bg-slate-200" />
+      </div>
+
+      {/* Can't find section */}
+      <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm">
+        <div className="text-center mb-6">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-xs font-bold mb-3">
+            🔍 Property Dhundwao
+          </span>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+            Apni Pasand Ki Property List Mein Nahi?
+          </h2>
+          <p className="text-slate-500 text-sm mt-2 font-medium max-w-md mx-auto">
+            Koi baat nahi — apna naam, number aur location batao. Hamari team aapke liye 
+            suitable property dhundh kar connect karegi.
+          </p>
+        </div>
+
+        <CantFindForm dbOptions={dbOptions} />
       </div>
 
       {/* Interest Modal */}
-      {interestedListing && (
-        <InterestedModal
-          listing={interestedListing}
-          onClose={() => setInterestedListing(null)}
-        />
+      {activeListing && (
+        <InterestModal listing={activeListing} onClose={() => setActiveListing(null)} />
       )}
-
-      {/* Scroll-to-form floating button */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="fixed bottom-6 right-4 z-40 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-full shadow-lg shadow-blue-600/30 transition-all duration-300 hover:scale-105"
-      >
-        <Tag className="w-4 h-4" />
-        <span className="hidden sm:inline">List My Property</span>
-        <span className="sm:hidden">Sell</span>
-      </button>
     </>
   );
 }
