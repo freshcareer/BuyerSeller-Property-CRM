@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   description: "Secure, dynamic real estate matching portal for premium buyers and sellers.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

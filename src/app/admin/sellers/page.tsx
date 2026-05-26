@@ -283,24 +283,24 @@ export default function SellersInventory() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 relative min-h-screen pb-32">
+    <div className="space-y-6 animate-in fade-in duration-500 relative min-h-screen pb-32">
 
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            <Building2 className="w-8 h-8 text-indigo-600" /> Sellers Inventory
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-600" /> Sellers Inventory
           </h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">
             Manage seller listings, edit property details, and send WhatsApp messages.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-center">
+        <div className="flex flex-row flex-wrap gap-2 self-start sm:self-center">
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-2 transition-all duration-300"
+            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200 rounded-lg text-sm font-bold text-white flex items-center justify-center gap-2 transition-all duration-300"
           >
             <Plus className="w-4 h-4" /> Add Listing
           </a>
@@ -360,8 +360,8 @@ export default function SellersInventory() {
           )}
         </div>
 
-        {/* Advanced Filters */}
-        <div className="flex flex-wrap gap-3 items-center">
+        {/* Advanced Filters - scrollable on mobile */}
+        <div className="flex gap-2 items-center overflow-x-auto pb-1 scrollbar-none">
           <select 
             value={filterStatus} 
             onChange={e => setFilterStatus(e.target.value)}
@@ -409,7 +409,7 @@ export default function SellersInventory() {
         </div>
       </div>
 
-      {/* ── Main Table ── */}
+      {/* ── Main List (cards on mobile, table on desktop) ── */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -417,7 +417,7 @@ export default function SellersInventory() {
             <p className="text-slate-500 font-medium text-sm">Fetching sellers inventory list...</p>
           </div>
         ) : filteredSellers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="flex flex-col items-center justify-center text-center py-16 px-4">
             <div className="p-4 bg-indigo-50 rounded-full mb-4 border border-indigo-100 shadow-inner">
                <Building2 className="w-10 h-10 text-indigo-400" />
             </div>
@@ -444,190 +444,226 @@ export default function SellersInventory() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wide text-xs">
-                  {/* Select All */}
-                  <th className="px-4 py-4 w-10">
-                    <button
-                      onClick={toggleSelectAll}
-                      className="text-slate-400 hover:text-indigo-600 transition-colors"
-                      title="Select All"
-                    >
-                      {selectedIds.size === filteredSellers.length && filteredSellers.length > 0
-                        ? <CheckSquare className="w-4 h-4 text-indigo-600" />
-                        : <Square className="w-4 h-4" />}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4">Seller Detail</th>
-                  <th className="px-6 py-4">Property Area</th>
-                  <th className="px-6 py-4">Property Type</th>
-                  <th className="px-6 py-4">Expected Price</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {filteredSellers.map((seller) => (
-                  <tr
-                    key={seller.id}
-                    className={`hover:bg-slate-50 transition-colors ${selectedIds.has(seller.id) ? 'bg-indigo-50/40' : ''}`}
-                  >
-                    {/* Checkbox */}
-                    <td className="px-4 py-4">
-                      <button
-                        onClick={() => toggleSelect(seller.id)}
-                        className="text-slate-400 hover:text-indigo-600 transition-colors"
-                      >
+          <>
+            {/* ── Mobile Card View ── */}
+            <div className="block md:hidden divide-y divide-slate-100">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
+                <button onClick={toggleSelectAll} className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  {selectedIds.size === filteredSellers.length && filteredSellers.length > 0
+                    ? <CheckSquare className="w-4 h-4 text-indigo-600" />
+                    : <Square className="w-4 h-4" />}
+                  Select All ({filteredSellers.length})
+                </button>
+              </div>
+              {filteredSellers.map((seller) => (
+                <div
+                  key={seller.id}
+                  className={`p-4 space-y-3 transition-colors ${selectedIds.has(seller.id) ? 'bg-indigo-50/40' : 'bg-white'}`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <button onClick={() => toggleSelect(seller.id)} className="mt-0.5 shrink-0">
                         {selectedIds.has(seller.id)
+                          ? <CheckSquare className="w-4 h-4 text-indigo-600" />
+                          : <Square className="w-4 h-4 text-slate-400" />}
+                      </button>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-slate-900 truncate">{seller.name}</h4>
+                        <a href={`tel:${seller.phone}`} className="text-xs text-indigo-600 font-medium flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3" />{seller.phone}
+                        </a>
+                        {seller.email && <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1"><Mail className="w-3 h-3" />{seller.email}</p>}
+                      </div>
+                    </div>
+                    <div className="relative shrink-0">
+                      <select
+                        value={seller.status}
+                        onChange={(e) => handleStatusChange(seller.id, e.target.value)}
+                        className={`appearance-none bg-white border text-xs font-bold rounded-lg pl-2 pr-6 py-1.5 outline-none cursor-pointer shadow-sm ${
+                          seller.status === 'new_lead' ? 'border-indigo-200 text-indigo-700' :
+                          seller.status === 'contacted' ? 'border-amber-200 text-amber-700' :
+                          seller.status === 'closed_won' ? 'border-emerald-200 text-emerald-700' :
+                          seller.status === 'closed_lost' ? 'border-rose-200 text-rose-700' :
+                          'border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {statuses.map((s) => (
+                          <option key={s.value} value={s.value}>{s.display_name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3 h-3 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2.5 py-2">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-700 capitalize truncate">{seller.area.replace(/_/g, ' ')}</p>
+                        <p className="text-slate-400">{seller.city}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2.5 py-2">
+                      <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <p className="font-bold text-slate-700 capitalize truncate">{seller.property_type.replace(/_/g, ' ')}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-emerald-50 rounded-lg px-2.5 py-2 col-span-2">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <p className="font-bold text-emerald-700">{seller.price.replace(/_/g, ' ').replace('under ', '< ').replace('plus', '+')}</p>
+                    </div>
+                  </div>
+
+                  {seller.notes && (
+                    <div className="text-xs text-slate-600 italic bg-amber-50 p-2 rounded border border-amber-100">
+                      📝 {seller.notes}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <a
+                      href={buildWaLink(seller.phone, DEFAULT_SELLER_MSG(seller))}
+                      target="_blank" rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold rounded-lg transition-all"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                    </a>
+                    <button onClick={() => handleFindMatches(seller)} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-bold rounded-lg transition-all">
+                      <GitCompare className="w-3.5 h-3.5" /> Match
+                    </button>
+                    <button onClick={() => openEdit(seller)} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-bold rounded-lg transition-all">
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    {deleteConfirmId === seller.id ? (
+                      <div className="flex gap-1">
+                        <button onClick={() => handleDelete(seller.id)} disabled={deletingId === seller.id} className="px-2.5 py-2 bg-rose-600 text-white text-xs font-bold rounded-lg flex items-center gap-1">
+                          {deletingId === seller.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                        </button>
+                        <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-2 bg-white border border-slate-200 text-xs rounded-lg"><X className="w-3 h-3" /></button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setDeleteConfirmId(seller.id)} className="px-3 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Desktop Table View ── */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wide text-xs">
+                    <th className="px-4 py-4 w-10">
+                      <button onClick={toggleSelectAll} className="text-slate-400 hover:text-indigo-600 transition-colors" title="Select All">
+                        {selectedIds.size === filteredSellers.length && filteredSellers.length > 0
                           ? <CheckSquare className="w-4 h-4 text-indigo-600" />
                           : <Square className="w-4 h-4" />}
                       </button>
-                    </td>
-
-                    {/* Seller Detail */}
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-900">{seller.name}</div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-xs text-slate-500 mt-1 font-medium">
-                        <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> {seller.phone}</span>
-                        {seller.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3 text-slate-400" /> {seller.email}</span>}
-                      </div>
-                      {seller.notes && (
-                        <div className="text-xs text-slate-600 mt-2 italic bg-amber-50 p-2 rounded border border-amber-100 max-w-xs">
-                          Note: {seller.notes}
-                        </div>
-                      )}
-                    </td>
-
-                    {/* Area */}
-                    <td className="px-6 py-4 capitalize font-bold text-slate-700">
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-4 h-4 text-slate-400" />
-                        {seller.area.replace(/_/g, ' ')}
-                      </div>
-                      <div className="text-xs text-slate-400 font-medium mt-0.5">{seller.city}, {seller.state}</div>
-                    </td>
-
-                    {/* Property Type */}
-                    <td className="px-6 py-4 capitalize text-slate-700 font-medium">
-                      <div className="flex items-center gap-1.5">
-                        <Building className="w-4 h-4 text-slate-400" />
-                        {seller.property_type.replace(/_/g, ' ')}
-                      </div>
-                    </td>
-
-                    {/* Price */}
-                    <td className="px-6 py-4 text-emerald-700 font-bold">
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-                        {seller.price.replace(/_/g, ' ').replace('under ', '< ').replace('plus', '+')}
-                      </div>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <select
-                            value={seller.status}
-                            onChange={(e) => handleStatusChange(seller.id, e.target.value)}
-                            className={`appearance-none bg-white border text-xs font-bold rounded-lg pl-2.5 pr-7 py-1.5 outline-none transition-all duration-300 cursor-pointer shadow-sm ${
-                              seller.status === 'new_lead' ? 'border-indigo-200 text-indigo-700' :
-                              seller.status === 'contacted' ? 'border-amber-200 text-amber-700' :
-                              seller.status === 'closed_won' ? 'border-emerald-200 text-emerald-700' :
-                              seller.status === 'closed_lost' ? 'border-rose-200 text-rose-700' :
-                              'border-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {statuses.map((s) => (
-                              <option key={s.value} value={s.value}>{s.display_name}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
-                        </div>
-                        {actionStatus.id === seller.id && (
-                          <span className="text-xs">
-                            {actionStatus.status === 'success' && <Check className="w-4 h-4 text-emerald-600" />}
-                            {actionStatus.status === 'error' && <span className="text-rose-500">❌</span>}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                        {/* WhatsApp */}
-                        <a
-                          href={buildWaLink(seller.phone, DEFAULT_SELLER_MSG(seller))}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold rounded-lg transition-all duration-300"
-                          title="Send WhatsApp"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" /> WA
-                        </a>
-
-                        {/* Match */}
-                        <button
-                          onClick={() => handleFindMatches(seller)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-bold rounded-lg transition-all duration-300"
-                          title="Find Matches"
-                        >
-                          <GitCompare className="w-3.5 h-3.5" /> Match
-                        </button>
-
-                        {/* Edit */}
-                        <button
-                          onClick={() => openEdit(seller)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-bold rounded-lg transition-all duration-300"
-                          title="Edit Seller"
-                        >
-                          <Pencil className="w-3.5 h-3.5" /> Edit
-                        </button>
-
-                        {/* Delete */}
-                        {deleteConfirmId === seller.id ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleDelete(seller.id)}
-                              disabled={deletingId === seller.id}
-                              className="px-2.5 py-1.5 bg-rose-600 text-white hover:bg-rose-700 text-xs font-bold rounded-lg transition-all duration-300 flex items-center gap-1"
-                            >
-                              {deletingId === seller.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirmId(null)}
-                              className="px-2 py-1.5 bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 text-xs font-bold rounded-lg transition-all"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setDeleteConfirmId(seller.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all duration-300"
-                            title="Delete Seller"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                    </th>
+                    <th className="px-6 py-4">Seller Detail</th>
+                    <th className="px-6 py-4">Property Area</th>
+                    <th className="px-6 py-4">Property Type</th>
+                    <th className="px-6 py-4">Expected Price</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {filteredSellers.map((seller) => (
+                    <tr key={seller.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.has(seller.id) ? 'bg-indigo-50/40' : ''}`}>
+                      <td className="px-4 py-4">
+                        <button onClick={() => toggleSelect(seller.id)} className="text-slate-400 hover:text-indigo-600 transition-colors">
+                          {selectedIds.has(seller.id) ? <CheckSquare className="w-4 h-4 text-indigo-600" /> : <Square className="w-4 h-4" />}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-900">{seller.name}</div>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-xs text-slate-500 mt-1 font-medium">
+                          <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-slate-400" /> {seller.phone}</span>
+                          {seller.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3 text-slate-400" /> {seller.email}</span>}
+                        </div>
+                        {seller.notes && (<div className="text-xs text-slate-600 mt-2 italic bg-amber-50 p-2 rounded border border-amber-100 max-w-xs">Note: {seller.notes}</div>)}
+                      </td>
+                      <td className="px-6 py-4 capitalize font-bold text-slate-700">
+                        <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-slate-400" />{seller.area.replace(/_/g, ' ')}</div>
+                        <div className="text-xs text-slate-400 font-medium mt-0.5">{seller.city}, {seller.state}</div>
+                      </td>
+                      <td className="px-6 py-4 capitalize text-slate-700 font-medium">
+                        <div className="flex items-center gap-1.5"><Building className="w-4 h-4 text-slate-400" />{seller.property_type.replace(/_/g, ' ')}</div>
+                      </td>
+                      <td className="px-6 py-4 text-emerald-700 font-bold">
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                          {seller.price.replace(/_/g, ' ').replace('under ', '< ').replace('plus', '+')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <select
+                              value={seller.status}
+                              onChange={(e) => handleStatusChange(seller.id, e.target.value)}
+                              className={`appearance-none bg-white border text-xs font-bold rounded-lg pl-2.5 pr-7 py-1.5 outline-none transition-all duration-300 cursor-pointer shadow-sm ${
+                                seller.status === 'new_lead' ? 'border-indigo-200 text-indigo-700' :
+                                seller.status === 'contacted' ? 'border-amber-200 text-amber-700' :
+                                seller.status === 'closed_won' ? 'border-emerald-200 text-emerald-700' :
+                                seller.status === 'closed_lost' ? 'border-rose-200 text-rose-700' :
+                                'border-slate-200 text-slate-700'
+                              }`}
+                            >
+                              {statuses.map((s) => (<option key={s.value} value={s.value}>{s.display_name}</option>))}
+                            </select>
+                            <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                          </div>
+                          {actionStatus.id === seller.id && (
+                            <span className="text-xs">
+                              {actionStatus.status === 'success' && <Check className="w-4 h-4 text-emerald-600" />}
+                              {actionStatus.status === 'error' && <span className="text-rose-500">❌</span>}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                          <a href={buildWaLink(seller.phone, DEFAULT_SELLER_MSG(seller))} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold rounded-lg transition-all">
+                            <MessageCircle className="w-3.5 h-3.5" /> WA
+                          </a>
+                          <button onClick={() => handleFindMatches(seller)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-bold rounded-lg transition-all">
+                            <GitCompare className="w-3.5 h-3.5" /> Match
+                          </button>
+                          <button onClick={() => openEdit(seller)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 text-xs font-bold rounded-lg transition-all">
+                            <Pencil className="w-3.5 h-3.5" /> Edit
+                          </button>
+                          {deleteConfirmId === seller.id ? (
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => handleDelete(seller.id)} disabled={deletingId === seller.id} className="px-2.5 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-lg flex items-center gap-1">
+                                {deletingId === seller.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Confirm
+                              </button>
+                              <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1.5 bg-white border border-slate-200 text-xs font-bold rounded-lg"><X className="w-3 h-3" /></button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setDeleteConfirmId(seller.id)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
       {/* ── WhatsApp Blast Bottom Bar ── */}
       {selectedCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-4 pointer-events-none">
-          <div className="bg-slate-900 text-white rounded-2xl shadow-2xl flex items-center gap-4 px-6 py-4 pointer-events-auto border border-slate-700 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-3 pointer-events-none">
+          <div className="bg-slate-900 text-white rounded-2xl shadow-2xl flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 pointer-events-auto border border-slate-700 animate-in slide-in-from-bottom duration-300 w-full max-w-sm sm:max-w-none sm:w-auto">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-xs font-extrabold">
                 {selectedCount}
