@@ -7,6 +7,7 @@ import {
   Layers, ArrowDown, User,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { LOCATION_DATA, getCities, getAreas } from '@/lib/locationData';
 
 interface Listing {
   id: string;
@@ -276,7 +277,9 @@ function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: (
 function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [location, setLocation] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [area, setArea] = useState('');
   const [propType, setPropType] = useState('');
   const [budget, setBudget] = useState('');
   const [loading, setLoading] = useState(false);
@@ -287,6 +290,9 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
   const propertyTypes = dbOptions.filter(o => o.category === 'property_type');
   const budgetRanges = dbOptions.filter(o => o.category === 'budget_range');
 
+  const availableCities = state ? getCities(state) : [];
+  const availableAreas = state && city ? getAreas(state, city) : [];
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(''); setPhoneErr('');
@@ -296,7 +302,9 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
     if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
       setPhoneErr('Valid 10-digit number chahiye.'); return;
     }
-    if (!location.trim()) { setErr('Location batayein.'); return; }
+    if (!state) { setErr('State select karein.'); return; }
+    if (!city) { setErr('City select karein.'); return; }
+    if (!area) { setErr('Area select karein.'); return; }
 
     setLoading(true);
     try {
@@ -304,11 +312,11 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         name: name.trim(),
         phone: phone.trim(),
         property_type: propType || 'any',
-        state: 'Gujarat',
-        city: location.trim(),
-        area: location.trim(),
+        state: state,
+        city: city,
+        area: `${area}, ${city}, ${state}`,
         budget: budget || 'any',
-        notes: `Help needed: Looking for ${propType || 'any'} in ${location}. Budget: ${budget || 'flexible'}.`,
+        notes: `Help needed: Looking for ${propType || 'any'} in ${area}, ${city}, ${state}. Budget: ${budget || 'flexible'}.`,
         status: 'new_lead',
       });
       if (error) throw error;
@@ -326,7 +334,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
         <h4 className="font-extrabold text-slate-900 text-lg">Request Mil Gayi! ✅</h4>
         <p className="text-slate-500 text-sm font-medium">
-          Hamari team aapke liye {location} mein property dhundh karegi aur jald contact karegi.
+          Hamari team aapke liye {city} mein property dhundh karegi aur jald contact karegi.
         </p>
       </div>
     );
@@ -372,12 +380,34 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
           Kahan Chahiye Property? <span className="text-rose-500">*</span>
         </label>
-        <input
-          type="text" required value={location} onChange={e => setLocation(e.target.value)}
-          placeholder="e.g. Bopal Ahmedabad, Surat City, Vadodara..."
-          className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white"
-        />
-        <p className="text-xs text-slate-400 font-medium">Area, city ya locality — jo bhi ho likhein</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <select
+            value={state}
+            onChange={e => { setState(e.target.value); setCity(''); setArea(''); }}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
+          >
+            <option value="">State</option>
+            {LOCATION_DATA.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+          <select
+            value={city}
+            onChange={e => { setCity(e.target.value); setArea(''); }}
+            disabled={!state}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+          >
+            <option value="">City</option>
+            {availableCities.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+          <select
+            value={area}
+            onChange={e => setArea(e.target.value)}
+            disabled={!city}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+          >
+            <option value="">Area</option>
+            {availableAreas.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
