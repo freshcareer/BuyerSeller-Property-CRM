@@ -5,8 +5,19 @@ import { supabase } from '@/lib/supabase';
 import { Zap, Loader2 } from 'lucide-react';
 import MatchCard from './MatchCard';
 
+interface Match {
+  buyer_id: string;
+  seller_id: string;
+  buyer_name: string;
+  buyer_phone: string;
+  seller_name: string;
+  seller_phone: string;
+  property_type: string;
+  area: string;
+}
+
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<any[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +44,7 @@ export default function MatchesPage() {
         const activeBuyers = (buyers || []).filter(b => b.status !== 'closed_won' && b.status !== 'closed_lost');
         const activeSellers = (sellers || []).filter(s => s.status !== 'closed_won' && s.status !== 'closed_lost');
 
-        let computedMatches: any[] = [];
+        const computedMatches: Match[] = [];
         activeBuyers.forEach(buyer => {
           activeSellers.forEach(seller => {
             const typeMatch = norm(buyer.property_type) === norm(seller.property_type);
@@ -55,8 +66,8 @@ export default function MatchesPage() {
           });
         });
         setMatches(computedMatches);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching matches');
+      } catch (err: unknown) {
+        setError((err as Error).message || 'An error occurred while fetching matches');
       } finally {
         setLoading(false);
       }
@@ -101,7 +112,7 @@ export default function MatchesPage() {
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-1">No matches found</h3>
           <p className="text-slate-500 text-center max-w-sm">
-            We couldn't find any exact matches between buyers and sellers in the same area for the same property type.
+            We couldn&apos;t find any exact matches between buyers and sellers in the same area for the same property type.
           </p>
         </div>
       ) : (

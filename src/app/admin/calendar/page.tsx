@@ -25,6 +25,27 @@ interface FollowUpTask {
   status: string;
 }
 
+const getFormatDate = (dateStr: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  
+  if (dateStr === today) return 'Today';
+  if (dateStr === tomorrow) return 'Tomorrow';
+  if (dateStr === yesterday) return 'Yesterday';
+  
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+const isPastDue = (dateStr: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  return dateStr < today;
+};
+
 export default function OperationsCalendar() {
   const [tasks, setTasks] = useState<FollowUpTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,26 +95,6 @@ export default function OperationsCalendar() {
     groupedTasks[dateStr].push(task);
   });
 
-  const getFormatDate = (dateStr: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    
-    if (dateStr === today) return 'Today';
-    if (dateStr === tomorrow) return 'Tomorrow';
-    if (dateStr === yesterday) return 'Yesterday';
-    
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const isPastDue = (dateStr: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    return dateStr < today;
-  };
 
   if (loading) {
     return (

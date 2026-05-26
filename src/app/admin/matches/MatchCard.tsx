@@ -84,8 +84,8 @@ export default function MatchCard({ match, formatType }: MatchProps) {
         setVisitTime('10:00');
         setVisitNotes('');
       }, 2000);
-    } catch (err: any) {
-      setSaveError(err.message || 'Failed to schedule visit. Please try again.');
+    } catch (err: unknown) {
+      setSaveError((err as Error).message || 'Failed to schedule visit. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -256,7 +256,7 @@ export default function MatchCard({ match, formatType }: MatchProps) {
 
                   {/* Info Box */}
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
-                    📌 Saving will update both buyer & seller status to <strong>"Site Visit Arranged"</strong> and add to your Operations Calendar.
+                    📌 Saving will update both buyer & seller status to <strong>&quot;Site Visit Arranged&quot;</strong> and add to your Operations Calendar.
                   </div>
                 </>
               )}

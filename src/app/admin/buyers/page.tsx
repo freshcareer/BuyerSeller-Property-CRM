@@ -766,7 +766,7 @@ export default function BuyersDemand() {
             {/* Selected Contacts List */}
             <div className="p-6 flex-1 overflow-y-auto space-y-3 bg-slate-50">
               <div className="flex items-center justify-between mb-2">
-                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Click "Send WA" for each contact</p>
+                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Click &quot;Send WA&quot; for each contact</p>
                  <span className="text-xs font-bold text-emerald-600">{selectedCount} Contacts</span>
               </div>
               

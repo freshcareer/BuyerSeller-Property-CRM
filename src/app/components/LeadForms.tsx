@@ -223,19 +223,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const disabledSelectCls = 'w-full bg-slate-50 border border-slate-200 text-slate-400 rounded-xl px-4 py-3 outline-none cursor-not-allowed appearance-none';
   const labelCls = 'text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5';
 
-  const FieldError = ({ field }: { field: FieldKey }) =>
+  const renderFieldError = (field: FieldKey) =>
     touched[field] && errors[field] ? (
       <p className="flex items-center gap-1 text-xs text-rose-600 font-medium mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
         <AlertCircle className="w-3 h-3 shrink-0" />
         {errors[field]}
-      </p>
-    ) : null;
-
-  const FieldSuccess = ({ field }: { field: FieldKey }) =>
-    touched[field] && !errors[field] && formData[field as keyof typeof formData] ? (
-      <p className="flex items-center gap-1 text-xs text-emerald-600 font-medium mt-1 animate-in fade-in duration-200">
-        <CheckCircle2 className="w-3 h-3 shrink-0" />
-        Looks good!
       </p>
     ) : null;
 
@@ -292,7 +284,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               type="text" name="name" value={formData.name} onChange={handleChange} onBlur={() => handleBlur('name')}
               placeholder="e.g. Rajesh Patel" className={getInputCls('name')} maxLength={255}
             />
-            <FieldError field="name" />
+            {renderFieldError('name')}
           </div>
 
           <div className="space-y-1">
@@ -303,7 +295,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               type="tel" name="phone" value={formData.phone} onChange={handleChange} onBlur={() => handleBlur('phone')}
               placeholder="e.g. 9876543210" className={getInputCls('phone')} maxLength={15} inputMode="numeric"
             />
-            <FieldError field="phone" />
+            {renderFieldError('phone')}
           </div>
 
           <div className="space-y-1">
@@ -315,7 +307,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               type="email" name="email" value={formData.email} onChange={handleChange} onBlur={() => handleBlur('email')}
               placeholder="e.g. rajesh@example.com" className={getInputCls('email')}
             />
-            <FieldError field="email" />
+            {renderFieldError('email')}
           </div>
         </div>
 
@@ -332,7 +324,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               <option value="" disabled className="text-slate-400">Select property type</option>
               {propertyTypes.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
             </select>
-            <FieldError field="propertyType" />
+            {renderFieldError('propertyType')}
           </div>
 
           <div className="space-y-1">
@@ -346,7 +338,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               <option value="" disabled className="text-slate-400">Select range</option>
               {budgetRanges.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
             </select>
-            <FieldError field="budgetOrPrice" />
+            {renderFieldError('budgetOrPrice')}
           </div>
         </div>
 
@@ -374,7 +366,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
-              <FieldError field="state" />
+              {renderFieldError('state')}
             </div>
 
             {/* City */}
@@ -396,7 +388,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                       <option key={c.value} value={c.value}>{c.label}</option>
                     ))}
                   </select>
-                  <FieldError field="city" />
+                  {renderFieldError('city')}
                 </>
               ) : (
                 <select disabled className={disabledSelectCls}>
@@ -424,7 +416,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                       <option key={a.value} value={a.value}>{a.label}</option>
                     ))}
                   </select>
-                  <FieldError field="area" />
+                  {renderFieldError('area')}
                 </>
               ) : (
                 <select disabled className={disabledSelectCls}>
