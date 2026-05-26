@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import PropertyListings from '@/app/components/PropertyListings';
+import LeadForms from '@/app/components/LeadForms';
 import { ShieldCheck, ArrowUpRight, Lock, Database, TrendingUp, PlusCircle } from 'lucide-react';
 
 export const revalidate = 0;
@@ -38,7 +39,7 @@ export default async function Home() {
   const dbOk = options !== null;
 
   return (
-    <div className="flex-1 min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col">
+    <div className="flex-1 min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col scroll-smooth">
 
       {/* ── Sticky Header ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
@@ -62,16 +63,16 @@ export default async function Home() {
               {listings.length} Live
             </div>
 
-            {/* Sell button — navigates to /sell page */}
+            {/* Sell button — smooth scrolls to section */}
             {dbOk && (
-              <Link
-                href="/sell"
+              <a
+                href="#sell-property"
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-all shadow shadow-blue-600/30"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Apni Property List Karo</span>
-                <span className="sm:hidden">Sell</span>
-              </Link>
+                <span className="hidden sm:inline">Apni Property Becho</span>
+                <span className="sm:hidden">Becho</span>
+              </a>
             )}
 
             {/* Admin */}
@@ -119,16 +120,35 @@ export default async function Home() {
             <p className="text-slate-500 text-sm">Run <code className="bg-slate-100 px-1 rounded">schema.sql</code> in Supabase SQL editor and refresh.</p>
           </div>
         ) : (
-          <PropertyListings listings={listings} dbOptions={options!} />
+          <>
+            {/* BUYER SECTION: Browse Properties */}
+            <PropertyListings listings={listings} dbOptions={options!} />
+
+            {/* SELLER SECTION: List Property Form */}
+            <div id="sell-property" className="mt-16 sm:mt-24 pt-8 border-t border-slate-200">
+              <div className="text-center mb-8 max-w-2xl mx-auto">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  Apni Property List Karo
+                </h2>
+                <p className="text-slate-500 text-sm mt-3 font-medium">
+                  Apni property ki details submit karein. Aapka contact directly kisi buyer ko nahi dikhega, 
+                  sirf admin ke through verified buyers se hi connect hoga.
+                </p>
+              </div>
+              <LeadForms options={options!} defaultTab="sell" hideTabs={true} />
+            </div>
+          </>
         )}
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white py-5 text-center">
-        <p className="text-xs text-slate-400 font-medium">
-          © {new Date().getFullYear()} BuyerSeller Property CRM &nbsp;·&nbsp;
+      <footer className="border-t border-slate-200 bg-white py-6 mt-10 text-center">
+        <p className="text-sm text-slate-400 font-medium">
+          © {new Date().getFullYear()} BuyerSeller Property CRM
+        </p>
+        <p className="text-xs text-slate-400 font-medium mt-1">
           Seller ka contact kabhi publicly nahi dikhaya jata &nbsp;·&nbsp;
-          <Link href="/login" className="text-blue-600 hover:underline">Admin</Link>
+          <Link href="/login" className="text-blue-600 hover:underline">Admin Login</Link>
         </p>
       </footer>
     </div>
