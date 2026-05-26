@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import PropertyListings from '@/app/components/PropertyListings';
-import SellModal from '@/app/components/SellModal';
 import { ShieldCheck, ArrowUpRight, Lock, Database, TrendingUp, PlusCircle } from 'lucide-react';
 
 export const revalidate = 0;
@@ -63,8 +62,17 @@ export default async function Home() {
               {listings.length} Live
             </div>
 
-            {/* Sell button — opens modal */}
-            {dbOk && <SellModal options={options!} />}
+            {/* Sell button — navigates to /sell page */}
+            {dbOk && (
+              <Link
+                href="/sell"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-all shadow shadow-blue-600/30"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Apni Property List Karo</span>
+                <span className="sm:hidden">Sell</span>
+              </Link>
+            )}
 
             {/* Admin */}
             <Link
