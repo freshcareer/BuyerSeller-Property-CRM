@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { LOCATION_DATA, getCities, getAreas } from '@/lib/locationData';
 import {
   CheckCircle2, ChevronRight, Loader2, User, Phone, Mail,
-  Building, MapPin, DollarSign, FileText, Globe, Home,
+  Building, MapPin, DollarSign, FileText, Globe, Home, AlertCircle,
 } from 'lucide-react';
 
 interface SettingOption {
@@ -18,11 +18,42 @@ interface LeadFormsProps {
   options: SettingOption[];
 }
 
+// ── Validation Rules ──────────────────────────────────────────────────────────
+
+const validators = {
+  name: (v: string) => {
+    if (!v.trim()) return 'Full name is required.';
+    if (v.trim().length < 2) return 'Name must be at least 2 characters.';
+    if (v.trim().length > 255) return 'Name must be less than 255 characters.';
+    if (!/^[a-zA-Z\s'.'-]+$/.test(v.trim())) return 'Name can only contain letters and spaces.';
+    return '';
+  },
+  phone: (v: string) => {
+    if (!v.trim()) return 'Phone number is required.';
+    const digits = v.replace(/\D/g, '');
+    if (digits.length === 10) return '';
+    if (digits.length === 12 && digits.startsWith('91')) return '';
+    return 'Enter a valid 10-digit Indian mobile number (e.g. 9876543210).';
+  },
+  email: (v: string) => {
+    if (!v.trim()) return ''; // optional
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Enter a valid email address.';
+    return '';
+  },
+  propertyType: (v: string) => (!v ? 'Please select a property type.' : ''),
+  state: (v: string) => (!v ? 'Please select your state.' : ''),
+  city: (v: string) => (!v ? 'Please select your city.' : ''),
+  area: (v: string) => (!v ? 'Please select your preferred area.' : ''),
+  budgetOrPrice: (v: string) => (!v ? 'Please select a budget / price range.' : ''),
+};
+
+type FieldKey = keyof typeof validators;
+
 export default function LeadForms({ options }: LeadFormsProps) {
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -37,92 +68,104 @@ export default function LeadForms({ options }: LeadFormsProps) {
     notes: '',
   });
 
+  // Track which fields have been touched (interacted with)
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
+
+  // Computed inline errors — only show for touched fields
+  const errors: Partial<Record<FieldKey, string>> = {};
+  (Object.keys(validators) as FieldKey[]).forEach((key) => {
+    const err = validators[key](formData[key as keyof typeof formData] || '');
+    if (err) errors[key] = err;
+  });
+
   // Cascading location options
   const availableCities = formData.state ? getCities(formData.state) : [];
   const availableAreas = formData.state && formData.city ? getAreas(formData.state, formData.city) : [];
 
   // Supabase system_settings options
   const propertyTypes = options.filter((o) => o.category === 'property_type');
-  const budgetRanges  = options.filter((o) => o.category === 'budget_range');
+  const budgetRanges = options.filter((o) => o.category === 'budget_range');
+
+  const touch = (field: FieldKey) => setTouched((prev) => ({ ...prev, [field]: true }));
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
+    // Phone: only allow digits and +
+    if (name === 'phone') {
+      const filtered = value.replace(/[^\d+\s-]/g, '');
+      if (name === 'state') {
+        setFormData({ ...formData, state: filtered, city: '', area: '' });
+      } else {
+        setFormData({ ...formData, phone: filtered });
+      }
+      touch('phone');
+      return;
+    }
+
     // Reset downstream selections on parent change
     if (name === 'state') {
       setFormData({ ...formData, state: value, city: '', area: '' });
+      touch('state');
     } else if (name === 'city') {
       setFormData({ ...formData, city: value, area: '' });
+      touch('city');
     } else {
       setFormData({ ...formData, [name]: value });
+      touch(name as FieldKey);
     }
   };
 
+  const handleBlur = (field: FieldKey) => touch(field);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
+
+    // Touch all required fields to show all errors at once
+    const allFields: FieldKey[] = ['name', 'phone', 'email', 'propertyType', 'state', 'city', 'area', 'budgetOrPrice'];
+    const allTouched: Partial<Record<FieldKey, boolean>> = {};
+    allFields.forEach((f) => (allTouched[f] = true));
+    setTouched(allTouched);
+
+    // Check for any error
+    const hasErrors = (Object.keys(validators) as FieldKey[]).some(
+      (key) => validators[key](formData[key as keyof typeof formData] || '') !== ''
+    );
+    if (hasErrors) return;
+
     setLoading(true);
-    setError(null);
-
-    if (!formData.name || !formData.phone || !formData.propertyType || !formData.state || !formData.city || !formData.area || !formData.budgetOrPrice) {
-      setError('Please fill in all required fields.');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.name.length > 255) {
-      setError('Full Name must be less than 255 characters.');
-      setLoading(false);
-      return;
-    }
-
-    // Exact length validation based on Indian standard (10 digits)
-    const phoneClean = formData.phone.replace(/\D/g, ''); // strip non-digits
-    // We expect exactly 10 digits, or 12 digits starting with 91.
-    const isValidPhone = phoneClean.length === 10 || (phoneClean.length === 12 && phoneClean.startsWith('91'));
-    if (!isValidPhone) {
-      setError('Please enter a valid 10-digit phone number (e.g., 9876543210).');
-      setLoading(false);
-      return;
-    }
-
-    // Email validation
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('Please enter a valid email address.');
-      setLoading(false);
-      return;
-    }
-
 
     const locationString = `${formData.area}, ${formData.city}, ${formData.state}`;
 
     try {
       if (activeTab === 'buy') {
         const { error: insertError } = await supabase.from('buyers_demand').insert({
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email || null,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim() || null,
           property_type: formData.propertyType,
           state: formData.state,
           city: formData.city,
           area: locationString,
           budget: formData.budgetOrPrice,
-          notes: formData.notes || null,
+          notes: formData.notes.trim() || null,
           status: 'new_lead',
         });
         if (insertError) throw insertError;
       } else {
         const { error: insertError } = await supabase.from('sellers_inventory').insert({
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email || null,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim() || null,
           property_type: formData.propertyType,
           state: formData.state,
           city: formData.city,
           area: locationString,
           price: formData.budgetOrPrice,
-          notes: formData.notes || null,
+          notes: formData.notes.trim() || null,
           status: 'new_lead',
         });
         if (insertError) throw insertError;
@@ -130,10 +173,11 @@ export default function LeadForms({ options }: LeadFormsProps) {
 
       setSuccess(true);
       setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', notes: '' });
+      setTouched({});
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
       console.error('Submission error:', err);
-      setError(message);
+      setSubmitError(message);
     } finally {
       setLoading(false);
     }
@@ -159,10 +203,39 @@ export default function LeadForms({ options }: LeadFormsProps) {
     );
   }
 
-  const inputCls = 'w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-300';
-  const selectCls = `${inputCls} appearance-none`;
+  // ── Style helpers ────────────────────────────────────────────────────────────
+
+  const getInputCls = (field: FieldKey) => {
+    const base = 'w-full bg-white border rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 text-slate-900';
+    if (touched[field] && errors[field]) {
+      return `${base} border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-100 bg-rose-50/30`;
+    }
+    if (touched[field] && !errors[field] && formData[field as keyof typeof formData]) {
+      return `${base} border-emerald-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100`;
+    }
+    return `${base} border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100`;
+  };
+
+  const getSelectCls = (field: FieldKey) => `${getInputCls(field)} appearance-none`;
+
   const disabledSelectCls = 'w-full bg-slate-50 border border-slate-200 text-slate-400 rounded-xl px-4 py-3 outline-none cursor-not-allowed appearance-none';
   const labelCls = 'text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5';
+
+  const FieldError = ({ field }: { field: FieldKey }) =>
+    touched[field] && errors[field] ? (
+      <p className="flex items-center gap-1 text-xs text-rose-600 font-medium mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+        <AlertCircle className="w-3 h-3 shrink-0" />
+        {errors[field]}
+      </p>
+    ) : null;
+
+  const FieldSuccess = ({ field }: { field: FieldKey }) =>
+    touched[field] && !errors[field] && formData[field as keyof typeof formData] ? (
+      <p className="flex items-center gap-1 text-xs text-emerald-600 font-medium mt-1 animate-in fade-in duration-200">
+        <CheckCircle2 className="w-3 h-3 shrink-0" />
+        Looks good!
+      </p>
+    ) : null;
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
@@ -171,7 +244,7 @@ export default function LeadForms({ options }: LeadFormsProps) {
       <div className="flex border-b border-slate-200 bg-slate-50/50">
         <button
           type="button"
-          onClick={() => { setActiveTab('buy'); setError(null); }}
+          onClick={() => { setActiveTab('buy'); setSubmitError(null); setTouched({}); }}
           className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
             activeTab === 'buy'
               ? 'text-blue-600 border-blue-600 bg-blue-50/30'
@@ -182,7 +255,7 @@ export default function LeadForms({ options }: LeadFormsProps) {
         </button>
         <button
           type="button"
-          onClick={() => { setActiveTab('sell'); setError(null); }}
+          onClick={() => { setActiveTab('sell'); setSubmitError(null); setTouched({}); }}
           className={`flex-1 py-4 text-center font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 border-b-2 ${
             activeTab === 'sell'
               ? 'text-blue-600 border-blue-600 bg-blue-50/30'
@@ -193,78 +266,151 @@ export default function LeadForms({ options }: LeadFormsProps) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-8 space-y-6">
+      <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5" noValidate>
         <h3 className="text-xl font-bold text-slate-900">
           {activeTab === 'buy' ? 'Submit your buying demand' : 'List your property for sale'}
         </h3>
 
-        {error && (
-          <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium">
-            {error}
+        {/* Server/submit error */}
+        {submitError && (
+          <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            {submitError}
           </div>
         )}
 
         {/* Name + Phone */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className={labelCls}><User className="w-3.5 h-3.5" /> Full Name <span className="text-rose-500">*</span></label>
-            <input type="text" name="name" required value={formData.name} onChange={handleChange} placeholder="e.g. Rajesh Patel" className={inputCls} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1">
+            <label className={labelCls}>
+              <User className="w-3.5 h-3.5" /> Full Name <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              onBlur={() => handleBlur('name')}
+              placeholder="e.g. Rajesh Patel"
+              className={getInputCls('name')}
+              maxLength={255}
+            />
+            <FieldError field="name" />
+            <FieldSuccess field="name" />
           </div>
-          <div className="space-y-2">
-            <label className={labelCls}><Phone className="w-3.5 h-3.5" /> Phone Number <span className="text-rose-500">*</span></label>
-            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} placeholder="e.g. +91 98765 43210" className={inputCls} />
+
+          <div className="space-y-1">
+            <label className={labelCls}>
+              <Phone className="w-3.5 h-3.5" /> Phone Number <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              onBlur={() => handleBlur('phone')}
+              placeholder="e.g. 9876543210"
+              className={getInputCls('phone')}
+              maxLength={15}
+              inputMode="numeric"
+            />
+            <FieldError field="phone" />
+            <FieldSuccess field="phone" />
           </div>
         </div>
 
         {/* Email */}
-        <div className="space-y-2">
-          <label className={labelCls}><Mail className="w-3.5 h-3.5" /> Email Address</label>
-          <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="e.g. rajesh@example.com" className={inputCls} />
+        <div className="space-y-1">
+          <label className={labelCls}>
+            <Mail className="w-3.5 h-3.5" /> Email Address
+            <span className="text-slate-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            onBlur={() => handleBlur('email')}
+            placeholder="e.g. rajesh@example.com"
+            className={getInputCls('email')}
+          />
+          <FieldError field="email" />
+          {touched.email && !errors.email && formData.email && (
+            <p className="flex items-center gap-1 text-xs text-emerald-600 font-medium mt-1">
+              <CheckCircle2 className="w-3 h-3 shrink-0" /> Looks good!
+            </p>
+          )}
         </div>
 
         {/* Property Type */}
-        <div className="space-y-2">
-          <label className={labelCls}><Home className="w-3.5 h-3.5" /> Property Type <span className="text-rose-500">*</span></label>
-          <select name="propertyType" required value={formData.propertyType} onChange={handleChange} className={selectCls}>
+        <div className="space-y-1">
+          <label className={labelCls}>
+            <Home className="w-3.5 h-3.5" /> Property Type <span className="text-rose-500">*</span>
+          </label>
+          <select
+            name="propertyType"
+            value={formData.propertyType}
+            onChange={handleChange}
+            onBlur={() => handleBlur('propertyType')}
+            className={getSelectCls('propertyType')}
+          >
             <option value="" disabled className="text-slate-400">Select property type</option>
             {propertyTypes.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.display_name}</option>
             ))}
           </select>
+          <FieldError field="propertyType" />
+          <FieldSuccess field="propertyType" />
         </div>
 
-        {/* ── Location: State → City → Area ── */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-1">
+        {/* Location: State → City → Area */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">Location</span>
             <span className="text-rose-500 text-xs">*</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-slate-50 border border-slate-200 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
             {/* State */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <label className={labelCls}><Globe className="w-3.5 h-3.5" /> State</label>
-              <select name="state" required value={formData.state} onChange={handleChange} className={selectCls}>
+              <select
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                onBlur={() => handleBlur('state')}
+                className={getSelectCls('state')}
+              >
                 <option value="" disabled className="text-slate-400">Select state</option>
                 {LOCATION_DATA.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
+              <FieldError field="state" />
             </div>
 
             {/* City */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <label className={`${labelCls} ${!formData.state ? 'opacity-50' : ''}`}>
                 <Building className="w-3.5 h-3.5" /> City
               </label>
               {formData.state ? (
-                <select name="city" required value={formData.city} onChange={handleChange} className={selectCls}>
-                  <option value="" disabled className="text-slate-400">Select city</option>
-                  {availableCities.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
-                </select>
+                <>
+                  <select
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('city')}
+                    className={getSelectCls('city')}
+                  >
+                    <option value="" disabled className="text-slate-400">Select city</option>
+                    {availableCities.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <FieldError field="city" />
+                </>
               ) : (
                 <select disabled className={disabledSelectCls}>
                   <option>Select state first</option>
@@ -273,17 +419,26 @@ export default function LeadForms({ options }: LeadFormsProps) {
             </div>
 
             {/* Preferred Area */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <label className={`${labelCls} ${!formData.city ? 'opacity-50' : ''}`}>
                 <MapPin className="w-3.5 h-3.5" /> Preferred Area
               </label>
               {formData.city ? (
-                <select name="area" required value={formData.area} onChange={handleChange} className={selectCls}>
-                  <option value="" disabled className="text-slate-400">Select area</option>
-                  {availableAreas.map((a) => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </select>
+                <>
+                  <select
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('area')}
+                    className={getSelectCls('area')}
+                  >
+                    <option value="" disabled className="text-slate-400">Select area</option>
+                    {availableAreas.map((a) => (
+                      <option key={a.value} value={a.value}>{a.label}</option>
+                    ))}
+                  </select>
+                  <FieldError field="area" />
+                </>
               ) : (
                 <select disabled className={disabledSelectCls}>
                   <option>Select city first</option>
@@ -294,22 +449,33 @@ export default function LeadForms({ options }: LeadFormsProps) {
         </div>
 
         {/* Budget / Price */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           <label className={labelCls}>
             <DollarSign className="w-3.5 h-3.5" />
             {activeTab === 'buy' ? 'Budget Range' : 'Expected Price'} <span className="text-rose-500">*</span>
           </label>
-          <select name="budgetOrPrice" required value={formData.budgetOrPrice} onChange={handleChange} className={selectCls}>
+          <select
+            name="budgetOrPrice"
+            value={formData.budgetOrPrice}
+            onChange={handleChange}
+            onBlur={() => handleBlur('budgetOrPrice')}
+            className={getSelectCls('budgetOrPrice')}
+          >
             <option value="" disabled className="text-slate-400">Select range</option>
             {budgetRanges.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.display_name}</option>
             ))}
           </select>
+          <FieldError field="budgetOrPrice" />
+          <FieldSuccess field="budgetOrPrice" />
         </div>
 
         {/* Notes */}
-        <div className="space-y-2">
-          <label className={labelCls}><FileText className="w-3.5 h-3.5" /> Additional Details</label>
+        <div className="space-y-1">
+          <label className={labelCls}>
+            <FileText className="w-3.5 h-3.5" /> Additional Details
+            <span className="text-slate-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
+          </label>
           <textarea
             name="notes"
             value={formData.notes}
@@ -320,7 +486,7 @@ export default function LeadForms({ options }: LeadFormsProps) {
                 : 'Describe the property e.g. age, floors, parking, furnishing, loan clear...'
             }
             rows={3}
-            className={`${inputCls} resize-none`}
+            className={`w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 resize-none`}
           />
         </div>
 
@@ -328,11 +494,7 @@ export default function LeadForms({ options }: LeadFormsProps) {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full py-4 text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md ${
-            activeTab === 'buy'
-              ? 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/20'
-              : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-600/20'
-          }`}
+          className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-blue-600/20"
         >
           {loading ? (
             <><Loader2 className="w-5 h-5 animate-spin" /> Submitting Request...</>
