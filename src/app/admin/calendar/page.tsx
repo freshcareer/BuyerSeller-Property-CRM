@@ -98,8 +98,8 @@ export default function OperationsCalendar() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-900">
-        <Clock className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-900 bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
+        <Clock className="w-10 h-10 text-emerald-500 animate-spin mb-4" />
         <p className="text-slate-500 font-medium">Loading operations calendar...</p>
       </div>
     );
@@ -109,18 +109,21 @@ export default function OperationsCalendar() {
     <div className="space-y-8 animate-in fade-in duration-500 pb-16">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
-          <CalendarDays className="w-8 h-8 text-blue-600" /> Operations Calendar
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 flex items-center gap-3 pb-1">
+          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl text-white shadow-lg shadow-teal-500/30">
+            <CalendarDays className="w-6 h-6 sm:w-7 sm:h-7" />
+          </div>
+          Operations Calendar
         </h1>
-        <p className="text-slate-500 text-sm mt-1 font-medium">
+        <p className="text-slate-500 text-sm mt-1.5 font-medium">
           Manage your scheduled follow-ups, calls, and site visits across all buyers and sellers.
         </p>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="p-4 bg-blue-50 rounded-full mb-4 border border-blue-100 shadow-inner">
-             <Calendar className="w-10 h-10 text-blue-400" />
+        <div className="flex flex-col items-center justify-center text-center py-24 bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
+          <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full mb-4 shadow-inner">
+             <Calendar className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="text-xl font-extrabold text-slate-900 mb-2">No upcoming follow-ups</h3>
           <p className="text-slate-500 max-w-sm mx-auto text-sm font-medium">
@@ -143,7 +146,7 @@ export default function OperationsCalendar() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {groupedTasks[dateStr].map(task => (
-                  <div key={`${task.type}-${task.id}`} className={`bg-white border rounded-xl p-5 shadow-sm transition-all duration-300 hover:shadow-md ${isPastDue(dateStr) ? 'border-rose-200' : 'border-slate-200 hover:border-blue-300'}`}>
+                  <div key={`${task.type}-${task.id}`} className={`bg-white/80 backdrop-blur-xl border rounded-3xl p-6 shadow-xl shadow-slate-900/5 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isPastDue(dateStr) ? 'border-rose-200/60' : 'border-slate-200/60 hover:border-emerald-300/60'}`}>
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">

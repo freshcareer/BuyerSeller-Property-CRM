@@ -79,26 +79,34 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
 
   useEffect(() => {
-    if (activeTab === 'sell') {
-      fetchMyListings();
-    }
+    fetchMyListings();
   }, [activeTab]);
 
   const fetchMyListings = async () => {
     try {
-      const stored = localStorage.getItem('mySellerListings');
-      if (!stored) return;
+      const storageKey = activeTab === 'buy' ? 'myBuyerListings' : 'mySellerListings';
+      const tableName = activeTab === 'buy' ? 'buyers_demand' : 'sellers_inventory';
+
+      const stored = localStorage.getItem(storageKey);
+      if (!stored) {
+        setMyListings([]);
+        return;
+      }
       const ids = JSON.parse(stored);
-      if (!Array.isArray(ids) || ids.length === 0) return;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        setMyListings([]);
+        return;
+      }
       
       setFetchingListings(true);
-      const { data, error } = await supabase.from('sellers_inventory').select('*').in('id', ids).order('created_at', { ascending: false });
+      const { data, error } = await supabase.from(tableName).select('*').in('id', ids).order('created_at', { ascending: false });
       if (error) throw error;
       if (data) {
         setMyListings(data);
       }
     } catch (e) {
       console.error('Error fetching my listings', e);
+      setMyListings([]);
     } finally {
       setFetchingListings(false);
     }
@@ -116,7 +124,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       state: item.state,
       city: item.city,
       area: areaVal,
-      budgetOrPrice: item.price,
+      budgetOrPrice: item.price || item.budget,
       notes: item.notes || '',
     });
     setTouched({});
@@ -125,14 +133,20 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   };
 
   const handleDeleteClick = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this listing?')) return;
+    const isBuy = activeTab === 'buy';
+    const typeLabel = isBuy ? 'requirement' : 'listing';
+    if (!confirm(`Are you sure you want to delete this ${typeLabel}?`)) return;
+
     try {
-      const { error } = await supabase.from('sellers_inventory').delete().eq('id', id);
+      const storageKey = isBuy ? 'myBuyerListings' : 'mySellerListings';
+      const tableName = isBuy ? 'buyers_demand' : 'sellers_inventory';
+
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
       if (error) throw error;
       
-      const stored = JSON.parse(localStorage.getItem('mySellerListings') || '[]');
+      const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
       const newStored = stored.filter((savedId: string) => savedId !== id);
-      localStorage.setItem('mySellerListings', JSON.stringify(newStored));
+      localStorage.setItem(storageKey, JSON.stringify(newStored));
       
       if (editModeId === id) {
         cancelEdit();
@@ -140,8 +154,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       
       fetchMyListings();
     } catch (e) {
-      console.error('Error deleting listing', e);
-      alert('Failed to delete the listing.');
+      console.error(`Error deleting ${typeLabel}`, e);
+      alert(`Failed to delete the ${typeLabel}.`);
     }
   };
 
@@ -355,11 +369,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         </div>
       )}
 
-      {/* My Listings Section (Seller Only) */}
-      {activeTab === 'sell' && myListings.length > 0 && (
+      {/* My Listings Section (Buyer & Seller) */}
+      {myListings.length > 0 && (
         <div className="p-4 md:p-6 bg-slate-50/80 border-b border-slate-200">
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Home className="w-5 h-5 text-indigo-600" /> My Listed Properties
+            <Home className="w-5 h-5 text-indigo-600" /> My {activeTab === 'sell' ? 'Listed Properties' : 'Submitted Requirements'}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {myListings.map((item) => (
@@ -367,7 +381,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-bold text-slate-800 text-sm capitalize">{item.property_type.replace(/_/g, ' ')}</h4>
                   <span className="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md">
-                    {item.price.replace(/_/g, ' ')}
+                    {(item.price || item.budget || '').replace(/_/g, ' ')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">

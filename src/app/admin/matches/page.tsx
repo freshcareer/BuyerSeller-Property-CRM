@@ -82,14 +82,16 @@ export default function MatchesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500 relative min-h-screen pb-32">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-blue-600" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-600 to-orange-600 flex items-center gap-3 pb-1">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl text-white shadow-lg shadow-orange-500/30">
+              <Zap className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
             Smart Matches
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 text-sm mt-1.5 font-medium">
             Automatically paired buyers and sellers based on location and property type.
           </p>
         </div>
@@ -101,17 +103,17 @@ export default function MatchesPage() {
           <p className="text-sm">{error}</p>
         </div>
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-4" />
+        <div className="flex flex-col items-center justify-center p-12 bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
+          <Loader2 className="w-8 h-8 text-orange-500 animate-spin mb-4" />
           <p className="text-slate-500 font-medium">Finding perfect matches...</p>
         </div>
       ) : !matches || matches.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="p-4 bg-slate-50 rounded-full mb-4">
+        <div className="flex flex-col items-center justify-center p-12 bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
+          <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full mb-4 shadow-inner">
             <Zap className="w-8 h-8 text-slate-400" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-1">No matches found</h3>
-          <p className="text-slate-500 text-center max-w-sm">
+          <p className="text-slate-500 text-center max-w-sm text-sm font-medium">
             We couldn&apos;t find any exact matches between buyers and sellers in the same area for the same property type.
           </p>
         </div>
