@@ -98,11 +98,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     // Phone: only allow digits and +
     if (name === 'phone') {
       const filtered = value.replace(/[^\d+\s-]/g, '');
-      if (name === 'state') {
-        setFormData({ ...formData, state: filtered, city: '', area: '' });
-      } else {
-        setFormData({ ...formData, phone: filtered });
-      }
+      setFormData({ ...formData, phone: filtered });
       touch('phone');
       return;
     }
