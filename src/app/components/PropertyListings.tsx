@@ -479,18 +479,14 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
 
   return (
     <>
-      {/* Can't find section (Moved above filters) */}
-      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 shadow-sm mb-8">
+      {/* Combined Header / Request Form */}
+      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 shadow-sm mb-6">
         <div className="text-center mb-5 sm:mb-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-xs font-bold mb-3">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
             🔍 Property Dhundwao
-          </span>
-          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900">
-            Apni Pasand Ki Property List Mein Nahi?
           </h2>
-          <p className="text-slate-500 text-xs sm:text-sm mt-2 font-medium max-w-md mx-auto">
-            Koi baat nahi — apna naam, number aur location batao. Hamari team aapke liye 
-            suitable property dhundh kar connect karegi.
+          <p className="text-slate-500 text-sm mt-2 font-medium max-w-lg mx-auto">
+            Neeche list mein se kharidne ke liye pasand karein, <strong>YA</strong> phir apni requirement batayein — hum dhundh kar connect karenge.
           </p>
         </div>
         <CantFindForm dbOptions={dbOptions} />

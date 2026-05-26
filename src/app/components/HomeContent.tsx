@@ -62,14 +62,6 @@ export default function HomeContent({ options, listings }: Props) {
       {/* ── Buyer View ─────────────────────────────────────────────────────── */}
       {activeTab === 'buyer' && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Browse Available Properties
-            </h1>
-            <p className="text-slate-500 text-sm mt-1 font-medium max-w-lg mx-auto">
-              Kharidne ke liye property dhundhein. Pasand aane par &quot;Mujhe Chahiye&quot; click karein.
-            </p>
-          </div>
           <PropertyListings listings={listings} dbOptions={options} />
         </div>
       )}
