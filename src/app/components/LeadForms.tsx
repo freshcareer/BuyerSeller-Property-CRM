@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LOCATION_DATA, getCities, getAreas } from '@/lib/locationData';
 import {
   CheckCircle2, ChevronRight, Loader2, User, Phone, Mail,
-  Building, MapPin, DollarSign, FileText, Globe, Home, AlertCircle,
+  Building, MapPin, DollarSign, FileText, Globe, Home, AlertCircle, Edit, Trash2,
 } from 'lucide-react';
 
 interface SettingOption {
@@ -57,6 +57,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Seller My Listings state
+  const [myListings, setMyListings] = useState<any[]>([]);
+  const [editModeId, setEditModeId] = useState<string | null>(null);
+  const [fetchingListings, setFetchingListings] = useState(false);
+
   // Form states
   const [formData, setFormData] = useState({
     name: '',
@@ -72,6 +77,80 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
   // Track which fields have been touched (interacted with)
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
+
+  useEffect(() => {
+    if (activeTab === 'sell') {
+      fetchMyListings();
+    }
+  }, [activeTab]);
+
+  const fetchMyListings = async () => {
+    try {
+      const stored = localStorage.getItem('mySellerListings');
+      if (!stored) return;
+      const ids = JSON.parse(stored);
+      if (!Array.isArray(ids) || ids.length === 0) return;
+      
+      setFetchingListings(true);
+      const { data, error } = await supabase.from('sellers_inventory').select('*').in('id', ids).order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) {
+        setMyListings(data);
+      }
+    } catch (e) {
+      console.error('Error fetching my listings', e);
+    } finally {
+      setFetchingListings(false);
+    }
+  };
+
+  const handleEditClick = (item: any) => {
+    setEditModeId(item.id);
+    const areaParts = item.area.split(',');
+    const areaVal = areaParts.length > 0 ? areaParts[0].trim() : item.area;
+    setFormData({
+      name: item.name,
+      phone: item.phone,
+      email: item.email || '',
+      propertyType: item.property_type,
+      state: item.state,
+      city: item.city,
+      area: areaVal,
+      budgetOrPrice: item.price,
+      notes: item.notes || '',
+    });
+    setTouched({});
+    setSubmitError(null);
+    setSuccess(false);
+  };
+
+  const handleDeleteClick = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+    try {
+      const { error } = await supabase.from('sellers_inventory').delete().eq('id', id);
+      if (error) throw error;
+      
+      const stored = JSON.parse(localStorage.getItem('mySellerListings') || '[]');
+      const newStored = stored.filter((savedId: string) => savedId !== id);
+      localStorage.setItem('mySellerListings', JSON.stringify(newStored));
+      
+      if (editModeId === id) {
+        cancelEdit();
+      }
+      
+      fetchMyListings();
+    } catch (e) {
+      console.error('Error deleting listing', e);
+      alert('Failed to delete the listing.');
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditModeId(null);
+    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', notes: '' });
+    setTouched({});
+    setSubmitError(null);
+  };
 
   // Computed inline errors — only show for touched fields
   const errors: Partial<Record<FieldKey, string>> = {};
@@ -154,7 +233,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         });
         if (insertError) throw insertError;
       } else {
-        const { error: insertError } = await supabase.from('sellers_inventory').insert({
+        const payload = {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           email: formData.email.trim() || null,
@@ -164,9 +243,28 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           area: locationString,
           price: formData.budgetOrPrice,
           notes: formData.notes.trim() || null,
-          status: 'new_lead',
-        });
-        if (insertError) throw insertError;
+        };
+
+        if (editModeId) {
+          const { error: updateError } = await supabase.from('sellers_inventory').update(payload).eq('id', editModeId);
+          if (updateError) throw updateError;
+          setEditModeId(null);
+          fetchMyListings();
+        } else {
+          const { data, error: insertError } = await supabase.from('sellers_inventory').insert({
+            ...payload,
+            status: 'new_lead',
+          }).select('id').single();
+          if (insertError) throw insertError;
+          if (data) {
+            const stored = JSON.parse(localStorage.getItem('mySellerListings') || '[]');
+            if (!stored.includes(data.id)) {
+              stored.push(data.id);
+              localStorage.setItem('mySellerListings', JSON.stringify(stored));
+            }
+            fetchMyListings();
+          }
+        }
       }
 
       setSuccess(true);
@@ -257,10 +355,53 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4" noValidate>
-        <h3 className="text-lg font-bold text-slate-900 mb-2">
-          {activeTab === 'buy' ? 'Submit your buying demand' : 'List your property for sale'}
-        </h3>
+      {/* My Listings Section (Seller Only) */}
+      {activeTab === 'sell' && myListings.length > 0 && (
+        <div className="p-4 md:p-6 bg-slate-50/80 border-b border-slate-200">
+          <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <Home className="w-5 h-5 text-indigo-600" /> My Listed Properties
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {myListings.map((item) => (
+              <div key={item.id} className={`bg-white border rounded-xl p-4 shadow-sm relative transition-all ${editModeId === item.id ? 'border-indigo-400 ring-2 ring-indigo-50' : 'border-slate-200 hover:border-indigo-200 hover:shadow-md'}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-bold text-slate-800 text-sm capitalize">{item.property_type.replace(/_/g, ' ')}</h4>
+                  <span className="text-xs font-semibold px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md">
+                    {item.price.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
+                  <MapPin className="w-3.5 h-3.5" /> {item.area.split(',')[0]}, {item.city}
+                </p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => handleEditClick(item)} className="flex-1 py-1.5 text-xs font-bold bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <Edit className="w-3.5 h-3.5" /> Edit
+                  </button>
+                  <button type="button" onClick={() => handleDeleteClick(item.id)} className="flex-1 py-1.5 text-xs font-bold bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className={`p-4 md:p-6 space-y-4 ${editModeId ? 'bg-indigo-50/30' : ''}`} noValidate>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-bold text-slate-900">
+            {activeTab === 'buy' 
+              ? 'Submit your buying demand' 
+              : editModeId 
+                ? 'Edit Property Listing' 
+                : 'List your property for sale'}
+          </h3>
+          {editModeId && (
+            <button type="button" onClick={cancelEdit} className="text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">
+              Cancel Edit
+            </button>
+          )}
+        </div>
 
         {/* Server/submit error */}
         {submitError && (
