@@ -31,14 +31,14 @@ export default function HomeContent({ options, listings }: Props) {
   const [activeTab, setActiveTab] = useState<'buyer' | 'seller'>('buyer');
 
   return (
-    <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
       
       {/* ── Main Tabs ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row bg-slate-100 p-1.5 rounded-2xl max-w-2xl mx-auto shadow-inner border border-slate-200 mb-8 sm:mb-10 gap-1.5 sm:gap-0">
+      <div className="grid grid-cols-2 bg-slate-100 p-1 sm:p-1.5 rounded-2xl max-w-2xl mx-auto shadow-inner border border-slate-200 mb-6 sm:mb-10 gap-1 sm:gap-2">
         <button
           type="button"
           onClick={() => setActiveTab('buyer')}
-          className={`flex-1 py-3.5 text-center font-bold sm:text-lg transition-all duration-300 flex items-center justify-center gap-2 rounded-xl ${
+          className={`py-2.5 sm:py-3.5 text-center font-bold text-sm sm:text-lg transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl ${
             activeTab === 'buyer'
               ? 'bg-white text-blue-700 shadow border border-slate-200'
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
@@ -49,7 +49,7 @@ export default function HomeContent({ options, listings }: Props) {
         <button
           type="button"
           onClick={() => setActiveTab('seller')}
-          className={`flex-1 py-3.5 text-center font-bold sm:text-lg transition-all duration-300 flex items-center justify-center gap-2 rounded-xl ${
+          className={`py-2.5 sm:py-3.5 text-center font-bold text-sm sm:text-lg transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl ${
             activeTab === 'seller'
               ? 'bg-white text-blue-700 shadow border border-slate-200'
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'

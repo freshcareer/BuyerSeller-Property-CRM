@@ -353,7 +353,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           <input
             type="text" required value={name} onChange={e => setName(e.target.value)}
             placeholder="e.g. Amit Shah"
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white"
           />
         </div>
 
@@ -367,7 +367,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneErr(''); }}
             placeholder="9876543210"
             inputMode="numeric" maxLength={15}
-            className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white ${
+            className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white ${
               phoneErr ? 'border-rose-400' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
             }`}
           />
@@ -384,7 +384,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           <select
             value={state}
             onChange={e => { setState(e.target.value); setCity(''); setArea(''); }}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
           >
             <option value="">State</option>
             {LOCATION_DATA.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
@@ -393,7 +393,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             value={city}
             onChange={e => { setCity(e.target.value); setArea(''); }}
             disabled={!state}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
             <option value="">City</option>
             {availableCities.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -402,7 +402,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             value={area}
             onChange={e => setArea(e.target.value)}
             disabled={!city}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
             <option value="">Area</option>
             {availableAreas.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
@@ -418,7 +418,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={propType} onChange={e => setPropType(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
             <option value="">Koi bhi type</option>
             {propertyTypes.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
@@ -432,7 +432,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={budget} onChange={e => setBudget(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
             <option value="">Flexible hai</option>
             {budgetRanges.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
@@ -512,7 +512,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 outline-none transition-all"
           />
         </div>
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-nowrap items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block" />
           {[
             { label: 'Type', val: filterType, set: setFilterType, opts: allTypes.map(t => ({ v: t, l: fmtPropType(t) })) },
@@ -520,18 +520,18 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
             { label: 'Price', val: filterPrice, set: setFilterPrice, opts: allPrices.map(p => ({ v: p, l: fmtPrice(p) })) },
           ].map(({ label, val, set, opts }) => (
             <select key={label} value={val} onChange={e => set(e.target.value)}
-              className="flex-1 sm:flex-none bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all appearance-none text-center sm:text-left"
+              className="w-full sm:w-auto bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2 py-2 sm:py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all appearance-none text-center sm:text-left"
             >
               <option value="all">All {label}s</option>
               {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
             </select>
           ))}
           {hasFilters && (
-            <button onClick={clearFilters} className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all mt-1 sm:mt-0">
+            <button onClick={clearFilters} className="col-span-2 sm:col-span-1 w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all mt-1 sm:mt-0">
               <X className="w-3 h-3" /> Clear
             </button>
           )}
-          <span className="w-full sm:w-auto text-center sm:ml-auto text-xs text-slate-400 font-bold mt-2 sm:mt-0">
+          <span className="col-span-2 sm:col-span-1 w-full sm:w-auto text-center sm:text-left sm:ml-auto text-xs text-slate-400 font-bold mt-1 sm:mt-0">
             {filtered.length} properties
           </span>
         </div>
