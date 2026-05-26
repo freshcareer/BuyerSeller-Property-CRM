@@ -38,16 +38,16 @@ export default async function Home() {
   const dbOk = options !== null;
 
   return (
-    <div className="flex-1 min-h-screen bg-slate-50 text-slate-900 flex flex-col scroll-smooth">
+    <div className="flex-1 min-h-screen bg-gradient-to-br from-indigo-50 via-white to-slate-50 text-slate-900 flex flex-col scroll-smooth">
       {/* ── Sticky Header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-30 w-full bg-white/70 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="p-1.5 bg-blue-600 rounded-lg shadow shadow-blue-600/30">
+          <div className="flex items-center gap-2 shrink-0 group cursor-default">
+            <div className="p-2 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
-            <span className="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg">
+            <span className="font-extrabold text-slate-900 tracking-tight text-base sm:text-xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
               BuyerSeller CRM
             </span>
           </div>
@@ -56,7 +56,7 @@ export default async function Home() {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold rounded-lg text-xs transition-all shadow-sm"
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/50 backdrop-blur-sm border border-slate-200 hover:bg-white text-slate-700 hover:text-blue-600 hover:border-blue-200 font-semibold rounded-xl text-xs sm:text-sm transition-all shadow-sm hover:shadow-md"
             >
               <Lock className="w-3 h-3" /> Admin <ArrowUpRight className="w-3 h-3" />
             </Link>

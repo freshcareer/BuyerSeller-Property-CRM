@@ -288,8 +288,11 @@ export default function SellersInventory() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-indigo-600" /> Sellers Inventory
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-800 to-purple-800 flex items-center gap-3 pb-1">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+              <Building2 className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            Sellers Inventory
           </h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">
             Manage seller listings, edit property details, and send WhatsApp messages.
@@ -410,7 +413,7 @@ export default function SellersInventory() {
       </div>
 
       {/* ── Main List (cards on mobile, table on desktop) ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />

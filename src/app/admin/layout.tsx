@@ -102,14 +102,14 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/50 text-slate-900 flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 space-y-6 shadow-sm z-10">
-        <div className="flex items-center gap-2.5 px-2 py-3 border-b border-slate-100">
-          <div className="p-2 bg-blue-600 rounded-xl shadow-md shadow-blue-600/20">
+      <aside className="hidden md:flex flex-col w-64 bg-white/70 backdrop-blur-xl border-r border-slate-200/50 p-5 space-y-6 shadow-xl shadow-indigo-900/5 z-20">
+        <div className="flex items-center gap-3 px-2 py-3 border-b border-slate-200/50">
+          <div className="p-2 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl shadow-lg shadow-blue-500/30">
             <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg text-slate-900">CRM Control</span>
+          <span className="font-extrabold text-lg text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">CRM Control</span>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -175,7 +175,7 @@ export default function AdminLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shadow-sm z-10 sticky top-0">
+        <header className="flex items-center justify-between px-6 py-4 bg-white/70 backdrop-blur-xl border-b border-slate-200/50 shadow-sm z-10 sticky top-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}

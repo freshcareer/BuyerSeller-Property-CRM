@@ -287,8 +287,11 @@ export default function BuyersDemand() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            <Users className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" /> Buyers Demand
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-800 flex items-center gap-3 pb-1">
+            <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl text-white shadow-lg shadow-blue-500/30">
+              <Users className="w-6 h-6 sm:w-7 sm:h-7" />
+            </div>
+            Buyers Demand
           </h1>
           <p className="text-slate-500 text-sm mt-1 font-medium">
             Manage buyer leads, edit details, log interactions, and send WhatsApp messages.
@@ -409,7 +412,7 @@ export default function BuyersDemand() {
       </div>
 
       {/* ── Main List (cards on mobile, table on desktop) ── */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />

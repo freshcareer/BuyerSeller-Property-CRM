@@ -229,16 +229,19 @@ export default function SettingsManager() {
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-          <Settings className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" /> Settings Manager
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-3 pb-1">
+          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/20">
+            <Settings className="w-6 h-6 sm:w-7 sm:h-7" />
+          </div>
+          Settings Manager
         </h1>
-        <p className="text-slate-500 text-sm mt-1 font-medium">
+        <p className="text-slate-500 text-sm mt-1.5 font-medium">
           Dynamically configure dropdown lists, forms, and lead status categories. No hardcoded choices.
         </p>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1 sm:gap-2 shadow-inner border border-slate-200/60 overflow-x-auto">
+      <div className="flex bg-white/60 backdrop-blur-md p-1.5 rounded-2xl max-w-full mx-auto shadow-sm border border-slate-200/60 overflow-x-auto relative z-10">
         {categories.map((cat) => {
           const Icon = getCategoryIcon(cat);
           const isActive = activeTab === cat;
@@ -252,13 +255,13 @@ export default function SettingsManager() {
                 cancelEdit();
                 setDeleteConfirmId(null);
               }}
-              className={`flex-1 min-w-[80px] py-2.5 px-3 rounded-lg text-xs md:text-sm font-bold transition-all duration-300 flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              className={`flex-1 min-w-[120px] py-3 text-center font-bold text-[13px] sm:text-sm transition-all duration-300 flex items-center justify-center gap-2 rounded-xl relative z-10 ${
                 isActive
-                  ? 'bg-white text-blue-700 shadow-sm border border-slate-200'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 border border-transparent'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50 border border-transparent'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : ''}`} />
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : ''}`} />
               <span className="hidden sm:inline">{getCategoryLabel(cat)}</span>
               <span className="sm:hidden capitalize">{cat.split('_')[0]}</span>
             </button>
@@ -283,7 +286,7 @@ export default function SettingsManager() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         {/* Left: Options List */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-4">
+        <div className="lg:col-span-7 bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-3xl p-6 space-y-5">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-50 rounded-xl text-blue-600 border border-blue-100">
@@ -395,8 +398,8 @@ export default function SettingsManager() {
           )}
         </div>
 
-        {/* Right: Add New OR Edit Panel */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+        {/* Right: Add Form */}
+        <div className="lg:col-span-5 bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-3xl p-6 space-y-5 sticky top-24">
 
           {/* Panel Header — switches between Add and Edit */}
           <div className={`p-5 border-b border-slate-100 ${editingItem ? 'bg-blue-50' : 'bg-white'}`}>

@@ -224,7 +224,7 @@ function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: (
   return (
     <button
       onClick={onInterest}
-      className="group w-full text-left bg-white border border-slate-200 hover:border-blue-400 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500"
     >
       {/* Color top bar */}
       <div className={`h-1.5 w-full ${color.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
@@ -263,7 +263,7 @@ function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: (
 
         {/* CTA */}
         <div className="mt-auto pt-2">
-          <div className="w-full py-2.5 bg-blue-600 group-hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm group-hover:shadow-md group-hover:shadow-blue-600/20">
+          <div className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:from-blue-700 group-hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm group-hover:shadow-md group-hover:shadow-indigo-600/20">
             I am Interested <ChevronRight className="w-4 h-4" />
           </div>
         </div>
@@ -497,16 +497,22 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
 
   return (
     <>
-      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-5 shadow-sm mb-6">
-        <div className="text-center mb-4 sm:mb-5">
-          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
+      <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50/50 border border-indigo-100/70 rounded-3xl p-5 sm:p-6 shadow-xl shadow-indigo-900/5 mb-8 relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 p-32 bg-blue-200/30 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 left-0 p-24 bg-indigo-200/20 rounded-full blur-2xl -z-10 -translate-x-1/2 translate-y-1/2"></div>
+        
+        <div className="text-center mb-6 sm:mb-8 relative z-10">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
             🔍 Find Your Perfect Property
           </h2>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium max-w-2xl mx-auto">
+          <p className="text-slate-600 text-sm mt-2 font-medium max-w-2xl mx-auto leading-relaxed">
             Browse available properties below, <strong>OR</strong> share your requirements—we&apos;ll find the perfect match and connect you.
           </p>
         </div>
-        <CantFindForm dbOptions={dbOptions} />
+        <div className="relative z-10">
+          <CantFindForm dbOptions={dbOptions} />
+        </div>
       </div>
 
       {/* Divider with arrow */}
