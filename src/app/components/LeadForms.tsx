@@ -240,8 +240,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     ) : null;
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-300">
-
+    <div className={`w-full ${hideTabs ? '' : 'max-w-4xl mx-auto'} bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-300`}>
       {/* Tab Headers */}
       {!hideTabs && (
         <div className="flex border-b border-slate-200 bg-slate-50/50">
@@ -270,8 +269,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5" noValidate>
-        <h3 className="text-xl font-bold text-slate-900">
+      <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4" noValidate>
+        <h3 className="text-lg font-bold text-slate-900 mb-2">
           {activeTab === 'buy' ? 'Submit your buying demand' : 'List your property for sale'}
         </h3>
 
@@ -283,24 +282,17 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           </div>
         )}
 
-        {/* Name + Phone */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Name, Phone, Email */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-1">
             <label className={labelCls}>
               <User className="w-3.5 h-3.5" /> Full Name <span className="text-rose-500">*</span>
             </label>
             <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => handleBlur('name')}
-              placeholder="e.g. Rajesh Patel"
-              className={getInputCls('name')}
-              maxLength={255}
+              type="text" name="name" value={formData.name} onChange={handleChange} onBlur={() => handleBlur('name')}
+              placeholder="e.g. Rajesh Patel" className={getInputCls('name')} maxLength={255}
             />
             <FieldError field="name" />
-            <FieldSuccess field="name" />
           </div>
 
           <div className="space-y-1">
@@ -308,74 +300,65 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               <Phone className="w-3.5 h-3.5" /> Phone Number <span className="text-rose-500">*</span>
             </label>
             <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              onBlur={() => handleBlur('phone')}
-              placeholder="e.g. 9876543210"
-              className={getInputCls('phone')}
-              maxLength={15}
-              inputMode="numeric"
+              type="tel" name="phone" value={formData.phone} onChange={handleChange} onBlur={() => handleBlur('phone')}
+              placeholder="e.g. 9876543210" className={getInputCls('phone')} maxLength={15} inputMode="numeric"
             />
             <FieldError field="phone" />
-            <FieldSuccess field="phone" />
+          </div>
+
+          <div className="space-y-1">
+            <label className={labelCls}>
+              <Mail className="w-3.5 h-3.5" /> Email
+              <span className="text-slate-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
+            </label>
+            <input
+              type="email" name="email" value={formData.email} onChange={handleChange} onBlur={() => handleBlur('email')}
+              placeholder="e.g. rajesh@example.com" className={getInputCls('email')}
+            />
+            <FieldError field="email" />
           </div>
         </div>
 
-        {/* Email */}
-        <div className="space-y-1">
-          <label className={labelCls}>
-            <Mail className="w-3.5 h-3.5" /> Email Address
-            <span className="text-slate-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            onBlur={() => handleBlur('email')}
-            placeholder="e.g. rajesh@example.com"
-            className={getInputCls('email')}
-          />
-          <FieldError field="email" />
-          {touched.email && !errors.email && formData.email && (
-            <p className="flex items-center gap-1 text-xs text-emerald-600 font-medium mt-1">
-              <CheckCircle2 className="w-3 h-3 shrink-0" /> Looks good!
-            </p>
-          )}
-        </div>
+        {/* Property Type & Budget */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className={labelCls}>
+              <Home className="w-3.5 h-3.5" /> Property Type <span className="text-rose-500">*</span>
+            </label>
+            <select
+              name="propertyType" value={formData.propertyType} onChange={handleChange} onBlur={() => handleBlur('propertyType')}
+              className={getSelectCls('propertyType')}
+            >
+              <option value="" disabled className="text-slate-400">Select property type</option>
+              {propertyTypes.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
+            </select>
+            <FieldError field="propertyType" />
+          </div>
 
-        {/* Property Type */}
-        <div className="space-y-1">
-          <label className={labelCls}>
-            <Home className="w-3.5 h-3.5" /> Property Type <span className="text-rose-500">*</span>
-          </label>
-          <select
-            name="propertyType"
-            value={formData.propertyType}
-            onChange={handleChange}
-            onBlur={() => handleBlur('propertyType')}
-            className={getSelectCls('propertyType')}
-          >
-            <option value="" disabled className="text-slate-400">Select property type</option>
-            {propertyTypes.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.display_name}</option>
-            ))}
-          </select>
-          <FieldError field="propertyType" />
-          <FieldSuccess field="propertyType" />
+          <div className="space-y-1">
+            <label className={labelCls}>
+              <DollarSign className="w-3.5 h-3.5" /> {activeTab === 'buy' ? 'Budget' : 'Expected Price'} <span className="text-rose-500">*</span>
+            </label>
+            <select
+              name="budgetOrPrice" value={formData.budgetOrPrice} onChange={handleChange} onBlur={() => handleBlur('budgetOrPrice')}
+              className={getSelectCls('budgetOrPrice')}
+            >
+              <option value="" disabled className="text-slate-400">Select range</option>
+              {budgetRanges.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
+            </select>
+            <FieldError field="budgetOrPrice" />
+          </div>
         </div>
 
         {/* Location: State → City → Area */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-bold text-slate-800 uppercase tracking-wide">Location</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-3.5 h-3.5 text-blue-600" />
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">Location</span>
             <span className="text-rose-500 text-xs">*</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
             {/* State */}
             <div className="space-y-1">
               <label className={labelCls}><Globe className="w-3.5 h-3.5" /> State</label>
@@ -452,28 +435,6 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           </div>
         </div>
 
-        {/* Budget / Price */}
-        <div className="space-y-1">
-          <label className={labelCls}>
-            <DollarSign className="w-3.5 h-3.5" />
-            {activeTab === 'buy' ? 'Budget Range' : 'Expected Price'} <span className="text-rose-500">*</span>
-          </label>
-          <select
-            name="budgetOrPrice"
-            value={formData.budgetOrPrice}
-            onChange={handleChange}
-            onBlur={() => handleBlur('budgetOrPrice')}
-            className={getSelectCls('budgetOrPrice')}
-          >
-            <option value="" disabled className="text-slate-400">Select range</option>
-            {budgetRanges.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.display_name}</option>
-            ))}
-          </select>
-          <FieldError field="budgetOrPrice" />
-          <FieldSuccess field="budgetOrPrice" />
-        </div>
-
         {/* Notes */}
         <div className="space-y-1">
           <label className={labelCls}>
@@ -489,7 +450,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 ? 'Specify preferences e.g. 3 BHK, east-facing, corner plot, vastu preferred...'
                 : 'Describe the property e.g. age, floors, parking, furnishing, loan clear...'
             }
-            rows={3}
+            rows={2}
             className={`w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 resize-none`}
           />
         </div>

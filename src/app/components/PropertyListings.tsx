@@ -341,10 +341,11 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 max-w-lg mx-auto">
-      {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{err}</p>}
+    <form onSubmit={submit} className="w-full">
+      {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5 mb-4">{err}</p>}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ── Row 1: Profile & Preferences ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
         {/* Name */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
@@ -367,50 +368,13 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneErr(''); }}
             placeholder="9876543210"
             inputMode="numeric" maxLength={15}
-            className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white ${
+            className={`w-full border rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white ${
               phoneErr ? 'border-rose-400' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
             }`}
           />
           {phoneErr && <p className="text-xs text-rose-600 font-medium">{phoneErr}</p>}
         </div>
-      </div>
 
-      {/* Location */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-          Kahan Chahiye Property? <span className="text-rose-500">*</span>
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <select
-            value={state}
-            onChange={e => { setState(e.target.value); setCity(''); setArea(''); }}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
-          >
-            <option value="">State</option>
-            {LOCATION_DATA.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-          <select
-            value={city}
-            onChange={e => { setCity(e.target.value); setArea(''); }}
-            disabled={!state}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
-          >
-            <option value="">City</option>
-            {availableCities.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-          <select
-            value={area}
-            onChange={e => setArea(e.target.value)}
-            disabled={!city}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
-          >
-            <option value="">Area</option>
-            {availableAreas.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Property Type */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
@@ -418,7 +382,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={propType} onChange={e => setPropType(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
             <option value="">Koi bhi type</option>
             {propertyTypes.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
@@ -432,7 +396,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={budget} onChange={e => setBudget(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
             <option value="">Flexible hai</option>
             {budgetRanges.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
@@ -440,14 +404,68 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         </div>
       </div>
 
-      <button
-        type="submit" disabled={loading}
-        className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm"
-      >
-        {loading
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
-          : <>Property Dhundne Mein Help Karo <ChevronRight className="w-4 h-4" /></>}
-      </button>
+      {/* ── Row 2: Location & Button ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        {/* State */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            State <span className="text-rose-500">*</span>
+          </label>
+          <select
+            value={state}
+            onChange={e => { setState(e.target.value); setCity(''); setArea(''); }}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
+          >
+            <option value="">State</option>
+            {LOCATION_DATA.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+        </div>
+
+        {/* City */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            City <span className="text-rose-500">*</span>
+          </label>
+          <select
+            value={city}
+            onChange={e => { setCity(e.target.value); setArea(''); }}
+            disabled={!state}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+          >
+            <option value="">City</option>
+            {availableCities.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        </div>
+
+        {/* Area */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
+            Area <span className="text-rose-500">*</span>
+          </label>
+          <select
+            value={area}
+            onChange={e => setArea(e.target.value)}
+            disabled={!city}
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+          >
+            <option value="">Area</option>
+            {availableAreas.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+          </select>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex items-end">
+          <button
+            type="submit" disabled={loading}
+            className="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm h-[42px] sm:h-[46px]"
+          >
+            {loading
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
+              : <>Property Dhundne Mein Help Karo <ChevronRight className="w-4 h-4" /></>}
+          </button>
+        </div>
+
+
     </form>
   );
 }
@@ -479,13 +497,12 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
 
   return (
     <>
-      {/* Combined Header / Request Form */}
-      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 shadow-sm mb-6">
-        <div className="text-center mb-5 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
+      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-5 shadow-sm mb-6">
+        <div className="text-center mb-4 sm:mb-5">
+          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
             🔍 Property Dhundwao
           </h2>
-          <p className="text-slate-500 text-sm mt-2 font-medium max-w-lg mx-auto">
+          <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium max-w-2xl mx-auto">
             Neeche list mein se kharidne ke liye pasand karein, <strong>YA</strong> phir apni requirement batayein — hum dhundh kar connect karenge.
           </p>
         </div>
