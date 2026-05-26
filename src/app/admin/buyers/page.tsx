@@ -42,7 +42,7 @@ const buildWaLink = (phone: string, message: string) =>
   `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
 const DEFAULT_BUYER_MSG = (b: any) =>
-  `Namaste ${b.name}! 🏠\n\nAapki ${b.property_type.replace(/_/g, ' ')} ki requirement ke liye hamare paas ${b.area.replace(/_/g, ' ')} mein kuch excellent options hain.\n\nKya aap ek site visit ke liye available hain? Please reply karen.\n\n- Property CRM Team`;
+  `Hello ${b.name}! 🏠\n\nWe have some excellent options in ${b.area.replace(/_/g, ' ')} that match your ${b.property_type.replace(/_/g, ' ')} requirement.\n\nWould you be available for a site visit? Please let us know.\n\n- Property CRM Team`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -255,7 +255,7 @@ export default function BuyersDemand() {
       setBlastMessage(DEFAULT_BUYER_MSG(selected[0]));
     } else {
       setBlastMessage(
-        `Namaste! 🏠\n\nHamare paas aapki property requirements ke liye excellent options hain.\n\nKya aap ek site visit ke liye available hain? Please reply karen.\n\n- Property CRM Team`
+        `Hello! 🏠\n\nWe have some excellent options for your property requirements.\n\nWould you be available for a site visit? Please let us know.\n\n- Property CRM Team`
       );
     }
     setBlastOpen(true);
@@ -1048,7 +1048,7 @@ export default function BuyersDemand() {
                         <div className="space-y-1">
                           <span className="text-slate-500 font-bold block">WhatsApp</span>
                           <a
-                            href={buildWaLink(seller.phone, `Namaste ${seller.name}! Aapki property ke liye ek interested buyer hai. Kya hum discuss kar sakte hain?`)}
+                            href={buildWaLink(seller.phone, `Hello ${seller.name}! We have an interested buyer for your property. Can we discuss?`)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-bold text-emerald-700 hover:text-emerald-600 flex items-center gap-1"

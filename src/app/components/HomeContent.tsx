@@ -44,7 +44,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
           }`}
         >
-          <Building className="w-5 h-5" /> Main Buyer Hun
+          <Building className="w-5 h-5" /> Buy Property
         </button>
         <button
           type="button"
@@ -55,7 +55,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
           }`}
         >
-          <MapPin className="w-5 h-5" /> Main Seller Hun
+          <MapPin className="w-5 h-5" /> Sell Property
         </button>
       </div>
 
@@ -77,20 +77,20 @@ export default function HomeContent({ options, listings }: Props) {
                 Fast & Secure
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight text-slate-900">
-                Apni Property List Karo, Sahi Buyer Pao
+                List Your Property, Find the Right Buyer
               </h1>
               <p className="text-slate-600 text-sm font-medium max-w-sm mx-auto lg:mx-0">
-                Aapki property directly website par dikhegi. Lekin aapka naam aur number 100% private rahega. Koi pareshan nahi karega.
+                Your property will be visible directly on our platform. However, your name and contact details will remain 100% private to prevent spam.
               </p>
 
               <div className="space-y-4 pt-4 text-left max-w-sm mx-auto lg:mx-0">
                 <div className="flex items-start gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <p className="text-sm font-bold text-slate-700">100% Contact Privacy <br/><span className="text-xs font-medium text-slate-500">Number aur address public nahi hota.</span></p>
+                  <p className="text-sm font-bold text-slate-700">100% Contact Privacy <br/><span className="text-xs font-medium text-slate-500">Contact numbers and exact addresses are never made public.</span></p>
                 </div>
                 <div className="flex items-start gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                  <p className="text-sm font-bold text-slate-700">Verified Matchmaking <br/><span className="text-xs font-medium text-slate-500">Sirf genuine buyers se hi connect karenge.</span></p>
+                  <p className="text-sm font-bold text-slate-700">Verified Matchmaking <br/><span className="text-xs font-medium text-slate-500">We connect you exclusively with verified, genuine buyers.</span></p>
                 </div>
               </div>
             </div>

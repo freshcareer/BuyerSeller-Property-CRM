@@ -83,7 +83,7 @@ export default async function Home() {
           © {new Date().getFullYear()} BuyerSeller Property CRM
         </p>
         <p className="text-xs text-slate-400 font-medium mt-1">
-          Seller ka contact kabhi publicly nahi dikhaya jata &nbsp;·&nbsp;
+          Seller contact details are never shown publicly &nbsp;·&nbsp;
           <Link href="/login" className="text-blue-600 hover:underline">Admin Login</Link>
         </p>
       </footer>

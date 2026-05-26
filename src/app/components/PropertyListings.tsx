@@ -65,10 +65,10 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
     e.preventDefault();
     setErr(''); setPhoneErr('');
 
-    if (!name.trim()) { setErr('Apna naam likhein.'); return; }
+    if (!name.trim()) { setErr('Please enter your name.'); return; }
     const digits = phone.replace(/\D/g, '');
     if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
-      setPhoneErr('Valid 10-digit number likhein.'); return;
+      setPhoneErr('Please enter a valid 10-digit number.'); return;
     }
 
     setLoading(true);
@@ -87,7 +87,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
       if (error) throw error;
       setDone(true);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Kuch galat hua, dobara try karein.');
+      setErr(e instanceof Error ? e.message : 'Something went wrong, please try again.');
     } finally {
       setLoading(false);
     }
@@ -116,11 +116,11 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
             <div>
               <h3 className="text-xl font-extrabold text-slate-900">Request Sent! ✅</h3>
               <p className="text-slate-500 text-sm mt-2 font-medium">
-                Hamari team aapko jald contact karegi. Seller se verified match hone par connect kiya jayega.
+                Our team will contact you soon. You will be connected once a verified match is found with the seller.
               </p>
             </div>
             <button onClick={onClose} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors">
-              Theek Hai
+              Okay
             </button>
           </div>
         ) : (
@@ -146,7 +146,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
             </div>
 
             <p className="text-xs text-slate-500 font-medium text-center">
-              Sirf apna naam aur number dein — baaki sab auto-fill ho gaya ✅
+              Just enter your name and number — everything else is auto-filled ✅
             </p>
 
             {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{err}</p>}
@@ -154,7 +154,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
             {/* Name */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
-                <User className="w-3 h-3" /> Aapka Naam <span className="text-rose-500">*</span>
+                <User className="w-3 h-3" /> Full Name <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -170,7 +170,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
             {/* Phone */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1">
-                <Phone className="w-3 h-3" /> Mobile Number <span className="text-rose-500">*</span>
+                <Phone className="w-3 h-3" /> Phone Number <span className="text-rose-500">*</span>
               </label>
               <input
                 type="tel"
@@ -201,13 +201,13 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
                 className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20"
               >
                 {loading
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
-                  : <>Hamse Connect Karo <ChevronRight className="w-4 h-4" /></>}
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
+                  : <>Contact Me <ChevronRight className="w-4 h-4" /></>}
               </button>
             </div>
 
             <p className="text-center text-xs text-slate-400 font-medium">
-              🔒 Seller ka number directly nahi milega. Admin verify karke connect karega.
+              🔒 Seller contact details are kept private. Our team will verify and connect you.
             </p>
           </form>
         )}
@@ -264,7 +264,7 @@ function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: (
         {/* CTA */}
         <div className="mt-auto pt-2">
           <div className="w-full py-2.5 bg-blue-600 group-hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm group-hover:shadow-md group-hover:shadow-blue-600/20">
-            Mujhe Chahiye <ChevronRight className="w-4 h-4" />
+            I am Interested <ChevronRight className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -297,14 +297,14 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
     e.preventDefault();
     setErr(''); setPhoneErr('');
 
-    if (!name.trim()) { setErr('Naam zaroori hai.'); return; }
+    if (!name.trim()) { setErr('Name is required.'); return; }
     const digits = phone.replace(/\D/g, '');
     if (digits.length !== 10 && !(digits.length === 12 && digits.startsWith('91'))) {
-      setPhoneErr('Valid 10-digit number chahiye.'); return;
+      setPhoneErr('A valid 10-digit number is required.'); return;
     }
-    if (!state) { setErr('State select karein.'); return; }
-    if (!city) { setErr('City select karein.'); return; }
-    if (!area) { setErr('Area select karein.'); return; }
+    if (!state) { setErr('Please select a state.'); return; }
+    if (!city) { setErr('Please select a city.'); return; }
+    if (!area) { setErr('Please select an area.'); return; }
 
     setLoading(true);
     try {
@@ -322,7 +322,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
       if (error) throw error;
       setDone(true);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : 'Kuch galat hua.');
+      setErr(e instanceof Error ? e.message : 'Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -332,9 +332,9 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
     return (
       <div className="text-center py-8 space-y-3">
         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-        <h4 className="font-extrabold text-slate-900 text-lg">Request Mil Gayi! ✅</h4>
+        <h4 className="font-extrabold text-slate-900 text-lg">Request Received! ✅</h4>
         <p className="text-slate-500 text-sm font-medium">
-          Hamari team aapke liye {city} mein property dhundh karegi aur jald contact karegi.
+          Our team will find the best properties for you in {city} and contact you shortly.
         </p>
       </div>
     );
@@ -349,7 +349,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         {/* Name */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Aapka Naam <span className="text-rose-500">*</span>
+            Full Name <span className="text-rose-500">*</span>
           </label>
           <input
             type="text" required value={name} onChange={e => setName(e.target.value)}
@@ -361,7 +361,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
         {/* Phone */}
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Mobile Number <span className="text-rose-500">*</span>
+            Phone Number <span className="text-rose-500">*</span>
           </label>
           <input
             type="tel" required value={phone}
@@ -384,7 +384,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             value={propType} onChange={e => setPropType(e.target.value)}
             className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="">Koi bhi type</option>
+            <option value="">Any type</option>
             {propertyTypes.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
         </div>
@@ -398,7 +398,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             value={budget} onChange={e => setBudget(e.target.value)}
             className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="">Flexible hai</option>
+            <option value="">Flexible</option>
             {budgetRanges.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
         </div>
@@ -460,8 +460,8 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             className="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm h-[42px] sm:h-[46px]"
           >
             {loading
-              ? <><Loader2 className="w-4 h-4 animate-spin" /> Bhejna...</>
-              : <>Property Dhundne Mein Help Karo <ChevronRight className="w-4 h-4" /></>}
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
+              : <>Help Me Find a Property <ChevronRight className="w-4 h-4" /></>}
           </button>
         </div>
       </div>
@@ -500,10 +500,10 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
       <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-5 shadow-sm mb-6">
         <div className="text-center mb-4 sm:mb-5">
           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center justify-center gap-2">
-            🔍 Property Dhundwao
+            🔍 Find Your Perfect Property
           </h2>
           <p className="text-slate-500 text-xs sm:text-sm mt-1.5 font-medium max-w-2xl mx-auto">
-            Neeche list mein se kharidne ke liye pasand karein, <strong>YA</strong> phir apni requirement batayein — hum dhundh kar connect karenge.
+            Browse available properties below, <strong>OR</strong> share your requirements—we&apos;ll find the perfect match and connect you.
           </p>
         </div>
         <CantFindForm dbOptions={dbOptions} />
@@ -514,7 +514,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
         <div className="flex-1 h-px bg-slate-200" />
         <div className="flex flex-col items-center gap-1 text-slate-400">
           <ArrowDown className="w-4 h-4 animate-bounce" />
-          <span className="text-xs font-bold whitespace-nowrap text-center">Ya neeche available listings dekhein</span>
+          <span className="text-xs font-bold whitespace-nowrap text-center">Or browse available listings below</span>
         </div>
         <div className="flex-1 h-px bg-slate-200" />
       </div>
@@ -525,7 +525,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Area, city ya property type search karein..."
+            placeholder="Search by area, city, or property type..."
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 outline-none transition-all"
           />
         </div>
@@ -539,7 +539,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
             <select key={label} value={val} onChange={e => set(e.target.value)}
               className="w-full sm:w-auto bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2 py-2 sm:py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all appearance-none text-center sm:text-left"
             >
-              <option value="all">All {label}s</option>
+              <option value="all">{label === 'City' ? 'All Cities' : `All ${label}s`}</option>
               {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
             </select>
           ))}
@@ -558,16 +558,16 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
       {listings.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
           <Home className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-extrabold text-slate-900 mb-2">Abhi Koi Listing Nahi</h3>
-          <p className="text-slate-500 text-sm font-medium">Neeche apni requirement bhejein — hum dhundh karenge!</p>
+          <h3 className="text-xl font-extrabold text-slate-900 mb-2">No Listings Available Yet</h3>
+          <p className="text-slate-500 text-sm font-medium">Submit your requirement below, and we&apos;ll find the best match for you!</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 mb-6">
           <Layers className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-600 font-bold mb-1">Is area mein abhi koi listing nahi mili.</p>
-          <p className="text-slate-400 text-sm font-medium mb-4">Neeche request bhejein — hum aapke liye dhundhenge!</p>
+          <p className="text-slate-600 font-bold mb-1">No listings found in this area.</p>
+          <p className="text-slate-400 text-sm font-medium mb-4">Submit a request below—we&apos;ll find it for you!</p>
           <button onClick={clearFilters} className="text-blue-600 text-sm font-bold underline underline-offset-2">
-            Saari properties dekhein
+            View all properties
           </button>
         </div>
       ) : (

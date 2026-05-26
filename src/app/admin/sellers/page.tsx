@@ -43,7 +43,7 @@ const buildWaLink = (phone: string, message: string) =>
   `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
 const DEFAULT_SELLER_MSG = (s: any) =>
-  `Namaste ${s.name}! 🏢\n\nAapki ${s.property_type.replace(/_/g, ' ')} property ${s.area.replace(/_/g, ' ')} mein hamare paas interested buyers hain.\n\nKya hum milkar discuss kar sakte hain? Please reply karen.\n\n- Property CRM Team`;
+  `Hello ${s.name}! 🏢\n\nWe have interested buyers for your ${s.property_type.replace(/_/g, ' ')} property in ${s.area.replace(/_/g, ' ')}.\n\nCould we discuss this further? Please let us know.\n\n- Property CRM Team`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -256,7 +256,7 @@ export default function SellersInventory() {
       setBlastMessage(DEFAULT_SELLER_MSG(selected[0]));
     } else {
       setBlastMessage(
-        `Namaste! 🏢\n\nAapki property ke liye hamare paas interested buyers hain.\n\nKya hum milkar discuss kar sakte hain? Please reply karen.\n\n- Property CRM Team`
+        `Hello! 🏢\n\nWe have interested buyers for your property.\n\nCould we discuss this further? Please let us know.\n\n- Property CRM Team`
       );
     }
     setBlastOpen(true);
@@ -1004,7 +1004,7 @@ export default function SellersInventory() {
                         <div className="space-y-1">
                           <span className="text-slate-500 font-bold block">WhatsApp</span>
                           <a
-                            href={buildWaLink(buyer.phone, `Namaste ${buyer.name}! Aapki ${buyer.property_type.replace(/_/g, ' ')} requirement ke liye hamare paas perfect property hai. Please reply karen!`)}
+                            href={buildWaLink(buyer.phone, `Hello ${buyer.name}! We have the perfect property for your ${buyer.property_type.replace(/_/g, ' ')} requirement. Please let us know if you're interested!`)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-bold text-emerald-700 hover:text-emerald-600 flex items-center gap-1"
