@@ -112,6 +112,12 @@ CREATE POLICY "Allow public inserts for sellers_inventory"
     ON public.sellers_inventory FOR INSERT
     WITH CHECK (true);
 
+-- Allow public frontend to read active inventory (but they should only query safe columns via frontend)
+DROP POLICY IF EXISTS "Allow public read-only access to active sellers_inventory" ON public.sellers_inventory;
+CREATE POLICY "Allow public read-only access to active sellers_inventory"
+    ON public.sellers_inventory FOR SELECT
+    USING (status IN ('new_lead', 'contacted'));
+
 -- Allow only Super Admins to select, update, or delete sellers inventory
 DROP POLICY IF EXISTS "Allow super admin full control on sellers_inventory" ON public.sellers_inventory;
 CREATE POLICY "Allow super admin full control on sellers_inventory"
