@@ -449,6 +449,33 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
 
   return (
     <>
+      {/* Can't find section (Moved above filters) */}
+      <div className="bg-white border border-blue-100 rounded-2xl p-4 sm:p-6 shadow-sm mb-8">
+        <div className="text-center mb-5 sm:mb-6">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-xs font-bold mb-3">
+            🔍 Property Dhundwao
+          </span>
+          <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900">
+            Apni Pasand Ki Property List Mein Nahi?
+          </h2>
+          <p className="text-slate-500 text-xs sm:text-sm mt-2 font-medium max-w-md mx-auto">
+            Koi baat nahi — apna naam, number aur location batao. Hamari team aapke liye 
+            suitable property dhundh kar connect karegi.
+          </p>
+        </div>
+        <CantFindForm dbOptions={dbOptions} />
+      </div>
+
+      {/* Divider with arrow */}
+      <div className="flex items-center gap-4 my-8">
+        <div className="flex-1 h-px bg-slate-200" />
+        <div className="flex flex-col items-center gap-1 text-slate-400">
+          <ArrowDown className="w-4 h-4 animate-bounce" />
+          <span className="text-xs font-bold whitespace-nowrap text-center">Ya neeche available listings dekhein</span>
+        </div>
+        <div className="flex-1 h-px bg-slate-200" />
+      </div>
+
       {/* Filters */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 mb-5 shadow-sm space-y-3">
         <div className="relative">
@@ -459,26 +486,26 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 outline-none transition-all"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block" />
           {[
             { label: 'Type', val: filterType, set: setFilterType, opts: allTypes.map(t => ({ v: t, l: fmtPropType(t) })) },
             { label: 'City', val: filterCity, set: setFilterCity, opts: allCities.map(c => ({ v: c, l: c })) },
             { label: 'Price', val: filterPrice, set: setFilterPrice, opts: allPrices.map(p => ({ v: p, l: fmtPrice(p) })) },
           ].map(({ label, val, set, opts }) => (
             <select key={label} value={val} onChange={e => set(e.target.value)}
-              className="bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer shrink-0 transition-all appearance-none"
+              className="flex-1 sm:flex-none bg-white border border-slate-200 hover:border-blue-300 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-700 outline-none cursor-pointer transition-all appearance-none text-center sm:text-left"
             >
               <option value="all">All {label}s</option>
               {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
             </select>
           ))}
           {hasFilters && (
-            <button onClick={clearFilters} className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all shrink-0">
+            <button onClick={clearFilters} className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 rounded-lg text-xs font-bold transition-all mt-1 sm:mt-0">
               <X className="w-3 h-3" /> Clear
             </button>
           )}
-          <span className="ml-auto text-xs text-slate-400 font-bold shrink-0 whitespace-nowrap">
+          <span className="w-full sm:w-auto text-center sm:ml-auto text-xs text-slate-400 font-bold mt-2 sm:mt-0">
             {filtered.length} properties
           </span>
         </div>
@@ -508,33 +535,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
         </div>
       )}
 
-      {/* Divider with arrow */}
-      <div className="flex items-center gap-4 my-8">
-        <div className="flex-1 h-px bg-slate-200" />
-        <div className="flex flex-col items-center gap-1 text-slate-400">
-          <ArrowDown className="w-4 h-4 animate-bounce" />
-          <span className="text-xs font-bold whitespace-nowrap">Nahi mila jo chahiye?</span>
-        </div>
-        <div className="flex-1 h-px bg-slate-200" />
-      </div>
 
-      {/* Can't find section */}
-      <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm">
-        <div className="text-center mb-6">
-          <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-xs font-bold mb-3">
-            🔍 Property Dhundwao
-          </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-            Apni Pasand Ki Property List Mein Nahi?
-          </h2>
-          <p className="text-slate-500 text-sm mt-2 font-medium max-w-md mx-auto">
-            Koi baat nahi — apna naam, number aur location batao. Hamari team aapke liye 
-            suitable property dhundh kar connect karegi.
-          </p>
-        </div>
-
-        <CantFindForm dbOptions={dbOptions} />
-      </div>
 
       {/* Interest Modal */}
       {activeListing && (

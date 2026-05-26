@@ -34,7 +34,7 @@ export default function HomeContent({ options, listings }: Props) {
     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
       
       {/* ── Main Tabs ──────────────────────────────────────────────────────── */}
-      <div className="flex bg-slate-100 p-1.5 rounded-2xl max-w-2xl mx-auto shadow-inner border border-slate-200 mb-10">
+      <div className="flex flex-col sm:flex-row bg-slate-100 p-1.5 rounded-2xl max-w-2xl mx-auto shadow-inner border border-slate-200 mb-8 sm:mb-10 gap-1.5 sm:gap-0">
         <button
           type="button"
           onClick={() => setActiveTab('buyer')}
