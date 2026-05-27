@@ -24,6 +24,9 @@ interface Listing {
   possession_status?: string | null;
   facing?: string | null;
   parking?: string | null;
+  furnishing?: string | null;
+  balconies?: string | null;
+  property_age?: string | null;
   description?: string | null;
   tags?: string | null;
   created_at: string;
@@ -255,6 +258,9 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
   const baths = getOptionName('bathrooms', listing.bathrooms);
   const facing = getOptionName('facing', listing.facing);
   const poss = getOptionName('possession_status', listing.possession_status);
+  const furnishing = getOptionName('furnishing', listing.furnishing);
+  const balconies = getOptionName('balconies', listing.balconies);
+  const propertyAge = getOptionName('property_age', listing.property_age);
 
   // Time ago formatter
   const timeAgo = (dateStr: string) => {
@@ -330,7 +336,7 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
         )}
 
         {/* Advanced Grid */}
-        {(beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking) && (
+        {(beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
           <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
             {listing.builtup_area && (
               <div className="flex items-start gap-1.5">
@@ -383,6 +389,32 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
                 <div>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Parking</p>
                   <p className="text-xs font-medium text-slate-700">{listing.parking}</p>
+                </div>
+              </div>
+            {furnishing && (
+              <div className="flex items-start gap-1.5">
+                <Home className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Furnishing</p>
+                  <p className="text-xs font-medium text-slate-700">{furnishing}</p>
+                </div>
+              </div>
+            )}
+            {balconies && (
+              <div className="flex items-start gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Balconies</p>
+                  <p className="text-xs font-medium text-slate-700">{balconies}</p>
+                </div>
+              </div>
+            )}
+            {propertyAge && (
+              <div className="flex items-start gap-1.5">
+                <Building className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Age</p>
+                  <p className="text-xs font-medium text-slate-700">{propertyAge}</p>
                 </div>
               </div>
             )}
