@@ -102,6 +102,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
   // Track which fields have been touched
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   // 1. Fetch States on Mount
   useEffect(() => {
@@ -815,12 +816,17 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
         {/* Advanced Property Details */}
         <div className="space-y-4 pt-2 border-t border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-4 h-4 text-indigo-600" />
-            <span className="text-sm font-extrabold text-slate-800">Advanced Details (Optional)</span>
-          </div>
+          <button type="button" onClick={() => setIsAdvancedOpen(!isAdvancedOpen)} className="flex items-center justify-between w-full p-3 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-extrabold text-slate-800">Advanced Details (Optional)</span>
+            </div>
+            <span className="text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition-colors">{isAdvancedOpen ? 'Hide ▲' : 'Expand ▼'}</span>
+          </button>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {isAdvancedOpen && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-1">
               <label className={labelCls}><Bed className="w-3.5 h-3.5" /> Bedrooms</label>
               <div className="flex flex-wrap gap-1.5">
@@ -985,6 +991,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
             <label className={labelCls}><FileText className="w-3.5 h-3.5" /> Public Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="Write a detailed description of the property to show on the public listing..." className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 resize-none" />
           </div>
+          </div>
+          )}
         </div>
 
 

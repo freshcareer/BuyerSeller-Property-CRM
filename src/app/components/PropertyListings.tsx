@@ -246,6 +246,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
 // ── Property Card ─────────────────────────────────────────────────────────────
 
 function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleWatchlist }: { listing: Listing; onInterest: () => void; dbOptions: SettingOption[]; isWatchlisted: boolean; onToggleWatchlist: (e: React.MouseEvent) => void }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const color = typeColors[listing.property_type] || defaultColor;
 
   const getOptionName = (cat: string, val: string | null | undefined) => {
@@ -274,10 +275,10 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
 
   return (
     <div
-      onClick={onInterest}
+      onClick={() => setIsExpanded(!isExpanded)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInterest(); } }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(!isExpanded); } }}
       className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
     >
       {/* Color top bar */}
@@ -335,9 +336,9 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
           </div>
         )}
 
-        {/* Advanced Grid */}
-        {(beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
-          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
+        {/* Advanced Grid (Hidden by default) */}
+        {isExpanded && (beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
+          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
             {listing.builtup_area && (
               <div className="flex items-start gap-1.5">
                 <Expand className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
@@ -422,18 +423,26 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
           </div>
         )}
 
-        {/* Description / Notes */}
-        {(listing.description || listing.notes) && (
-          <p className="text-xs text-slate-500 line-clamp-2 italic font-medium flex-1 pt-2">
+        {/* Description / Notes (Hidden by default) */}
+        {isExpanded && (listing.description || listing.notes) && (
+          <p className="text-xs text-slate-500 line-clamp-3 italic font-medium flex-1 pt-2 animate-in fade-in duration-300">
             {listing.description || listing.notes}
           </p>
         )}
 
         {/* CTA */}
-        <div className="mt-auto pt-2">
-          <div className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 group-hover:from-blue-700 group-hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm group-hover:shadow-md group-hover:shadow-indigo-600/20">
+        <div className="mt-auto pt-2 flex flex-col gap-2">
+          {!isExpanded && (beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
+            <div className="text-[10px] text-center font-bold text-slate-400 group-hover:text-blue-500 transition-colors">
+              Click to quick view advanced details ▼
+            </div>
+          )}
+          <button 
+            onClick={(e) => { e.stopPropagation(); onInterest(); }}
+            className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-indigo-600/20"
+          >
             I am Interested <ChevronRight className="w-4 h-4" />
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -589,58 +598,46 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
       {/* ── Row 1: Profile & Preferences ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
         {/* Name */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Full Name <span className="text-rose-500">*</span>
-          </label>
+        <div>
           <input
             type="text" required value={name} onChange={e => setName(e.target.value)}
-            placeholder="e.g. Amit Shah"
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 text-sm outline-none transition-all font-medium bg-white"
+            placeholder="Full Name *"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white"
           />
         </div>
 
         {/* Phone */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Phone Number <span className="text-rose-500">*</span>
-          </label>
+        <div>
           <input
             type="tel" required value={phone}
             onChange={e => { setPhone(e.target.value.replace(/[^\d+\s-]/g, '')); setPhoneErr(''); }}
-            placeholder="9876543210"
+            placeholder="Phone Number *"
             inputMode="numeric" maxLength={15}
-            className={`w-full border rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white ${
+            className={`w-full border rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white ${
               phoneErr ? 'border-rose-400' : 'border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
             }`}
           />
-          {phoneErr && <p className="text-xs text-rose-600 font-medium">{phoneErr}</p>}
+          {phoneErr && <p className="text-xs text-rose-600 font-medium mt-1">{phoneErr}</p>}
         </div>
 
         {/* Property Type */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Property Type <span className="text-slate-400 font-normal">(optional)</span>
-          </label>
+        <div>
           <select
             value={propType} onChange={e => setPropType(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="">Any type</option>
+            <option value="">Property Type (Optional)</option>
             {propertyTypes.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
         </div>
 
         {/* Budget */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Budget <span className="text-slate-400 font-normal">(optional)</span>
-          </label>
+        <div>
           <select
             value={budget} onChange={e => setBudget(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white appearance-none"
           >
-            <option value="">Flexible</option>
+            <option value="">Budget (Flexible)</option>
             {budgetRanges.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
           </select>
         </div>
@@ -649,57 +646,48 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
       {/* ── Row 2: Location & Button ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {/* State */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            State <span className="text-rose-500">*</span>
-          </label>
+        <div>
           <select
             value={state}
             onChange={e => setState(e.target.value)}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
           >
-            <option value="">State</option>
+            <option value="">State *</option>
             {dbStates.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
 
         {/* City */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            City <span className="text-rose-500">*</span>
-          </label>
+        <div>
           <select
             value={city}
             onChange={e => setCity(e.target.value)}
             disabled={!state}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
-            <option value="">City</option>
+            <option value="">City *</option>
             {dbCities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
 
         {/* Area */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-600 uppercase tracking-wide">
-            Area <span className="text-rose-500">*</span>
-          </label>
+        <div>
           <select
             value={area}
             onChange={e => setArea(e.target.value)}
             disabled={!city}
-            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
+            className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-3 sm:py-4 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
-            <option value="">Area</option>
+            <option value="">Area *</option>
             {dbAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
 
         {/* Submit Button */}
-        <div className="flex items-end">
+        <div>
           <button
             type="submit" disabled={loading}
-            className="w-full py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm h-[42px] sm:h-[46px]"
+            className="w-full py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 text-sm h-full max-h-[52px]"
           >
             {loading
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>

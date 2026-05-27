@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import HomeContent from '@/app/components/HomeContent';
-import { ShieldCheck, ArrowUpRight, Lock, Database, User } from 'lucide-react';
+import { ShieldCheck, ArrowUpRight, Lock, Database, User, Phone, Mail } from 'lucide-react';
 
 export const revalidate = 0;
 
@@ -56,13 +56,13 @@ export default async function Home() {
           </div>
 
           {/* Contact Details in Header */}
-          <div className="hidden lg:flex items-center gap-6 text-xs text-slate-655 font-medium">
-            <div className="flex items-center gap-1">
-              📞 
-              <a href="tel:+917692885502" className="hover:text-blue-600 transition-colors">+91 7692885502</a>, 
-              <a href="tel:+918488075196" className="hover:text-blue-600 transition-colors">8488075196</a>
-            </div>
-            <a href="mailto:freshcareer4@gmail.com" className="flex items-center gap-1 hover:text-blue-600 transition-colors">✉️ freshcareer4@gmail.com</a>
+          <div className="hidden lg:flex items-center gap-5 text-xs text-slate-600 font-bold">
+            <a href="tel:+917692885502" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+              <Phone className="w-4 h-4" /> +91 7692885502
+            </a>
+            <a href="mailto:freshcareer4@gmail.com" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+              <Mail className="w-4 h-4" /> freshcareer4@gmail.com
+            </a>
           </div>
 
           {/* Right side */}
@@ -97,15 +97,14 @@ export default async function Home() {
       )}
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white py-8 mt-auto text-center space-y-3">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs sm:text-sm text-slate-500 font-medium">
-          <div className="flex items-center gap-1">
-            📞 Phone: 
-            <a href="tel:+917692885502" className="hover:text-blue-600 transition-colors">+91 7692885502</a>, 
-            <a href="tel:+918488075196" className="hover:text-blue-600 transition-colors">8488075196</a>
-          </div>
-          <span className="hidden sm:inline">|</span>
-          <a href="mailto:freshcareer4@gmail.com" className="flex items-center gap-1 hover:text-blue-600 transition-colors">✉️ Email: freshcareer4@gmail.com</a>
+      <footer className="border-t border-slate-200 bg-white py-8 mt-auto text-center space-y-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-slate-600 font-bold">
+          <a href="tel:+917692885502" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+            <Phone className="w-4 h-4" /> +91 7692885502
+          </a>
+          <a href="mailto:freshcareer4@gmail.com" className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+            <Mail className="w-4 h-4" /> freshcareer4@gmail.com
+          </a>
         </div>
         <p className="text-sm text-slate-400 font-medium">
           © {new Date().getFullYear()} PropConnect. All rights reserved.
