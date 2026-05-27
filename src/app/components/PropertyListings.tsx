@@ -391,6 +391,7 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
                   <p className="text-xs font-medium text-slate-700">{listing.parking}</p>
                 </div>
               </div>
+            )}
             {furnishing && (
               <div className="flex items-start gap-1.5">
                 <Home className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
