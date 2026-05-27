@@ -7,7 +7,9 @@ import { supabase } from '@/lib/supabase';
 import { UserCircle, Lock, Loader2, ArrowLeft, Phone } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PortalLogin() {
+import { Suspense } from 'react';
+
+function PortalLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/portal/buyer';
@@ -217,5 +219,13 @@ export default function PortalLogin() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PortalLogin() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>}>
+      <PortalLoginForm />
+    </Suspense>
   );
 }
