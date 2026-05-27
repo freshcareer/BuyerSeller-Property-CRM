@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { LOCATION_DATA, getCities, getAreas } from '@/lib/locationData';
 import {
   CheckCircle2, ChevronRight, Loader2, User, Phone, Mail,
   Building, MapPin, DollarSign, FileText, Globe, Home, AlertCircle, Edit, Trash2,
@@ -57,12 +56,18 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Dynamic Location states
+  const [dbStates, setDbStates] = useState<{ id: string; name: string }[]>([]);
+  const [dbCities, setDbCities] = useState<{ id: string; name: string }[]>([]);
+  const [dbAreas, setDbAreas] = useState<{ id: string; name: string }[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+
   // Seller My Listings state
   const [myListings, setMyListings] = useState<any[]>([]);
   const [editModeId, setEditModeId] = useState<string | null>(null);
   const [fetchingListings, setFetchingListings] = useState(false);
 
-  // Form states
+  // Form states (Location values hold state_id, city_id, area_id)
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -75,8 +80,77 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     notes: '',
   });
 
-  // Track which fields have been touched (interacted with)
+  // Track which fields have been touched
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
+
+  // 1. Fetch States on Mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('states')
+          .select('id, name')
+          .order('name', { ascending: true });
+        if (error) throw error;
+        setDbStates(data || []);
+      } catch (e) {
+        console.error('Error loading states:', e);
+      }
+    };
+    fetchStates();
+  }, []);
+
+  // 2. Fetch Cities when selected State changes
+  useEffect(() => {
+    if (!formData.state) {
+      setDbCities([]);
+      setDbAreas([]);
+      return;
+    }
+    const fetchCities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cities')
+          .select('id, name')
+          .eq('state_id', formData.state)
+          .order('name', { ascending: true });
+        if (error) throw error;
+        setDbCities(data || []);
+        // Reset city/area selects if they aren't part of an edit trigger
+        if (!editModeId) {
+          setFormData(prev => ({ ...prev, city: '', area: '' }));
+        }
+      } catch (e) {
+        console.error('Error loading cities:', e);
+      }
+    };
+    fetchCities();
+  }, [formData.state]);
+
+  // 3. Fetch Areas when selected City changes
+  useEffect(() => {
+    if (!formData.city) {
+      setDbAreas([]);
+      return;
+    }
+    const fetchAreas = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('areas')
+          .select('id, name')
+          .eq('city_id', formData.city)
+          .order('name', { ascending: true });
+        if (error) throw error;
+        setDbAreas(data || []);
+        if (!editModeId) {
+          setFormData(prev => ({ ...prev, area: '' }));
+        }
+      } catch (e) {
+        console.error('Error loading areas:', e);
+      }
+    };
+    fetchAreas();
+  }, [formData.city]);
 
   useEffect(() => {
     fetchMyListings();
@@ -112,24 +186,70 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     }
   };
 
-  const handleEditClick = (item: any) => {
+  const handleEditClick = async (item: any) => {
+    setLoadingLocations(true);
     setEditModeId(item.id);
-    const areaParts = item.area.split(',');
-    const areaVal = areaParts.length > 0 ? areaParts[0].trim() : item.area;
-    setFormData({
-      name: item.name,
-      phone: item.phone,
-      email: item.email || '',
-      propertyType: item.property_type,
-      state: item.state,
-      city: item.city,
-      area: areaVal,
-      budgetOrPrice: item.price || item.budget,
-      notes: item.notes || '',
-    });
-    setTouched({});
-    setSubmitError(null);
-    setSuccess(false);
+
+    try {
+      // Find state ID by matching text name
+      const matchedState = dbStates.find(s => s.name.toLowerCase() === item.state.toLowerCase());
+      const stateId = matchedState ? matchedState.id : '';
+
+      let cityId = '';
+      let areaId = '';
+      let loadedCities: any[] = [];
+      let loadedAreas: any[] = [];
+
+      if (stateId) {
+        const { data: citiesData } = await supabase
+          .from('cities')
+          .select('id, name')
+          .eq('state_id', stateId)
+          .order('name');
+        if (citiesData) {
+          loadedCities = citiesData;
+          const matchedCity = citiesData.find(c => c.name.toLowerCase() === item.city.toLowerCase());
+          cityId = matchedCity ? matchedCity.id : '';
+        }
+      }
+
+      if (cityId) {
+        const { data: areasData } = await supabase
+          .from('areas')
+          .select('id, name')
+          .eq('city_id', cityId)
+          .order('name');
+        if (areasData) {
+          loadedAreas = areasData;
+          // Extract first part of area e.g. "Bopal" from "Bopal, Ahmedabad, Gujarat"
+          const cleanAreaName = item.area.split(',')[0].trim();
+          const matchedArea = areasData.find(a => a.name.toLowerCase() === cleanAreaName.toLowerCase());
+          areaId = matchedArea ? matchedArea.id : '';
+        }
+      }
+
+      setDbCities(loadedCities);
+      setDbAreas(loadedAreas);
+
+      setFormData({
+        name: item.name,
+        phone: item.phone,
+        email: item.email || '',
+        propertyType: item.property_type,
+        state: stateId,
+        city: cityId,
+        area: areaId,
+        budgetOrPrice: item.price || item.budget,
+        notes: item.notes || '',
+      });
+      setTouched({});
+      setSubmitError(null);
+      setSuccess(false);
+    } catch (e) {
+      console.error('Error loading location keys for edit:', e);
+    } finally {
+      setLoadingLocations(false);
+    }
   };
 
   const handleDeleteClick = async (id: string) => {
@@ -172,10 +292,6 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     const err = validators[key](formData[key as keyof typeof formData] || '');
     if (err) errors[key] = err;
   });
-
-  // Cascading location options
-  const availableCities = formData.state ? getCities(formData.state) : [];
-  const availableAreas = formData.state && formData.city ? getAreas(formData.state, formData.city) : [];
 
   // Supabase system_settings options
   const propertyTypes = options.filter((o) => o.category === 'property_type');
@@ -229,7 +345,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
     setLoading(true);
 
-    const locationString = `${formData.area}, ${formData.city}, ${formData.state}`;
+    // Find state, city, area names for storage in string columns
+    const selectedState = dbStates.find(s => s.id === formData.state)?.name || '';
+    const selectedCity = dbCities.find(c => c.id === formData.city)?.name || '';
+    const selectedArea = dbAreas.find(a => a.id === formData.area)?.name || '';
+    const locationString = `${selectedArea}, ${selectedCity}, ${selectedState}`;
 
     try {
       if (activeTab === 'buy') {
@@ -238,8 +358,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           phone: formData.phone.trim(),
           email: formData.email.trim() || null,
           property_type: formData.propertyType,
-          state: formData.state,
-          city: formData.city,
+          state: selectedState,
+          city: selectedCity,
           area: locationString,
           budget: formData.budgetOrPrice,
           notes: formData.notes.trim() || null,
@@ -252,8 +372,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           phone: formData.phone.trim(),
           email: formData.email.trim() || null,
           property_type: formData.propertyType,
-          state: formData.state,
-          city: formData.city,
+          state: selectedState,
+          city: selectedCity,
           area: locationString,
           price: formData.budgetOrPrice,
           notes: formData.notes.trim() || null,
@@ -401,11 +521,17 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         </div>
       )}
 
+      {loadingLocations && (
+        <div className="p-4 bg-blue-50 text-blue-700 flex items-center gap-2 text-sm font-semibold">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading location metadata for edit mode...
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className={`p-4 md:p-6 space-y-4 ${editModeId ? 'bg-indigo-50/30' : ''}`} noValidate>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-bold text-slate-900">
             {activeTab === 'buy' 
-              ? 'Submit your buying demand' 
+              ? 'Submit your buying requirement' 
               : editModeId 
                 ? 'Edit Property Listing' 
                 : 'List your property for sale'}
@@ -456,7 +582,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
             </label>
             <input
               type="email" name="email" value={formData.email} onChange={handleChange} onBlur={() => handleBlur('email')}
-              placeholder="e.g. rajesh@example.com" className={getInputCls('email')}
+              placeholder="e.g. freshcareer4@gmail.com" className={getInputCls('email')}
             />
             {renderFieldError('email')}
           </div>
@@ -513,8 +639,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 className={getSelectCls('state')}
               >
                 <option value="" disabled className="text-slate-400">Select state</option>
-                {LOCATION_DATA.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                {dbStates.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
               {renderFieldError('state')}
@@ -535,8 +661,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                     className={getSelectCls('city')}
                   >
                     <option value="" disabled className="text-slate-400">Select city</option>
-                    {availableCities.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
+                    {dbCities.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                   </select>
                   {renderFieldError('city')}
@@ -563,8 +689,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                     className={getSelectCls('area')}
                   >
                     <option value="" disabled className="text-slate-400">Select area</option>
-                    {availableAreas.map((a) => (
-                      <option key={a.value} value={a.value}>{a.label}</option>
+                    {dbAreas.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
                   </select>
                   {renderFieldError('area')}

@@ -18,7 +18,813 @@ import {
   Pencil,
   X,
   Save,
+  Globe,
 } from 'lucide-react';
+
+interface SettingItem {
+  id: string;
+  category: string;
+  value: string;
+  display_name: string;
+  sort_order: number;
+}
+
+interface LocationSettingsManagerProps {
+  setError: (msg: string | null) => void;
+  setSuccess: (msg: string | null) => void;
+}
+
+function LocationSettingsManager({ setError, setSuccess }: LocationSettingsManagerProps) {
+  const [states, setStates] = useState<any[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [areas, setAreas] = useState<any[]>([]);
+
+  const [selectedStateId, setSelectedStateId] = useState<string | null>(null);
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingAreas, setLoadingAreas] = useState(false);
+
+  const [newStateName, setNewStateName] = useState('');
+  const [newCityName, setNewCityName] = useState('');
+  const [newAreaName, setNewAreaName] = useState('');
+
+  // Editing state
+  const [editingStateId, setEditingStateId] = useState<string | null>(null);
+  const [editingStateName, setEditingStateName] = useState('');
+  const [editingCityId, setEditingCityId] = useState<string | null>(null);
+  const [editingCityName, setEditingCityName] = useState('');
+  const [editingAreaId, setEditingAreaId] = useState<string | null>(null);
+  const [editingAreaName, setEditingAreaName] = useState('');
+
+  // Delete confirmations
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmType, setDeleteConfirmType] = useState<'state' | 'city' | 'area' | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [savingState, setSavingState] = useState(false);
+  const [savingCity, setSavingCity] = useState(false);
+  const [savingArea, setSavingArea] = useState(false);
+
+  useEffect(() => {
+    fetchStates();
+  }, []);
+
+  useEffect(() => {
+    if (selectedStateId) {
+      fetchCities(selectedStateId);
+      setSelectedCityId(null);
+      setAreas([]);
+    } else {
+      setCities([]);
+      setSelectedCityId(null);
+      setAreas([]);
+    }
+  }, [selectedStateId]);
+
+  useEffect(() => {
+    if (selectedCityId) {
+      fetchAreas(selectedCityId);
+    } else {
+      setAreas([]);
+    }
+  }, [selectedCityId]);
+
+  const fetchStates = async () => {
+    setLoadingStates(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('states')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setStates(data || []);
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to fetch states: ' + (err.message || err));
+    } finally {
+      setLoadingStates(false);
+    }
+  };
+
+  const fetchCities = async (stateId: string) => {
+    setLoadingCities(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('state_id', stateId)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setCities(data || []);
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to fetch cities: ' + (err.message || err));
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  const fetchAreas = async (cityId: string) => {
+    setLoadingAreas(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('areas')
+        .select('*')
+        .eq('city_id', cityId)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setAreas(data || []);
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to fetch areas: ' + (err.message || err));
+    } finally {
+      setLoadingAreas(false);
+    }
+  };
+
+  // State actions
+  const handleAddState = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStateName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    setSavingState(true);
+    try {
+      const { data, error } = await supabase
+        .from('states')
+        .insert({ name: newStateName.trim() })
+        .select()
+        .single();
+      if (error) throw error;
+      setNewStateName('');
+      setStates(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      setSuccess(`State "${newStateName.trim()}" added successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'A state with this name already exists.'
+        : err.message || 'Failed to add state.');
+    } finally {
+      setSavingState(false);
+    }
+  };
+
+  const handleUpdateState = async (id: string) => {
+    if (!editingStateName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      const { error } = await supabase
+        .from('states')
+        .update({ name: editingStateName.trim() })
+        .eq('id', id);
+      if (error) throw error;
+      setStates(prev => prev.map(s => s.id === id ? { ...s, name: editingStateName.trim() } : s));
+      setEditingStateId(null);
+      setSuccess(`State updated to "${editingStateName.trim()}".`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'A state with this name already exists.'
+        : err.message || 'Failed to update state.');
+    }
+  };
+
+  const handleDeleteState = async (id: string, name: string) => {
+    setError(null);
+    setSuccess(null);
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('states')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setStates(prev => prev.filter(s => s.id !== id));
+      if (selectedStateId === id) {
+        setSelectedStateId(null);
+      }
+      setDeleteConfirmId(null);
+      setDeleteConfirmType(null);
+      setSuccess(`State "${name}" and all its cities/areas deleted successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to delete state.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // City actions
+  const handleAddCity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStateId || !newCityName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    setSavingCity(true);
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .insert({ name: newCityName.trim(), state_id: selectedStateId })
+        .select()
+        .single();
+      if (error) throw error;
+      setNewCityName('');
+      setCities(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      setSuccess(`City "${newCityName.trim()}" added successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'A city with this name already exists in this state.'
+        : err.message || 'Failed to add city.');
+    } finally {
+      setSavingCity(false);
+    }
+  };
+
+  const handleUpdateCity = async (id: string) => {
+    if (!editingCityName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      const { error } = await supabase
+        .from('cities')
+        .update({ name: editingCityName.trim() })
+        .eq('id', id);
+      if (error) throw error;
+      setCities(prev => prev.map(c => c.id === id ? { ...c, name: editingCityName.trim() } : c));
+      setEditingCityId(null);
+      setSuccess(`City updated to "${editingCityName.trim()}".`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'A city with this name already exists in this state.'
+        : err.message || 'Failed to update city.');
+    }
+  };
+
+  const handleDeleteCity = async (id: string, name: string) => {
+    setError(null);
+    setSuccess(null);
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('cities')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setCities(prev => prev.filter(c => c.id !== id));
+      if (selectedCityId === id) {
+        setSelectedCityId(null);
+      }
+      setDeleteConfirmId(null);
+      setDeleteConfirmType(null);
+      setSuccess(`City "${name}" and all its areas deleted successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to delete city.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Area actions
+  const handleAddArea = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCityId || !newAreaName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    setSavingArea(true);
+    try {
+      const { data, error } = await supabase
+        .from('areas')
+        .insert({ name: newAreaName.trim(), city_id: selectedCityId })
+        .select()
+        .single();
+      if (error) throw error;
+      setNewAreaName('');
+      setAreas(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      setSuccess(`Area "${newAreaName.trim()}" added successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'An area with this name already exists in this city.'
+        : err.message || 'Failed to add area.');
+    } finally {
+      setSavingArea(false);
+    }
+  };
+
+  const handleUpdateArea = async (id: string) => {
+    if (!editingAreaName.trim()) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      const { error } = await supabase
+        .from('areas')
+        .update({ name: editingAreaName.trim() })
+        .eq('id', id);
+      if (error) throw error;
+      setAreas(prev => prev.map(a => a.id === id ? { ...a, name: editingAreaName.trim() } : a));
+      setEditingAreaId(null);
+      setSuccess(`Area updated to "${editingAreaName.trim()}".`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message?.includes('duplicate key')
+        ? 'An area with this name already exists in this city.'
+        : err.message || 'Failed to update area.');
+    }
+  };
+
+  const handleDeleteArea = async (id: string, name: string) => {
+    setError(null);
+    setSuccess(null);
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('areas')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setAreas(prev => prev.filter(a => a.id !== id));
+      setDeleteConfirmId(null);
+      setDeleteConfirmType(null);
+      setSuccess(`Area "${name}" deleted successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to delete area.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const selectedState = states.find(s => s.id === selectedStateId);
+  const selectedCity = cities.find(c => c.id === selectedCityId);
+
+  const cardCls = 'bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-3xl p-5 flex flex-col h-[560px] relative overflow-hidden';
+  const listContainerCls = 'flex-1 overflow-y-auto pr-1 space-y-1.5 py-2';
+  const itemCls = 'p-3 border rounded-xl flex items-center justify-between gap-2 cursor-pointer transition-all duration-200';
+  const inputCls = 'w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-semibold rounded-lg px-3 py-2 text-sm outline-none transition-all';
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start animate-in fade-in duration-300">
+      {/* 1. States column */}
+      <div className={cardCls}>
+        <div className="pb-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <h3 className="font-extrabold text-slate-800 text-sm tracking-wide uppercase">1. States</h3>
+          </div>
+          <span className="text-[11px] bg-slate-100 border border-slate-200 text-slate-600 font-bold px-2 py-0.5 rounded-full shrink-0">
+            {states.length} total
+          </span>
+        </div>
+
+        {loadingStates ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <Loader2 className="w-6 h-6 text-blue-600 animate-spin mb-2" />
+            <p className="text-slate-400 text-xs font-semibold">Loading states...</p>
+          </div>
+        ) : (
+          <div className={listContainerCls}>
+            {states.map(state => {
+              const isSelected = selectedStateId === state.id;
+              const isEditing = editingStateId === state.id;
+              const isConfirmDelete = deleteConfirmId === state.id && deleteConfirmType === 'state';
+
+              return (
+                <div
+                  key={state.id}
+                  onClick={() => {
+                    if (!isEditing && !isConfirmDelete) {
+                      setSelectedStateId(state.id);
+                    }
+                  }}
+                  className={`${itemCls} ${
+                    isSelected
+                      ? 'bg-blue-50/80 border-blue-300 shadow-sm'
+                      : 'bg-white hover:bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  {isEditing ? (
+                    <div className="flex-1 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={editingStateName}
+                        onChange={e => setEditingStateName(e.target.value)}
+                        className="flex-1 px-2.5 py-1 text-xs border border-blue-400 focus:outline-none rounded font-semibold bg-white text-slate-900"
+                        autoFocus
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleUpdateState(state.id);
+                          if (e.key === 'Escape') setEditingStateId(null);
+                        }}
+                      />
+                      <button
+                        onClick={() => handleUpdateState(state.id)}
+                        className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setEditingStateId(null)}
+                        className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : isConfirmDelete ? (
+                    <div className="flex-1 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+                      <span className="text-[10px] text-rose-600 font-extrabold uppercase animate-pulse">Delete?</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleDeleteState(state.id, state.name)}
+                          disabled={deleting}
+                          className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-extrabold rounded transition-all"
+                        >
+                          {deleting ? '...' : 'Yes'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDeleteConfirmId(null);
+                            setDeleteConfirmType(null);
+                          }}
+                          className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 text-[10px] font-extrabold rounded transition-all"
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className={`text-xs font-bold truncate ${isSelected ? 'text-blue-800' : 'text-slate-700'}`}>
+                        {state.name}
+                      </span>
+                      <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => {
+                            setEditingStateId(state.id);
+                            setEditingStateName(state.name);
+                            setDeleteConfirmId(null);
+                            setDeleteConfirmType(null);
+                          }}
+                          className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDeleteConfirmId(state.id);
+                            setDeleteConfirmType('state');
+                            setEditingStateId(null);
+                          }}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+            {states.length === 0 && (
+              <p className="text-center py-8 text-slate-400 text-xs font-medium">No states added yet.</p>
+            )}
+          </div>
+        )}
+
+        <form onSubmit={handleAddState} className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+          <input
+            type="text"
+            required
+            placeholder="New State (e.g. Gujarat)"
+            value={newStateName}
+            onChange={e => setNewStateName(e.target.value)}
+            className={inputCls}
+          />
+          <button
+            type="submit"
+            disabled={savingState}
+            className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shrink-0 shadow-sm"
+          >
+            {savingState ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          </button>
+        </form>
+      </div>
+
+      {/* 2. Cities column */}
+      <div className={cardCls}>
+        <div className="pb-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${selectedStateId ? 'bg-indigo-600 animate-pulse' : 'bg-slate-300'}`} />
+            <h3 className="font-extrabold text-slate-800 text-sm tracking-wide uppercase truncate">
+              2. Cities {selectedState ? `(${selectedState.name})` : ''}
+            </h3>
+          </div>
+          {selectedStateId && (
+            <span className="text-[11px] bg-slate-100 border border-slate-200 text-slate-600 font-bold px-2 py-0.5 rounded-full shrink-0">
+              {cities.length} total
+            </span>
+          )}
+        </div>
+
+        {!selectedStateId ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-3 bg-slate-50 border border-slate-100 rounded-full text-slate-400 mb-3 shadow-inner">
+              <MapPin className="w-6 h-6" />
+            </div>
+            <p className="text-slate-500 text-xs font-bold">No State Selected</p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Select a state from the first column to manage its cities.</p>
+          </div>
+        ) : loadingCities ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <Loader2 className="w-6 h-6 text-indigo-600 animate-spin mb-2" />
+            <p className="text-slate-400 text-xs font-semibold">Loading cities...</p>
+          </div>
+        ) : (
+          <>
+            <div className={listContainerCls}>
+              {cities.map(city => {
+                const isSelected = selectedCityId === city.id;
+                const isEditing = editingCityId === city.id;
+                const isConfirmDelete = deleteConfirmId === city.id && deleteConfirmType === 'city';
+
+                return (
+                  <div
+                    key={city.id}
+                    onClick={() => {
+                      if (!isEditing && !isConfirmDelete) {
+                        setSelectedCityId(city.id);
+                      }
+                    }}
+                    className={`${itemCls} ${
+                      isSelected
+                        ? 'bg-indigo-50/80 border-indigo-300 shadow-sm'
+                        : 'bg-white hover:bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    {isEditing ? (
+                      <div className="flex-1 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="text"
+                          value={editingCityName}
+                          onChange={e => setEditingCityName(e.target.value)}
+                          className="flex-1 px-2.5 py-1 text-xs border border-indigo-400 focus:outline-none rounded font-semibold bg-white text-slate-900"
+                          autoFocus
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleUpdateCity(city.id);
+                            if (e.key === 'Escape') setEditingCityId(null);
+                          }}
+                        />
+                        <button
+                          onClick={() => handleUpdateCity(city.id)}
+                          className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setEditingCityId(null)}
+                          className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : isConfirmDelete ? (
+                      <div className="flex-1 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+                        <span className="text-[10px] text-rose-600 font-extrabold uppercase animate-pulse">Delete?</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeleteCity(city.id, city.name)}
+                            disabled={deleting}
+                            className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-extrabold rounded transition-all"
+                          >
+                            {deleting ? '...' : 'Yes'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteConfirmId(null);
+                              setDeleteConfirmType(null);
+                            }}
+                            className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 text-[10px] font-extrabold rounded transition-all"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span className={`text-xs font-bold truncate ${isSelected ? 'text-indigo-800' : 'text-slate-700'}`}>
+                          {city.name}
+                        </span>
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => {
+                              setEditingCityId(city.id);
+                              setEditingCityName(city.name);
+                              setDeleteConfirmId(null);
+                              setDeleteConfirmType(null);
+                            }}
+                            className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteConfirmId(city.id);
+                              setDeleteConfirmType('city');
+                              setEditingCityId(null);
+                            }}
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              {cities.length === 0 && (
+                <p className="text-center py-8 text-slate-400 text-xs font-medium">No cities added in this state yet.</p>
+              )}
+            </div>
+
+            <form onSubmit={handleAddCity} className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <input
+                type="text"
+                required
+                placeholder="New City (e.g. Ahmedabad)"
+                value={newCityName}
+                onChange={e => setNewCityName(e.target.value)}
+                className={inputCls}
+              />
+              <button
+                type="submit"
+                disabled={savingCity}
+                className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all shrink-0 shadow-sm"
+              >
+                {savingCity ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+
+      {/* 3. Areas column */}
+      <div className={cardCls}>
+        <div className="pb-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${selectedCityId ? 'bg-violet-600 animate-pulse' : 'bg-slate-300'}`} />
+            <h3 className="font-extrabold text-slate-800 text-sm tracking-wide uppercase truncate">
+              3. Areas {selectedCity ? `(${selectedCity.name})` : ''}
+            </h3>
+          </div>
+          {selectedCityId && (
+            <span className="text-[11px] bg-slate-100 border border-slate-200 text-slate-600 font-bold px-2 py-0.5 rounded-full shrink-0">
+              {areas.length} total
+            </span>
+          )}
+        </div>
+
+        {!selectedCityId ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <div className="p-3 bg-slate-50 border border-slate-100 rounded-full text-slate-400 mb-3 shadow-inner">
+              <Building className="w-6 h-6" />
+            </div>
+            <p className="text-slate-500 text-xs font-bold">No City Selected</p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-[200px]">Select a city from the second column to manage its areas.</p>
+          </div>
+        ) : loadingAreas ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <Loader2 className="w-6 h-6 text-violet-600 animate-spin mb-2" />
+            <p className="text-slate-400 text-xs font-semibold">Loading areas...</p>
+          </div>
+        ) : (
+          <>
+            <div className={listContainerCls}>
+              {areas.map(area => {
+                const isEditing = editingAreaId === area.id;
+                const isConfirmDelete = deleteConfirmId === area.id && deleteConfirmType === 'area';
+
+                return (
+                  <div
+                    key={area.id}
+                    className={`${itemCls} bg-white hover:bg-slate-50 border-slate-200 cursor-default`}
+                  >
+                    {isEditing ? (
+                      <div className="flex-1 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="text"
+                          value={editingAreaName}
+                          onChange={e => setEditingAreaName(e.target.value)}
+                          className="flex-1 px-2.5 py-1 text-xs border border-violet-400 focus:outline-none rounded font-semibold bg-white text-slate-900"
+                          autoFocus
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleUpdateArea(area.id);
+                            if (e.key === 'Escape') setEditingAreaId(null);
+                          }}
+                        />
+                        <button
+                          onClick={() => handleUpdateArea(area.id)}
+                          className="p-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setEditingAreaId(null)}
+                          className="p-1 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : isConfirmDelete ? (
+                      <div className="flex-1 flex items-center justify-between gap-1" onClick={e => e.stopPropagation()}>
+                        <span className="text-[10px] text-rose-600 font-extrabold uppercase animate-pulse">Delete?</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDeleteArea(area.id, area.name)}
+                            disabled={deleting}
+                            className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-extrabold rounded transition-all"
+                          >
+                            {deleting ? '...' : 'Yes'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteConfirmId(null);
+                              setDeleteConfirmType(null);
+                            }}
+                            className="px-2 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 text-[10px] font-extrabold rounded transition-all"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-xs font-bold truncate text-slate-700">
+                          {area.name}
+                        </span>
+                        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => {
+                              setEditingAreaId(area.id);
+                              setEditingAreaName(area.name);
+                              setDeleteConfirmId(null);
+                              setDeleteConfirmType(null);
+                            }}
+                            className="p-1 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded transition-colors"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteConfirmId(area.id);
+                              setDeleteConfirmType('area');
+                              setEditingAreaId(null);
+                            }}
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+              {areas.length === 0 && (
+                <p className="text-center py-8 text-slate-400 text-xs font-medium">No areas added in this city yet.</p>
+              )}
+            </div>
+
+            <form onSubmit={handleAddArea} className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <input
+                type="text"
+                required
+                placeholder="New Area (e.g. Satellite)"
+                value={newAreaName}
+                onChange={e => setNewAreaName(e.target.value)}
+                className={inputCls}
+              />
+              <button
+                type="submit"
+                disabled={savingArea}
+                className="p-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-all shrink-0 shadow-sm"
+              >
+                {savingArea ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 interface SettingItem {
   id: string;
@@ -203,6 +1009,7 @@ export default function SettingsManager() {
       case 'city_area': return 'City Areas';
       case 'budget_range': return 'Budget / Price Ranges';
       case 'lead_status': return 'Lead Statuses';
+      case 'location_settings': return 'Location Settings';
       default: return category;
     }
   };
@@ -213,12 +1020,13 @@ export default function SettingsManager() {
       case 'city_area': return MapPin;
       case 'budget_range': return DollarSign;
       case 'lead_status': return Activity;
+      case 'location_settings': return Globe;
       default: return Settings;
     }
   };
 
   const filteredSettings = settingsList.filter(s => s.category === activeTab);
-  const categories = ['property_type', 'city_area', 'budget_range', 'lead_status'];
+  const categories = ['property_type', 'budget_range', 'lead_status', 'location_settings'];
 
   const inputCls = 'w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-200';
 
@@ -283,6 +1091,9 @@ export default function SettingsManager() {
       )}
 
       {/* Main Panel */}
+      {activeTab === 'location_settings' ? (
+        <LocationSettingsManager setError={setError} setSuccess={setSuccess} />
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         {/* Left: Options List */}
@@ -574,6 +1385,7 @@ export default function SettingsManager() {
         </div>
 
       </div>
+      )}
     </div>
   );
 }

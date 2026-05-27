@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   MapPin, Building, DollarSign, Search, Filter, X,
   CheckCircle2, Loader2, Phone, ChevronRight, Home,
-  Layers, ArrowDown, User,
+  Layers, ArrowDown, User, Globe
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { LOCATION_DATA, getCities, getAreas } from '@/lib/locationData';
 
 interface Listing {
   id: string;
@@ -48,6 +47,7 @@ const typeColors: Record<string, { bg: string; text: string; dot: string }> = {
   commercial: { bg: 'bg-slate-100',  text: 'text-slate-700',  dot: 'bg-slate-500'  },
   farmhouse:  { bg: 'bg-emerald-50', text: 'text-emerald-700',dot: 'bg-emerald-500'},
   bungalow:   { bg: 'bg-rose-50',    text: 'text-rose-700',   dot: 'bg-rose-500'   },
+  pg_guest_house: { bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-500' },
 };
 const defaultColor = { bg: 'bg-indigo-50', text: 'text-indigo-700', dot: 'bg-indigo-500' };
 
@@ -149,7 +149,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
               Just enter your name and number — everything else is auto-filled ✅
             </p>
 
-            {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5">{err}</p>}
+            {err && <p className="text-xs text-rose-600 font-medium bg-rose-50 border border-rose-200 rounded-lg p-2.5 mb-2">{err}</p>}
 
             {/* Name */}
             <div className="space-y-1.5">
@@ -287,11 +287,79 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
   const [err, setErr] = useState('');
   const [phoneErr, setPhoneErr] = useState('');
 
+  // Location database variables
+  const [dbStates, setDbStates] = useState<{ id: string; name: string }[]>([]);
+  const [dbCities, setDbCities] = useState<{ id: string; name: string }[]>([]);
+  const [dbAreas, setDbAreas] = useState<{ id: string; name: string }[]>([]);
+
   const propertyTypes = dbOptions.filter(o => o.category === 'property_type');
   const budgetRanges = dbOptions.filter(o => o.category === 'budget_range');
 
-  const availableCities = state ? getCities(state) : [];
-  const availableAreas = state && city ? getAreas(state, city) : [];
+  // Load states on mount
+  useEffect(() => {
+    const loadStates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('states')
+          .select('id, name')
+          .order('name');
+        if (!error && data) setDbStates(data);
+      } catch (e) {
+        console.error('Error loading states:', e);
+      }
+    };
+    loadStates();
+  }, []);
+
+  // Load cities on state change
+  useEffect(() => {
+    if (!state) {
+      setDbCities([]);
+      setDbAreas([]);
+      return;
+    }
+    const loadCities = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cities')
+          .select('id, name')
+          .eq('state_id', state)
+          .order('name');
+        if (!error && data) {
+          setDbCities(data);
+          setCity('');
+          setArea('');
+        }
+      } catch (e) {
+        console.error('Error loading cities:', e);
+      }
+    };
+    loadCities();
+  }, [state]);
+
+  // Load areas on city change
+  useEffect(() => {
+    if (!city) {
+      setDbAreas([]);
+      return;
+    }
+    const loadAreas = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('areas')
+          .select('id, name')
+          .eq('city_id', city)
+          .order('name');
+        if (!error && data) {
+          setDbAreas(data);
+          setArea('');
+        }
+      } catch (e) {
+        console.error('Error loading areas:', e);
+      }
+    };
+    loadAreas();
+  }, [city]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,17 +374,22 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
     if (!city) { setErr('Please select a city.'); return; }
     if (!area) { setErr('Please select an area.'); return; }
 
+    const selectedStateName = dbStates.find(s => s.id === state)?.name || '';
+    const selectedCityName = dbCities.find(c => c.id === city)?.name || '';
+    const selectedAreaName = dbAreas.find(a => a.id === area)?.name || '';
+    const locationString = `${selectedAreaName}, ${selectedCityName}, ${selectedStateName}`;
+
     setLoading(true);
     try {
       const { error } = await supabase.from('buyers_demand').insert({
         name: name.trim(),
         phone: phone.trim(),
         property_type: propType || 'any',
-        state: state,
-        city: city,
-        area: `${area}, ${city}, ${state}`,
+        state: selectedStateName,
+        city: selectedCityName,
+        area: locationString,
         budget: budget || 'any',
-        notes: `Help needed: Looking for ${propType || 'any'} in ${area}, ${city}, ${state}. Budget: ${budget || 'flexible'}.`,
+        notes: `Help needed: Looking for ${propType || 'any'} in ${selectedAreaName}, ${selectedCityName}, ${selectedStateName}. Budget: ${budget || 'flexible'}.`,
         status: 'new_lead',
       });
       if (error) throw error;
@@ -329,12 +402,13 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
   };
 
   if (done) {
+    const selectedCityName = dbCities.find(c => c.id === city)?.name || '';
     return (
       <div className="text-center py-8 space-y-3">
         <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
         <h4 className="font-extrabold text-slate-900 text-lg">Request Received! ✅</h4>
         <p className="text-slate-500 text-sm font-medium">
-          Our team will find the best properties for you in {city} and contact you shortly.
+          Our team will find the best properties for you in {selectedCityName} and contact you shortly.
         </p>
       </div>
     );
@@ -413,11 +487,11 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={state}
-            onChange={e => { setState(e.target.value); setCity(''); setArea(''); }}
+            onChange={e => setState(e.target.value)}
             className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50"
           >
             <option value="">State</option>
-            {LOCATION_DATA.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            {dbStates.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
 
@@ -428,12 +502,12 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
           </label>
           <select
             value={city}
-            onChange={e => { setCity(e.target.value); setArea(''); }}
+            onChange={e => setCity(e.target.value)}
             disabled={!state}
             className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
             <option value="">City</option>
-            {availableCities.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            {dbCities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
 
@@ -449,7 +523,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
             className="w-full border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 rounded-xl px-4 py-2.5 sm:py-3 text-sm outline-none transition-all font-medium bg-white appearance-none disabled:opacity-50 disabled:bg-slate-50"
           >
             <option value="">Area</option>
-            {availableAreas.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+            {dbAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
 
@@ -583,8 +657,6 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
           ))}
         </div>
       )}
-
-
 
       {/* Interest Modal */}
       {activeListing && (

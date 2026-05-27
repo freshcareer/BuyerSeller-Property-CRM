@@ -52,6 +52,12 @@ export default async function Home() {
             </span>
           </div>
 
+          {/* Contact Details in Header */}
+          <div className="hidden lg:flex items-center gap-6 text-xs text-slate-655 font-medium">
+            <span className="flex items-center gap-1">📞 +91 7692885502, 8488075196</span>
+            <span className="flex items-center gap-1">✉️ freshcareer4@gmail.com</span>
+          </div>
+
           {/* Right side */}
           <div className="flex items-center gap-2">
             <Link
@@ -78,11 +84,16 @@ export default async function Home() {
       )}
 
       {/* ── Footer ─────────────────────────────────────────────────────── */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-auto text-center">
+      <footer className="border-t border-slate-200 bg-white py-8 mt-auto text-center space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs sm:text-sm text-slate-500 font-medium">
+          <span className="flex items-center gap-1">📞 Phone: +91 7692885502, 8488075196</span>
+          <span className="hidden sm:inline">|</span>
+          <span className="flex items-center gap-1">✉️ Email: freshcareer4@gmail.com</span>
+        </div>
         <p className="text-sm text-slate-400 font-medium">
-          © {new Date().getFullYear()} BuyerSeller Property CRM
+          © {new Date().getFullYear()} BuyerSeller Property CRM. All rights reserved.
         </p>
-        <p className="text-xs text-slate-400 font-medium mt-1">
+        <p className="text-xs text-slate-400 font-medium">
           Seller contact details are never shown publicly &nbsp;·&nbsp;
           <Link href="/login" className="text-blue-600 hover:underline">Admin Login</Link>
         </p>
