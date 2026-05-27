@@ -121,13 +121,14 @@ export default function OperationsCalendar() {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center py-24 bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl shadow-xl shadow-slate-900/5">
-          <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full mb-4 shadow-inner">
-             <Calendar className="w-10 h-10 text-slate-400" />
+        <div className="flex flex-col items-center justify-center text-center py-24 px-4 bg-gradient-to-br from-white to-emerald-50/30 border border-emerald-100/50 rounded-3xl shadow-xl shadow-slate-900/5 relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-48 h-48 bg-emerald-400/5 rounded-full blur-3xl" />
+          <div className="p-6 bg-white rounded-full mb-6 border border-slate-100 shadow-sm relative z-10">
+             <Calendar className="w-12 h-12 text-emerald-400" />
           </div>
-          <h3 className="text-xl font-extrabold text-slate-900 mb-2">No upcoming follow-ups</h3>
-          <p className="text-slate-500 max-w-sm mx-auto text-sm font-medium">
-            When you schedule a follow up date on a buyer or seller, it will appear here.
+          <h3 className="text-2xl font-extrabold text-slate-900 mb-3 relative z-10">Your calendar is completely clear!</h3>
+          <p className="text-slate-500 max-w-md mx-auto text-sm font-medium relative z-10 leading-relaxed">
+            When you schedule a follow up date on a buyer or seller profile, it will automatically appear here so you never miss a beat.
           </p>
         </div>
       ) : (

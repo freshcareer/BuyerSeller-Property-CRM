@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BuyerSeller Property CRM | Lead Collection Engine",
+  title: "PropConnect | Real Estate Platform",
   description: "Secure, dynamic real estate matching portal for premium buyers and sellers.",
 };
 

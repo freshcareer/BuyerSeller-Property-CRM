@@ -73,6 +73,7 @@ export default function AdminLayout({
 
   const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'User Management', href: '/admin/users', icon: Users },
     { name: 'Smart Matches', href: '/admin/matches', icon: Zap },
     { name: 'Buyers Demand', href: '/admin/buyers', icon: Users },
     { name: 'Sellers Inventory', href: '/admin/sellers', icon: Building2 },
@@ -109,7 +110,7 @@ export default function AdminLayout({
           <div className="p-2 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-xl shadow-lg shadow-blue-500/30">
             <LayoutDashboard className="w-5 h-5 text-white" />
           </div>
-          <span className="font-extrabold text-lg text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">CRM Control</span>
+          <span className="font-extrabold text-lg text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">PropConnect Admin</span>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -140,7 +141,7 @@ export default function AdminLayout({
         <div className="fixed inset-0 z-50 flex md:hidden bg-slate-900/50 backdrop-blur-sm">
           <div className="w-64 bg-white border-r border-slate-200 p-5 flex flex-col space-y-6 animate-in slide-in-from-left duration-300 shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <span className="font-bold text-lg text-slate-900">CRM Control</span>
+              <span className="font-bold text-lg text-slate-900">PropConnect Admin</span>
               <button onClick={() => setSidebarOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg">
                 <X className="w-5 h-5 text-slate-500" />
               </button>
@@ -183,7 +184,7 @@ export default function AdminLayout({
             >
               <Menu className="w-6 h-6" />
             </button>
-            <span className="md:hidden font-bold text-lg text-slate-900">CRM Control</span>
+            <span className="md:hidden font-bold text-lg text-slate-900">PropConnect Admin</span>
           </div>
 
           <div className="flex items-center gap-4">

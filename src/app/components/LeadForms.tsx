@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import {
   CheckCircle2, ChevronRight, Loader2, User, Phone, Mail,
   Building, MapPin, DollarSign, FileText, Globe, Home, AlertCircle, Edit, Trash2,
+  Bed, Bath, Compass, Key, Tag, Car, Expand, Armchair, Layers, Clock,
 } from 'lucide-react';
 
 interface SettingOption {
@@ -18,6 +19,12 @@ interface LeadFormsProps {
   defaultTab?: 'buy' | 'sell';
   hideTabs?: boolean;
 }
+
+// ── Constants for Quick Select ────────────────────────────────────────────────
+const PARKING_OPTIONS = ['None', '1 Covered', '2 Covered', '3+ Covered', '1 Open', '2 Open'];
+const ADDITIONAL_SPACES_OPTIONS = ['Pooja Room', 'Servant Room', 'Study Room', 'Store Room', 'Balcony', 'Terrace'];
+const TAG_OPTIONS = ['Vastu Compliant', 'Gated Society', 'Corner Property', 'Park Facing', 'Main Road Facing', 'Premium Interiors', 'Newly Renovated'];
+const AREA_SUGGESTIONS = ['500 Sq.Ft.', '1000 Sq.Ft.', '1500 Sq.Ft.', '2000 Sq.Ft.', '50 Sq.Yd.', '100 Sq.Yd.', '200 Sq.Yd.'];
 
 // ── Validation Rules ──────────────────────────────────────────────────────────
 
@@ -55,6 +62,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Dynamic Location states
   const [dbStates, setDbStates] = useState<{ id: string; name: string }[]>([]);
@@ -72,11 +80,23 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     name: '',
     phone: '',
     email: '',
-    propertyType: '',
+    propertyType: 'apartment',
     state: '',
     city: '',
     area: '',
     budgetOrPrice: '',
+    bedrooms: '3',
+    bathrooms: '3',
+    builtupArea: '',
+    additionalSpaces: '',
+    possessionStatus: 'ready_to_move',
+    facing: '',
+    parking: '',
+    description: '',
+    tags: '',
+    furnishing: 'semi_furnished',
+    balconies: '',
+    propertyAge: '',
     notes: '',
   });
 
@@ -87,6 +107,22 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   useEffect(() => {
     const fetchStates = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUserId(session.user.id);
+          // Auto-fill email and phone if they have it and it's not set
+          const profileEmail = session.user.email || session.user.user_metadata?.email || '';
+          const profilePhone = session.user.phone || session.user.user_metadata?.phone || '';
+          const profileName = session.user.user_metadata?.full_name || '';
+
+          setFormData(prev => ({ 
+            ...prev, 
+            email: prev.email || profileEmail,
+            phone: prev.phone || profilePhone,
+            name: prev.name || profileName
+          }));
+        }
+
         const { data, error } = await supabase
           .from('states')
           .select('id, name')
@@ -240,6 +276,18 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         city: cityId,
         area: areaId,
         budgetOrPrice: item.price || item.budget,
+        bedrooms: item.bedrooms || '',
+        bathrooms: item.bathrooms || '',
+        builtupArea: item.builtup_area || '',
+        additionalSpaces: item.additional_spaces || '',
+        possessionStatus: item.possession_status || '',
+        facing: item.facing || '',
+        parking: item.parking || '',
+        description: item.description || '',
+        tags: item.tags || '',
+        furnishing: item.furnishing || '',
+        balconies: item.balconies || '',
+        propertyAge: item.property_age || '',
         notes: item.notes || '',
       });
       setTouched({});
@@ -281,7 +329,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
   const cancelEdit = () => {
     setEditModeId(null);
-    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', notes: '' });
+    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '' });
     setTouched({});
     setSubmitError(null);
   };
@@ -296,8 +344,33 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   // Supabase system_settings options
   const propertyTypes = options.filter((o) => o.category === 'property_type');
   const budgetRanges = options.filter((o) => o.category === 'budget_range');
+  const bedroomOptions = options.filter((o) => o.category === 'bedrooms');
+  const bathroomOptions = options.filter((o) => o.category === 'bathrooms');
+  const facingOptions = options.filter((o) => o.category === 'facing');
+  const possessionOptions = options.filter((o) => o.category === 'possession_status');
+  const furnishingOptions = options.filter((o) => o.category === 'furnishing');
+  const balconyOptions = options.filter((o) => o.category === 'balconies');
+  const propertyAgeOptions = options.filter((o) => o.category === 'property_age');
 
   const touch = (field: FieldKey) => setTouched((prev) => ({ ...prev, [field]: true }));
+
+  // ── Quick Select Handlers ──────────────────────────────────────────────────
+  const toggleMultiSelect = (field: 'additionalSpaces' | 'tags', value: string) => {
+    const current = formData[field];
+    const array = current ? current.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (array.includes(value)) {
+      setFormData(prev => ({ ...prev, [field]: array.filter(v => v !== value).join(', ') }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: [...array, value].join(', ') }));
+    }
+  };
+
+  const selectSingle = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field in validators) {
+      touch(field as FieldKey);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -362,8 +435,21 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           city: selectedCity,
           area: locationString,
           budget: formData.budgetOrPrice,
+          bedrooms: formData.bedrooms || null,
+          bathrooms: formData.bathrooms || null,
+          builtup_area: formData.builtupArea.trim() || null,
+          additional_spaces: formData.additionalSpaces.trim() || null,
+          possession_status: formData.possessionStatus || null,
+          facing: formData.facing || null,
+          parking: formData.parking.trim() || null,
+          description: formData.description.trim() || null,
+          tags: formData.tags.trim() || null,
+          furnishing: formData.furnishing || null,
+          balconies: formData.balconies || null,
+          property_age: formData.propertyAge || null,
           notes: formData.notes.trim() || null,
           status: 'new_lead',
+          user_id: userId,
         });
         if (insertError) throw insertError;
       } else {
@@ -376,7 +462,20 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           city: selectedCity,
           area: locationString,
           price: formData.budgetOrPrice,
+          bedrooms: formData.bedrooms || null,
+          bathrooms: formData.bathrooms || null,
+          builtup_area: formData.builtupArea.trim() || null,
+          additional_spaces: formData.additionalSpaces.trim() || null,
+          possession_status: formData.possessionStatus || null,
+          facing: formData.facing || null,
+          parking: formData.parking.trim() || null,
+          description: formData.description.trim() || null,
+          tags: formData.tags.trim() || null,
+          furnishing: formData.furnishing || null,
+          balconies: formData.balconies || null,
+          property_age: formData.propertyAge || null,
           notes: formData.notes.trim() || null,
+          user_id: userId,
         };
 
         if (editModeId) {
@@ -402,7 +501,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       }
 
       setSuccess(true);
-      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', notes: '' });
+      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '' });
       setTouched({});
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -589,32 +688,42 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         </div>
 
         {/* Property Type & Budget */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
             <label className={labelCls}>
               <Home className="w-3.5 h-3.5" /> Property Type <span className="text-rose-500">*</span>
             </label>
-            <select
-              name="propertyType" value={formData.propertyType} onChange={handleChange} onBlur={() => handleBlur('propertyType')}
-              className={getSelectCls('propertyType')}
-            >
-              <option value="" disabled className="text-slate-400">Select property type</option>
-              {propertyTypes.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
-            </select>
+            <div className="flex flex-wrap gap-2">
+              {propertyTypes.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => selectSingle('propertyType', opt.value)}
+                  className={`flex-1 min-w-[120px] px-3 py-2 text-sm font-semibold rounded-xl border-2 transition-all ${formData.propertyType === opt.value ? 'bg-indigo-50 border-indigo-600 text-indigo-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}
+                >
+                  {opt.display_name}
+                </button>
+              ))}
+            </div>
             {renderFieldError('propertyType')}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             <label className={labelCls}>
               <DollarSign className="w-3.5 h-3.5" /> {activeTab === 'buy' ? 'Budget' : 'Expected Price'} <span className="text-rose-500">*</span>
             </label>
-            <select
-              name="budgetOrPrice" value={formData.budgetOrPrice} onChange={handleChange} onBlur={() => handleBlur('budgetOrPrice')}
-              className={getSelectCls('budgetOrPrice')}
-            >
-              <option value="" disabled className="text-slate-400">Select range</option>
-              {budgetRanges.map(opt => <option key={opt.value} value={opt.value}>{opt.display_name}</option>)}
-            </select>
+            <div className="flex flex-wrap gap-1.5">
+              {budgetRanges.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => selectSingle('budgetOrPrice', opt.value)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg border-2 transition-all ${formData.budgetOrPrice === opt.value ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'}`}
+                >
+                  {opt.display_name}
+                </button>
+              ))}
+            </div>
             {renderFieldError('budgetOrPrice')}
           </div>
         </div>
@@ -704,25 +813,180 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           </div>
         </div>
 
-        {/* Notes */}
-        <div className="space-y-1">
-          <label className={labelCls}>
-            <FileText className="w-3.5 h-3.5" /> Additional Details
-            <span className="text-slate-400 font-normal normal-case tracking-normal ml-1">(optional)</span>
-          </label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            placeholder={
-              activeTab === 'buy'
-                ? 'Specify preferences e.g. 3 BHK, east-facing, corner plot, vastu preferred...'
-                : 'Describe the property e.g. age, floors, parking, furnishing, loan clear...'
-            }
-            rows={2}
-            className={`w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 resize-none`}
-          />
+        {/* Advanced Property Details */}
+        <div className="space-y-4 pt-2 border-t border-slate-100">
+          <div className="flex items-center gap-2 mb-2">
+            <FileText className="w-4 h-4 text-indigo-600" />
+            <span className="text-sm font-extrabold text-slate-800">Advanced Details (Optional)</span>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className={labelCls}><Bed className="w-3.5 h-3.5" /> Bedrooms</label>
+              <div className="flex flex-wrap gap-1.5">
+                {bedroomOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('bedrooms', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.bedrooms === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace(' Bedrooms', '').replace(' Bedroom', '').replace('5+ ', '5+')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Bath className="w-3.5 h-3.5" /> Bathrooms</label>
+              <div className="flex flex-wrap gap-1.5">
+                {bathroomOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('bathrooms', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.bathrooms === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace(' Bathrooms', '').replace(' Bathroom', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Expand className="w-3.5 h-3.5" /> Built-up Area</label>
+              <input type="text" name="builtupArea" value={formData.builtupArea} onChange={handleChange} placeholder="e.g. 1500 Sq.Ft." className={getInputCls('builtupArea' as any)} />
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {AREA_SUGGESTIONS.map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setFormData(p => ({...p, builtupArea: s}))}
+                    className={`px-2 py-1 text-xs font-medium rounded border transition-colors ${formData.builtupArea === s ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Compass className="w-3.5 h-3.5" /> Facing</label>
+              <div className="flex flex-wrap gap-1.5">
+                {facingOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('facing', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.facing === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace(' Facing', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Key className="w-3.5 h-3.5" /> Possession</label>
+              <div className="flex flex-wrap gap-1.5">
+                {possessionOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('possessionStatus', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.possessionStatus === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Car className="w-3.5 h-3.5" /> Parking</label>
+              <div className="flex flex-wrap gap-1.5">
+                {PARKING_OPTIONS.map(opt => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => selectSingle('parking', opt)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.parking === opt ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Armchair className="w-3.5 h-3.5" /> Furnishing</label>
+              <div className="flex flex-wrap gap-1.5">
+                {furnishingOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('furnishing', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.furnishing === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace('-Furnished', '').replace(' Furnished', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Layers className="w-3.5 h-3.5" /> Balconies</label>
+              <div className="flex flex-wrap gap-1.5">
+                {balconyOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('balconies', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.balconies === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace(' Balconies', '').replace(' Balcony', '')}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}><Clock className="w-3.5 h-3.5" /> Property Age</label>
+              <div className="flex flex-wrap gap-1.5">
+                {propertyAgeOptions.map(opt => (
+                  <button key={opt.value} type="button" onClick={() => selectSingle('propertyAge', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.propertyAge === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                  >
+                    {opt.display_name.replace(' Years Old', ' Yrs').replace('New Construction', 'New')}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="space-y-1">
+               <label className={labelCls}><Home className="w-3.5 h-3.5" /> Additional Spaces</label>
+               <div className="flex flex-wrap gap-1.5 mb-1.5">
+                 {ADDITIONAL_SPACES_OPTIONS.map(opt => {
+                   const isSelected = formData.additionalSpaces.includes(opt);
+                   return (
+                     <button
+                       key={opt}
+                       type="button"
+                       onClick={() => toggleMultiSelect('additionalSpaces', opt)}
+                       className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'}`}
+                     >
+                       {isSelected && <CheckCircle2 className="w-3 h-3 inline-block mr-1" />}
+                       {opt}
+                     </button>
+                   );
+                 })}
+               </div>
+               <input type="text" name="additionalSpaces" value={formData.additionalSpaces} onChange={handleChange} placeholder="Custom (comma separated)" className={getInputCls('additionalSpaces' as any) + ' mt-1'} />
+             </div>
+             <div className="space-y-1">
+               <label className={labelCls}><Tag className="w-3.5 h-3.5" /> Highlight Tags</label>
+               <div className="flex flex-wrap gap-1.5 mb-1.5">
+                 {TAG_OPTIONS.map(opt => {
+                   const isSelected = formData.tags.includes(opt);
+                   return (
+                     <button
+                       key={opt}
+                       type="button"
+                       onClick={() => toggleMultiSelect('tags', opt)}
+                       className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'}`}
+                     >
+                       {isSelected && <CheckCircle2 className="w-3 h-3 inline-block mr-1" />}
+                       {opt}
+                     </button>
+                   );
+                 })}
+               </div>
+               <input type="text" name="tags" value={formData.tags} onChange={handleChange} placeholder="Custom (comma separated)" className={getInputCls('tags' as any) + ' mt-1'} />
+             </div>
+          </div>
+          
+          <div className="space-y-1">
+            <label className={labelCls}><FileText className="w-3.5 h-3.5" /> Public Description</label>
+            <textarea name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="Write a detailed description of the property to show on the public listing..." className="w-full bg-white border border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 rounded-xl px-4 py-3 placeholder-slate-400 outline-none transition-all duration-200 resize-none" />
+          </div>
         </div>
+
 
         {/* Submit */}
         <button
@@ -731,11 +995,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-blue-600/20"
         >
           {loading ? (
-            <><Loader2 className="w-5 h-5 animate-spin" /> Submitting Request...</>
+            <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
           ) : activeTab === 'buy' ? (
-            'Submit Buying Requirement'
+            'Let\'s Find Your Dream Home Together'
           ) : (
-            'Submit Property Listing'
+            'Help Me Sell My Property Safely'
           )}
         </button>
       </form>

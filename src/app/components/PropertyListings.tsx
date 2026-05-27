@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import {
   MapPin, Building, DollarSign, Search, Filter, X,
   CheckCircle2, Loader2, Phone, ChevronRight, Home,
-  Layers, ArrowDown, User, Globe
+  Layers, ArrowDown, User, Globe, Bed, Bath, Expand,
+  Key, Compass, Tag, Car, Heart
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -16,6 +17,15 @@ interface Listing {
   area: string;
   price: string;
   notes: string | null;
+  bedrooms?: string | null;
+  bathrooms?: string | null;
+  builtup_area?: string | null;
+  additional_spaces?: string | null;
+  possession_status?: string | null;
+  facing?: string | null;
+  parking?: string | null;
+  description?: string | null;
+  tags?: string | null;
   created_at: string;
 }
 
@@ -60,6 +70,19 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
   const [done, setDone] = useState(false);
   const [err, setErr] = useState('');
   const [phoneErr, setPhoneErr] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUserId(session.user.id);
+        setName(session.user.user_metadata?.full_name || '');
+        if (session.user.user_metadata?.phone || session.user.phone) {
+          setPhone(session.user.user_metadata?.phone || session.user.phone || '');
+        }
+      }
+    });
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +106,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
         budget: listing.price,
         notes: `Interested in listing: ${fmtPropType(listing.property_type)} at ${fmtArea(listing.area)}. Listing ID: ${listing.id}`,
         status: 'new_lead',
+        user_id: userId,
       });
       if (error) throw error;
       setDone(true);
@@ -218,46 +242,157 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
 
 // ── Property Card ─────────────────────────────────────────────────────────────
 
-function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: () => void }) {
+function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleWatchlist }: { listing: Listing; onInterest: () => void; dbOptions: SettingOption[]; isWatchlisted: boolean; onToggleWatchlist: (e: React.MouseEvent) => void }) {
   const color = typeColors[listing.property_type] || defaultColor;
 
+  const getOptionName = (cat: string, val: string | null | undefined) => {
+    if (!val) return null;
+    const opt = dbOptions.find(o => o.category === cat && o.value === val);
+    return opt ? opt.display_name : val;
+  };
+
+  const beds = getOptionName('bedrooms', listing.bedrooms);
+  const baths = getOptionName('bathrooms', listing.bathrooms);
+  const facing = getOptionName('facing', listing.facing);
+  const poss = getOptionName('possession_status', listing.possession_status);
+
+  // Time ago formatter
+  const timeAgo = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff === 0) return 'Today';
+    if (diff === 1) return '1 day ago';
+    return `${diff} days ago`;
+  };
+
   return (
-    <button
+    <div
       onClick={onInterest}
-      className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInterest(); } }}
+      className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
     >
       {/* Color top bar */}
       <div className={`h-1.5 w-full ${color.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
         {/* Type badge */}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 relative z-10">
           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color.bg} ${color.text}`}>
             <Building className="w-3 h-3" />
             {fmtPropType(listing.property_type)}
           </span>
-          <span className="text-xs text-slate-400 font-medium">🔒 Private</span>
-        </div>
-
-        {/* Location */}
-        <div className="flex items-start gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-slate-800 text-sm leading-snug">{fmtArea(listing.area)}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{listing.city}, {listing.state}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">🔒 Private</span>
+            <button
+              onClick={onToggleWatchlist}
+              className={`p-1.5 rounded-full transition-colors ${isWatchlisted ? 'bg-rose-50 text-rose-500 hover:bg-rose-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+              title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
+            >
+              <Heart className={`w-4 h-4 ${isWatchlisted ? 'fill-current' : ''}`} />
+            </button>
           </div>
         </div>
 
-        {/* Price */}
-        <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
-          <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-          <span className="font-extrabold text-emerald-700 text-sm">{fmtPrice(listing.price)}</span>
+        {/* Title / Description */}
+        <div>
+          <p className="font-bold text-slate-800 text-sm leading-snug">
+            {listing.builtup_area && `${listing.builtup_area} `}
+            {beds && `${beds} Bedroom `}
+            {fmtPropType(listing.property_type)} in {fmtArea(listing.area)}
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5 flex justify-between items-center">
+            <span>Listing ID: #{listing.id.substring(0, 8).toUpperCase()}</span>
+            <span>Updated {timeAgo(listing.created_at)}</span>
+          </p>
         </div>
 
-        {/* Notes preview */}
-        {listing.notes && (
-          <p className="text-xs text-slate-500 line-clamp-2 italic font-medium flex-1">
-            {listing.notes}
+        {/* Price */}
+        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span className="font-extrabold text-emerald-700 text-sm">{fmtPrice(listing.price)}</span>
+          </div>
+          {poss && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">{poss}</span>}
+        </div>
+
+        {/* Highlight Tags */}
+        {listing.tags && (
+          <div className="flex flex-wrap gap-1.5">
+            {listing.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => (
+              <span key={t} className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Tag className="w-2.5 h-2.5" /> {t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Advanced Grid */}
+        {(beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking) && (
+          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100">
+            {listing.builtup_area && (
+              <div className="flex items-start gap-1.5">
+                <Expand className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Area</p>
+                  <p className="text-xs font-medium text-slate-700">{listing.builtup_area}</p>
+                </div>
+              </div>
+            )}
+            {beds && (
+              <div className="flex items-start gap-1.5">
+                <Bed className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bedroom</p>
+                  <p className="text-xs font-medium text-slate-700">{beds}</p>
+                </div>
+              </div>
+            )}
+            {baths && (
+              <div className="flex items-start gap-1.5">
+                <Bath className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bath</p>
+                  <p className="text-xs font-medium text-slate-700">{baths}</p>
+                </div>
+              </div>
+            )}
+            {listing.additional_spaces && (
+              <div className="flex items-start gap-1.5">
+                <Home className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Add. Spaces</p>
+                  <p className="text-xs font-medium text-slate-700">{listing.additional_spaces}</p>
+                </div>
+              </div>
+            )}
+            {facing && (
+              <div className="flex items-start gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">View/Facing</p>
+                  <p className="text-xs font-medium text-slate-700">{facing}</p>
+                </div>
+              </div>
+            )}
+            {listing.parking && (
+              <div className="flex items-start gap-1.5">
+                <Car className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Parking</p>
+                  <p className="text-xs font-medium text-slate-700">{listing.parking}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Description / Notes */}
+        {(listing.description || listing.notes) && (
+          <p className="text-xs text-slate-500 line-clamp-2 italic font-medium flex-1 pt-2">
+            {listing.description || listing.notes}
           </p>
         )}
 
@@ -268,7 +403,7 @@ function PropertyCard({ listing, onInterest }: { listing: Listing; onInterest: (
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -552,6 +687,52 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
   const [filterCity, setFilterCity] = useState('all');
   const [filterPrice, setFilterPrice] = useState('all');
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
+  const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      setUserId(session.user.id);
+      
+      const { data } = await supabase
+        .from('buyer_watchlists')
+        .select('property_id')
+        .eq('user_id', session.user.id);
+        
+      if (data) {
+        setWatchlistIds(new Set(data.map(d => d.property_id)));
+      }
+    };
+    fetchWatchlist();
+  }, []);
+
+  const handleToggleWatchlist = async (e: React.MouseEvent, propertyId: string) => {
+    e.stopPropagation();
+    if (!userId) {
+      window.location.href = '/portal/login';
+      return;
+    }
+
+    if (watchlistIds.has(propertyId)) {
+      // Remove
+      await supabase.from('buyer_watchlists').delete().match({ user_id: userId, property_id: propertyId });
+      setWatchlistIds(prev => {
+        const next = new Set(prev);
+        next.delete(propertyId);
+        return next;
+      });
+    } else {
+      // Add
+      await supabase.from('buyer_watchlists').insert({ user_id: userId, property_id: propertyId });
+      setWatchlistIds(prev => {
+        const next = new Set(prev);
+        next.add(propertyId);
+        return next;
+      });
+    }
+  };
 
   const allTypes = useMemo(() => [...new Set(listings.map(l => l.property_type))].sort(), [listings]);
   const allCities = useMemo(() => [...new Set(listings.map(l => l.city))].sort(), [listings]);
@@ -636,24 +817,32 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
 
       {/* Grid */}
       {listings.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <Home className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-extrabold text-slate-900 mb-2">No Listings Available Yet</h3>
-          <p className="text-slate-500 text-sm font-medium">Submit your requirement below, and we&apos;ll find the best match for you!</p>
+        <div className="text-center py-20 bg-gradient-to-b from-white to-blue-50/30 rounded-3xl border border-blue-100 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-1/4 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl" />
+          <Home className="w-16 h-16 text-blue-300 mx-auto mb-5 relative z-10" />
+          <h3 className="text-2xl font-extrabold text-slate-900 mb-3 relative z-10">We'll find it for you!</h3>
+          <p className="text-slate-600 font-medium max-w-md mx-auto leading-relaxed relative z-10">There are no public listings yet, but our offline network is huge. Submit your requirement below and we will contact you with matching properties.</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 mb-6">
-          <Layers className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-600 font-bold mb-1">No listings found in this area.</p>
-          <p className="text-slate-400 text-sm font-medium mb-4">Submit a request below—we&apos;ll find it for you!</p>
-          <button onClick={clearFilters} className="text-blue-600 text-sm font-bold underline underline-offset-2">
-            View all properties
+        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 mb-6 shadow-sm">
+          <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <h3 className="text-lg font-bold text-slate-900 mb-2">No exact matches found.</h3>
+          <p className="text-slate-500 font-medium mb-5 max-w-sm mx-auto">We might have offline properties that match your filters! Submit a custom request.</p>
+          <button onClick={clearFilters} className="px-5 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-xl transition-colors">
+            View all available properties
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
           {filtered.map(l => (
-            <PropertyCard key={l.id} listing={l} onInterest={() => setActiveListing(l)} />
+            <PropertyCard 
+              key={l.id} 
+              listing={l} 
+              dbOptions={dbOptions} 
+              onInterest={() => setActiveListing(l)} 
+              isWatchlisted={watchlistIds.has(l.id)}
+              onToggleWatchlist={(e) => handleToggleWatchlist(e, l.id)}
+            />
           ))}
         </div>
       )}

@@ -28,7 +28,7 @@ export default function MatchCard({ match, formatType }: MatchProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // WhatsApp message for buyer
-  const waMessage = `Hello ${match.buyer_name},\n\nWe have found a perfect match for your requirement of a ${formatType(match.property_type)} in ${match.area.split(',')[0].trim()}.\n\nSeller Details:\nName: ${match.seller_name}\nPhone: ${match.seller_phone}\n\nWould you like to schedule a site visit? Please reply to confirm.\n\n- Property CRM Team`;
+  const waMessage = `Hello ${match.buyer_name},\n\nWe have found a perfect match for your requirement of a ${formatType(match.property_type)} in ${match.area.split(',')[0].trim()}.\n\nSeller Details:\nName: ${match.seller_name}\nPhone: ${match.seller_phone}\n\nWould you like to schedule a site visit? Please reply to confirm.\n\n- PropConnect Team`;
   const waUrl = `https://wa.me/${match.buyer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(waMessage)}`;
 
   // Get tomorrow as minimum date for scheduling

@@ -7,7 +7,8 @@ import {
   Building2, Search, GitCompare, Phone, Mail, MapPin, Building,
   DollarSign, Check, Loader2, X, RefreshCw, Pencil, Trash2,
   MessageCircle, Send, CheckSquare, Square, AlertTriangle,
-  ChevronDown, Users, Download, Plus, Globe
+  ChevronDown, Users, Download, Plus, Globe,
+  Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -22,7 +23,7 @@ const buildWaLink = (phone: string, message: string) =>
   `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
 const DEFAULT_SELLER_MSG = (s: any) =>
-  `Hello ${s.name}! 🏢\n\nWe have interested buyers for your ${s.property_type.replace(/_/g, ' ')} property in ${s.area}.\n\nCould we discuss this further? Please let us know.\n\n- Property CRM Team`;
+  `Hello ${s.name}! 🏢\n\nWe have interested buyers for your ${s.property_type.replace(/_/g, ' ')} property in ${s.area}.\n\nCould we discuss this further? Please let us know.\n\n- PropConnect Team`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,18 @@ interface Seller {
   price: string;
   status: string;
   notes?: string;
+  bedrooms?: string;
+  bathrooms?: string;
+  builtup_area?: string;
+  additional_spaces?: string;
+  possession_status?: string;
+  facing?: string;
+  parking?: string;
+  description?: string;
+  tags?: string;
+  furnishing?: string;
+  balconies?: string;
+  property_age?: string;
   follow_up_date?: string | null;
   created_at: string;
 }
@@ -52,6 +65,13 @@ export default function SellersInventory() {
   const [statuses, setStatuses] = useState<SettingOption[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<SettingOption[]>([]);
   const [budgets, setBudgets] = useState<SettingOption[]>([]);
+  const [bedroomOptions, setBedroomOptions] = useState<SettingOption[]>([]);
+  const [bathroomOptions, setBathroomOptions] = useState<SettingOption[]>([]);
+  const [facingOptions, setFacingOptions] = useState<SettingOption[]>([]);
+  const [possessionOptions, setPossessionOptions] = useState<SettingOption[]>([]);
+  const [furnishingOptions, setFurnishingOptions] = useState<SettingOption[]>([]);
+  const [balconyOptions, setBalconyOptions] = useState<SettingOption[]>([]);
+  const [propertyAgeOptions, setPropertyAgeOptions] = useState<SettingOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -86,6 +106,18 @@ export default function SellersInventory() {
     city: '',
     area: '',
     price: '',
+    bedrooms: '',
+    bathrooms: '',
+    builtupArea: '',
+    additionalSpaces: '',
+    possessionStatus: '',
+    facing: '',
+    parking: '',
+    description: '',
+    tags: '',
+    furnishing: '',
+    balconies: '',
+    propertyAge: '',
     notes: '',
   });
   const [addCities, setAddCities] = useState<any[]>([]);
@@ -107,6 +139,18 @@ export default function SellersInventory() {
     status: '',
     notes: '',
     follow_up_date: '',
+    bedrooms: '',
+    bathrooms: '',
+    builtupArea: '',
+    additionalSpaces: '',
+    possessionStatus: '',
+    facing: '',
+    parking: '',
+    description: '',
+    tags: '',
+    furnishing: '',
+    balconies: '',
+    propertyAge: '',
   });
   const [editCities, setEditCities] = useState<any[]>([]);
   const [editAreas, setEditAreas] = useState<any[]>([]);
@@ -134,7 +178,14 @@ export default function SellersInventory() {
         { data: budgetData },
         { data: statesData },
         { data: citiesData },
-        { data: areasData }
+        { data: areasData },
+        { data: bedData },
+        { data: bathData },
+        { data: faceData },
+        { data: possData },
+        { data: furnData },
+        { data: balcData },
+        { data: ageData }
       ] = await Promise.all([
         supabase.from('sellers_inventory').select('*').order('created_at', { ascending: false }),
         supabase.from('system_settings').select('value,display_name').eq('category', 'lead_status').order('sort_order'),
@@ -143,6 +194,13 @@ export default function SellersInventory() {
         supabase.from('states').select('id, name').order('name'),
         supabase.from('cities').select('id, name, state_id').order('name'),
         supabase.from('areas').select('id, name, city_id').order('name'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'bedrooms').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'bathrooms').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'facing').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'possession_status').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'furnishing').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'balconies').order('sort_order'),
+        supabase.from('system_settings').select('value,display_name').eq('category', 'property_age').order('sort_order'),
       ]);
 
       setSellers(sellersData || []);
@@ -152,6 +210,13 @@ export default function SellersInventory() {
       setDbStates(statesData || []);
       setDbCities(citiesData || []);
       setDbAreas(areasData || []);
+      setBedroomOptions(bedData || []);
+      setBathroomOptions(bathData || []);
+      setFacingOptions(faceData || []);
+      setPossessionOptions(possData || []);
+      setFurnishingOptions(furnData || []);
+      setBalconyOptions(balcData || []);
+      setPropertyAgeOptions(ageData || []);
     } catch (err) {
       console.error('Error fetching sellers data:', err);
     } finally {
@@ -271,6 +336,18 @@ export default function SellersInventory() {
           city: cityName,
           area: locationString,
           price: addForm.price,
+          bedrooms: addForm.bedrooms || null,
+          bathrooms: addForm.bathrooms || null,
+          builtup_area: addForm.builtupArea.trim() || null,
+          additional_spaces: addForm.additionalSpaces.trim() || null,
+          possession_status: addForm.possessionStatus || null,
+          facing: addForm.facing || null,
+          parking: addForm.parking.trim() || null,
+          description: addForm.description.trim() || null,
+          tags: addForm.tags.trim() || null,
+          furnishing: addForm.furnishing || null,
+          balconies: addForm.balconies || null,
+          property_age: addForm.propertyAge || null,
           notes: addForm.notes.trim() || null,
           status: 'new_lead',
         })
@@ -289,6 +366,18 @@ export default function SellersInventory() {
         city: '',
         area: '',
         price: '',
+        bedrooms: '',
+        bathrooms: '',
+        builtupArea: '',
+        additionalSpaces: '',
+        possessionStatus: '',
+        facing: '',
+        parking: '',
+        description: '',
+        tags: '',
+        furnishing: '',
+        balconies: '',
+        propertyAge: '',
         notes: '',
       });
     } catch (err: any) {
@@ -330,6 +419,18 @@ export default function SellersInventory() {
       status: seller.status,
       notes: seller.notes || '',
       follow_up_date: seller.follow_up_date ? new Date(seller.follow_up_date).toISOString().split('T')[0] : '',
+      bedrooms: seller.bedrooms || '',
+      bathrooms: seller.bathrooms || '',
+      builtupArea: seller.builtup_area || '',
+      additionalSpaces: seller.additional_spaces || '',
+      possessionStatus: seller.possession_status || '',
+      facing: seller.facing || '',
+      parking: seller.parking || '',
+      description: seller.description || '',
+      tags: seller.tags || '',
+      furnishing: seller.furnishing || '',
+      balconies: seller.balconies || '',
+      propertyAge: seller.property_age || '',
     });
     setSaveError(null);
   };
@@ -357,6 +458,18 @@ export default function SellersInventory() {
           area: locationString,
           price: editForm.price,
           status: editForm.status,
+          bedrooms: editForm.bedrooms || null,
+          bathrooms: editForm.bathrooms || null,
+          builtup_area: editForm.builtupArea.trim() || null,
+          additional_spaces: editForm.additionalSpaces.trim() || null,
+          possession_status: editForm.possessionStatus || null,
+          facing: editForm.facing || null,
+          parking: editForm.parking.trim() || null,
+          description: editForm.description.trim() || null,
+          tags: editForm.tags.trim() || null,
+          furnishing: editForm.furnishing || null,
+          balconies: editForm.balconies || null,
+          property_age: editForm.propertyAge || null,
           notes: editForm.notes || null,
           follow_up_date: editForm.follow_up_date ? new Date(editForm.follow_up_date).toISOString() : null,
         })
@@ -375,6 +488,18 @@ export default function SellersInventory() {
         area: locationString,
         price: editForm.price,
         status: editForm.status,
+        bedrooms: editForm.bedrooms || undefined,
+        bathrooms: editForm.bathrooms || undefined,
+        builtup_area: editForm.builtupArea.trim() || undefined,
+        additional_spaces: editForm.additionalSpaces.trim() || undefined,
+        possession_status: editForm.possessionStatus || undefined,
+        facing: editForm.facing || undefined,
+        parking: editForm.parking.trim() || undefined,
+        description: editForm.description.trim() || undefined,
+        tags: editForm.tags.trim() || undefined,
+        furnishing: editForm.furnishing || undefined,
+        balconies: editForm.balconies || undefined,
+        property_age: editForm.propertyAge || undefined,
         notes: editForm.notes || undefined,
         follow_up_date: editForm.follow_up_date || null
       } as Seller : s));
@@ -438,7 +563,7 @@ export default function SellersInventory() {
       setBlastMessage(DEFAULT_SELLER_MSG(selected[0]));
     } else {
       setBlastMessage(
-        `Hello! 🏢\n\nWe have active buyers matching your properties listed in our CRM.\n\nCould we discuss this further? Please let us know.\n\n- Property CRM Team`
+        `Hello! 🏢\n\nWe have active buyers matching your properties listed in our CRM.\n\nCould we discuss this further? Please let us know.\n\n- PropConnect Team`
       );
     }
     setBlastOpen(true);
@@ -850,9 +975,87 @@ export default function SellersInventory() {
                     {budgets.map(b => <option key={b.value} value={b.value}>{b.display_name}</option>)}
                   </select>
                 </div>
+                {/* Advanced Property Details */}
+                <div className="sm:col-span-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><FileText className="w-4 h-4" /> Advanced Details (Optional)</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Bedrooms</label>
+                      <select value={addForm.bedrooms} onChange={e => setAddForm(p => ({...p, bedrooms: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {bedroomOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Bathrooms</label>
+                      <select value={addForm.bathrooms} onChange={e => setAddForm(p => ({...p, bathrooms: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {bathroomOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Built-up Area</label>
+                      <input type="text" value={addForm.builtupArea} onChange={e => setAddForm(p => ({...p, builtupArea: e.target.value}))} placeholder="e.g. 520 Sq.Yd." className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Facing</label>
+                      <select value={addForm.facing} onChange={e => setAddForm(p => ({...p, facing: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {facingOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Possession</label>
+                      <select value={addForm.possessionStatus} onChange={e => setAddForm(p => ({...p, possessionStatus: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {possessionOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Parking</label>
+                      <input type="text" value={addForm.parking} onChange={e => setAddForm(p => ({...p, parking: e.target.value}))} placeholder="e.g. 2 Covered Cars" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Furnishing</label>
+                      <select value={addForm.furnishing} onChange={e => setAddForm(p => ({...p, furnishing: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {furnishingOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Balconies</label>
+                      <select value={addForm.balconies} onChange={e => setAddForm(p => ({...p, balconies: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {balconyOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Property Age</label>
+                      <select value={addForm.propertyAge} onChange={e => setAddForm(p => ({...p, propertyAge: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {propertyAgeOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Additional Spaces</label>
+                      <input type="text" value={addForm.additionalSpaces} onChange={e => setAddForm(p => ({...p, additionalSpaces: e.target.value}))} placeholder="e.g. Pooja Room" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Tags</label>
+                      <input type="text" value={addForm.tags} onChange={e => setAddForm(p => ({...p, tags: e.target.value}))} placeholder="e.g. Safe Locality, Quick Deal" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 mt-4">
+                    <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Public Description</label>
+                    <textarea value={addForm.description} onChange={e => setAddForm(p => ({...p, description: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" rows={2} placeholder="Description for public property card..." />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Notes</label>
-                  <textarea value={addForm.notes} onChange={e => setAddForm(p => ({ ...p, notes: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" rows={2} placeholder="Property characteristics..." />
+                  <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Internal Notes</label>
+                  <textarea value={addForm.notes} onChange={e => setAddForm(p => ({ ...p, notes: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" rows={2} placeholder="Internal CRM notes..." />
                 </div>
               </div>
             </div>
@@ -931,8 +1134,86 @@ export default function SellersInventory() {
                   <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Follow Up Date</label>
                   <input type="date" value={editForm.follow_up_date} onChange={e => setEditForm(p => ({ ...p, follow_up_date: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
                 </div>
+                {/* Advanced Property Details */}
+                <div className="sm:col-span-2 pt-4 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><FileText className="w-4 h-4" /> Advanced Details</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Bedrooms</label>
+                      <select value={editForm.bedrooms} onChange={e => setEditForm(p => ({...p, bedrooms: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {bedroomOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Bathrooms</label>
+                      <select value={editForm.bathrooms} onChange={e => setEditForm(p => ({...p, bathrooms: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {bathroomOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Built-up Area</label>
+                      <input type="text" value={editForm.builtupArea} onChange={e => setEditForm(p => ({...p, builtupArea: e.target.value}))} placeholder="e.g. 520 Sq.Yd." className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Facing</label>
+                      <select value={editForm.facing} onChange={e => setEditForm(p => ({...p, facing: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {facingOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Possession</label>
+                      <select value={editForm.possessionStatus} onChange={e => setEditForm(p => ({...p, possessionStatus: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {possessionOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Parking</label>
+                      <input type="text" value={editForm.parking} onChange={e => setEditForm(p => ({...p, parking: e.target.value}))} placeholder="e.g. 2 Covered Cars" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Furnishing</label>
+                      <select value={editForm.furnishing} onChange={e => setEditForm(p => ({...p, furnishing: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {furnishingOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Balconies</label>
+                      <select value={editForm.balconies} onChange={e => setEditForm(p => ({...p, balconies: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {balconyOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Property Age</label>
+                      <select value={editForm.propertyAge} onChange={e => setEditForm(p => ({...p, propertyAge: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                        <option value="">Any / N/A</option>
+                        {propertyAgeOptions.map(o => <option key={o.value} value={o.value}>{o.display_name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Additional Spaces</label>
+                      <input type="text" value={editForm.additionalSpaces} onChange={e => setEditForm(p => ({...p, additionalSpaces: e.target.value}))} placeholder="e.g. Pooja Room" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Tags</label>
+                      <input type="text" value={editForm.tags} onChange={e => setEditForm(p => ({...p, tags: e.target.value}))} placeholder="e.g. Safe Locality, Quick Deal" className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 mt-4">
+                    <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Public Description</label>
+                    <textarea value={editForm.description} onChange={e => setEditForm(p => ({...p, description: e.target.value}))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" rows={2} placeholder="Description for public property card..." />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Notes</label>
+                  <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Internal Notes</label>
                   <textarea value={editForm.notes} onChange={e => setEditForm(p => ({ ...p, notes: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" rows={2} />
                 </div>
               </div>

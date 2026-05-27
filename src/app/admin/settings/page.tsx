@@ -19,6 +19,13 @@ import {
   X,
   Save,
   Globe,
+  Bed,
+  Bath,
+  Compass,
+  Key,
+  Armchair,
+  Layers,
+  Clock,
 } from 'lucide-react';
 
 interface SettingItem {
@@ -1006,10 +1013,16 @@ export default function SettingsManager() {
   const getCategoryLabel = (category: string) => {
     switch (category) {
       case 'property_type': return 'Property Types';
-      case 'city_area': return 'City Areas';
       case 'budget_range': return 'Budget / Price Ranges';
       case 'lead_status': return 'Lead Statuses';
       case 'location_settings': return 'Location Settings';
+      case 'bedrooms': return 'Bedrooms';
+      case 'bathrooms': return 'Bathrooms';
+      case 'facing': return 'Facing Options';
+      case 'possession_status': return 'Possession Status';
+      case 'furnishing': return 'Furnishing';
+      case 'balconies': return 'Balconies';
+      case 'property_age': return 'Property Age';
       default: return category;
     }
   };
@@ -1017,16 +1030,22 @@ export default function SettingsManager() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'property_type': return Building;
-      case 'city_area': return MapPin;
       case 'budget_range': return DollarSign;
       case 'lead_status': return Activity;
       case 'location_settings': return Globe;
+      case 'bedrooms': return Bed;
+      case 'bathrooms': return Bath;
+      case 'facing': return Compass;
+      case 'possession_status': return Key;
+      case 'furnishing': return Armchair;
+      case 'balconies': return Layers;
+      case 'property_age': return Clock;
       default: return Settings;
     }
   };
 
   const filteredSettings = settingsList.filter(s => s.category === activeTab);
-  const categories = ['property_type', 'budget_range', 'lead_status', 'location_settings'];
+  const categories = ['property_type', 'budget_range', 'lead_status', 'location_settings', 'bedrooms', 'bathrooms', 'facing', 'possession_status', 'furnishing', 'balconies', 'property_age'];
 
   const inputCls = 'w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-200';
 
@@ -1102,9 +1121,12 @@ export default function SettingsManager() {
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-50 rounded-xl text-blue-600 border border-blue-100">
                 {activeTab === 'property_type' && <Building className="w-5 h-5" />}
-                {activeTab === 'city_area' && <MapPin className="w-5 h-5" />}
                 {activeTab === 'budget_range' && <DollarSign className="w-5 h-5" />}
                 {activeTab === 'lead_status' && <Activity className="w-5 h-5" />}
+                {activeTab === 'bedrooms' && <Bed className="w-5 h-5" />}
+                {activeTab === 'bathrooms' && <Bath className="w-5 h-5" />}
+                {activeTab === 'facing' && <Compass className="w-5 h-5" />}
+                {activeTab === 'possession_status' && <Key className="w-5 h-5" />}
               </div>
               <h3 className="font-extrabold text-slate-900 text-lg">Active {getCategoryLabel(activeTab)}</h3>
             </div>

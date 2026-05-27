@@ -97,7 +97,7 @@ export default function Login() {
             Admin Portal
           </h2>
           <p className="text-slate-500 mt-2 text-sm max-w-xs">
-            Sign in to BuyerSeller CRM with your Super Admin credentials.
+            Sign in to PropConnect with your Super Admin credentials.
           </p>
         </div>
 
