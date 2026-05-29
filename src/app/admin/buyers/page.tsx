@@ -7,7 +7,7 @@ import {
   Users, Search, GitCompare, Phone, Mail, MapPin, Building,
   DollarSign, Check, Loader2, X, RefreshCw, Pencil, Trash2,
   MessageCircle, Send, CheckSquare, Square, AlertTriangle,
-  ChevronDown, Download, Plus, Globe,
+  ChevronDown, Download, Plus, Globe, Heart,
   Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock
 } from 'lucide-react';
 
@@ -52,6 +52,7 @@ interface Buyer {
   balconies?: string;
   property_age?: string;
   follow_up_date?: string | null;
+  user_id?: string | null;
   created_at: string;
 }
 
@@ -94,6 +95,29 @@ export default function BuyersDemand() {
   const [selectedBuyer, setSelectedBuyer] = useState<Buyer | null>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
+
+  // Recommend to Watchlist
+  const handleRecommend = async (propertyId: string, buyer: Buyer) => {
+    if (!buyer.user_id) {
+      alert('This buyer has not created a registered account yet. You cannot push to their watchlist.');
+      return;
+    }
+    try {
+      const { error } = await supabase.from('buyer_watchlists').insert({
+        user_id: buyer.user_id,
+        property_id: propertyId
+      });
+      if (error) {
+        if (error.code === '23505') alert("This property is already in the buyer's watchlist!");
+        else throw error;
+      } else {
+        alert("Property successfully added to the buyer's portal watchlist!");
+      }
+    } catch (e: any) {
+      console.error(e);
+      alert('Failed to add to watchlist: ' + e.message);
+    }
+  };
 
   // Add Lead Modal State
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -1291,7 +1315,7 @@ export default function BuyersDemand() {
                           </span>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-lg border">
+                      <div className="grid grid-cols-3 gap-3 text-xs bg-slate-50 p-3 rounded-lg border mt-2">
                         <div>
                           <span className="text-slate-500 font-bold block">Phone</span>
                           <a href={`tel:${seller.phone}`} className="font-bold text-slate-900 hover:text-blue-605 flex items-center gap-1">
@@ -1303,6 +1327,12 @@ export default function BuyersDemand() {
                           <a href={buildWaLink(seller.phone, `Hello ${seller.name}! We have an active buyer matching your property listed in ${seller.area}.`)} target="_blank" rel="noopener noreferrer" className="font-bold text-emerald-600 hover:text-emerald-500 flex items-center gap-1">
                             <MessageCircle className="w-3 h-3 text-slate-400" /> Send WA
                           </a>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 font-bold block">Action</span>
+                          <button onClick={() => handleRecommend(seller.id, selectedBuyer)} className="font-bold text-rose-600 hover:text-rose-500 flex items-center gap-1 transition-colors">
+                            <Heart className="w-3 h-3 text-rose-500" /> Recommend
+                          </button>
                         </div>
                       </div>
                     </div>
