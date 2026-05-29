@@ -60,7 +60,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Building className="w-4 h-4" /> Buy Property
+          <Search className="w-4 h-4" /> Find a Property
         </button>
         <button
           type="button"
@@ -71,7 +71,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <MapPin className="w-4 h-4" /> Sell Property
+          <Building className="w-4 h-4" /> List a Property
         </button>
       </div>
 

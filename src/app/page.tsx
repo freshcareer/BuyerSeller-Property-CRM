@@ -20,7 +20,7 @@ async function getPublicListings() {
   try {
     const { data, error } = await supabase
       .from('sellers_inventory')
-      .select('id, property_type, city, state, area, price, notes, bedrooms, bathrooms, builtup_area, additional_spaces, possession_status, facing, parking, description, tags, furnishing, balconies, property_age, created_at')
+      .select('id, property_type, city, state, area, price, notes, bedrooms, bathrooms, builtup_area, additional_spaces, possession_status, facing, parking, description, tags, furnishing, balconies, property_age, listing_purpose, created_at')
       .in('status', ['new_lead', 'contacted', 'active'])
       .order('created_at', { ascending: false })
       .limit(60);

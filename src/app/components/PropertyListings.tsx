@@ -17,6 +17,7 @@ interface Listing {
   area: string;
   price: string;
   notes: string | null;
+  listing_purpose?: string;
   bedrooms?: string | null;
   bathrooms?: string | null;
   builtup_area?: string | null;
@@ -285,12 +286,21 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
       <div className={`h-1.5 w-full ${color.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
 
       <div className="p-4 space-y-3 flex-1 flex flex-col">
-        {/* Type badge */}
+        {/* Type & Purpose badges */}
         <div className="flex items-center justify-between gap-2 relative z-10">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color.bg} ${color.text}`}>
-            <Building className="w-3 h-3" />
-            {fmtPropType(listing.property_type)}
-          </span>
+          <div className="flex gap-2">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color.bg} ${color.text}`}>
+              <Building className="w-3 h-3" />
+              {fmtPropType(listing.property_type)}
+            </span>
+            {listing.listing_purpose && (
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                listing.listing_purpose === 'rent' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
+              }`}>
+                {listing.listing_purpose === 'rent' ? 'For Rent' : 'For Sale'}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 font-medium">🔒 Private</span>
             <button
@@ -704,6 +714,7 @@ function CantFindForm({ dbOptions }: { dbOptions: SettingOption[] }) {
 
 export default function PropertyListings({ listings, dbOptions }: Props) {
   const [search, setSearch] = useState('');
+  const [filterPurpose, setFilterPurpose] = useState('all');
   const [filterType, setFilterType] = useState('all');
   const [filterCity, setFilterCity] = useState('all');
   const [filterPrice, setFilterPrice] = useState('all');
@@ -763,13 +774,14 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
     const q = search.toLowerCase();
     const matchSearch = !q || l.property_type.includes(q) || l.area.toLowerCase().includes(q) || l.city.toLowerCase().includes(q) || l.price.includes(q);
     return matchSearch
+      && (filterPurpose === 'all' || l.listing_purpose === filterPurpose)
       && (filterType === 'all' || l.property_type === filterType)
       && (filterCity === 'all' || l.city === filterCity)
       && (filterPrice === 'all' || l.price === filterPrice);
-  }), [listings, search, filterType, filterCity, filterPrice]);
+  }), [listings, search, filterPurpose, filterType, filterCity, filterPrice]);
 
-  const hasFilters = search || filterType !== 'all' || filterCity !== 'all' || filterPrice !== 'all';
-  const clearFilters = () => { setSearch(''); setFilterType('all'); setFilterCity('all'); setFilterPrice('all'); };
+  const hasFilters = search || filterPurpose !== 'all' || filterType !== 'all' || filterCity !== 'all' || filterPrice !== 'all';
+  const clearFilters = () => { setSearch(''); setFilterPurpose('all'); setFilterType('all'); setFilterCity('all'); setFilterPrice('all'); };
 
   return (
     <>
@@ -814,6 +826,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
         <div className="grid grid-cols-2 sm:flex sm:flex-nowrap items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block" />
           {[
+            { label: 'Purpose', val: filterPurpose, set: setFilterPurpose, opts: [{v:'sell', l:'For Sale'}, {v:'rent', l:'For Rent'}] },
             { label: 'Type', val: filterType, set: setFilterType, opts: allTypes.map(t => ({ v: t, l: fmtPropType(t) })) },
             { label: 'City', val: filterCity, set: setFilterCity, opts: allCities.map(c => ({ v: c, l: c })) },
             { label: 'Price', val: filterPrice, set: setFilterPrice, opts: allPrices.map(p => ({ v: p, l: fmtPrice(p) })) },

@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS public.buyers_demand (
 
 -- Ensure user_id column exists if table was created in Phase 1
 ALTER TABLE public.buyers_demand ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE public.buyers_demand ADD COLUMN IF NOT EXISTS listing_purpose VARCHAR(50) DEFAULT 'buy' NOT NULL;
 
 -- Enable RLS for Buyers Demand
 ALTER TABLE public.buyers_demand ENABLE ROW LEVEL SECURITY;
@@ -170,6 +171,7 @@ CREATE TABLE IF NOT EXISTS public.sellers_inventory (
 
 -- Ensure user_id column exists if table was created in Phase 1
 ALTER TABLE public.sellers_inventory ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+ALTER TABLE public.sellers_inventory ADD COLUMN IF NOT EXISTS listing_purpose VARCHAR(50) DEFAULT 'sell' NOT NULL;
 
 -- Enable RLS for Sellers Inventory
 ALTER TABLE public.sellers_inventory ENABLE ROW LEVEL SECURITY;

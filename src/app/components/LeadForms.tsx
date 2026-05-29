@@ -98,7 +98,16 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     balconies: '',
     propertyAge: '',
     notes: '',
+    listingPurpose: activeTab === 'buy' ? 'buy' : 'sell',
   });
+
+  // Keep listingPurpose in sync when switching between forms
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      listingPurpose: activeTab === 'buy' ? 'buy' : 'sell'
+    }));
+  }, [activeTab]);
 
   // Track which fields have been touched
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
@@ -290,6 +299,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         balconies: item.balconies || '',
         propertyAge: item.property_age || '',
         notes: item.notes || '',
+        listingPurpose: item.listing_purpose || (activeTab === 'buy' ? 'buy' : 'sell'),
       });
       setTouched({});
       setSubmitError(null);
@@ -450,6 +460,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           property_age: formData.propertyAge || null,
           notes: formData.notes.trim() || null,
           status: 'new_lead',
+          listing_purpose: formData.listingPurpose,
           user_id: userId,
         });
         if (insertError) throw insertError;
@@ -476,6 +487,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           balconies: formData.balconies || null,
           property_age: formData.propertyAge || null,
           notes: formData.notes.trim() || null,
+          listing_purpose: formData.listingPurpose,
           user_id: userId,
         };
 
@@ -650,6 +662,32 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
             {submitError}
           </div>
         )}
+
+        {/* Purpose Toggle */}
+        <div className="flex bg-slate-100 p-1.5 rounded-xl gap-1 mb-6 max-w-md mx-auto sm:mx-0">
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' })}
+            className={`flex-1 py-2.5 px-4 text-sm font-bold rounded-lg transition-all shadow-sm ${
+              formData.listingPurpose === (activeTab === 'buy' ? 'buy' : 'sell')
+                ? 'bg-white text-blue-700 ring-1 ring-slate-200'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 shadow-none'
+            }`}
+          >
+            {activeTab === 'buy' ? 'I Want to Buy' : 'I Want to Sell'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, listingPurpose: 'rent' })}
+            className={`flex-1 py-2.5 px-4 text-sm font-bold rounded-lg transition-all shadow-sm ${
+              formData.listingPurpose === 'rent'
+                ? 'bg-white text-blue-700 ring-1 ring-slate-200'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 shadow-none'
+            }`}
+          >
+            {activeTab === 'buy' ? 'I Want to Rent' : 'Rent Out'}
+          </button>
+        </div>
 
         {/* Name, Phone, Email */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
