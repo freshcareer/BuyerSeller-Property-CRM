@@ -23,7 +23,7 @@ const buildWaLink = (phone: string, message: string) =>
   `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
 const DEFAULT_SELLER_MSG = (s: any) =>
-  `Hello ${s.name}! 🏢\n\nWe have interested buyers for your ${s.property_type.replace(/_/g, ' ')} property in ${s.area}.\n\nCould we discuss this further? Please let us know.\n\n- PropConnect Team`;
+  `Hello ${s.name}, this is PropConnect, Ahmedabad's premium property matchmakers. 🏢\n\nWe have highly verified buyers actively looking for a ${s.property_type.replace(/_/g, ' ')} property in ${s.area}.\n\nCould we arrange a quick call or visit to close a deal for you? Zero registration fees.\n\n- Team PropConnect`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,6 +52,7 @@ interface Seller {
   balconies?: string;
   property_age?: string;
   follow_up_date?: string | null;
+  listing_purpose?: string;
   created_at: string;
 }
 
@@ -119,6 +120,7 @@ export default function SellersInventory() {
     balconies: '',
     propertyAge: '',
     notes: '',
+    listingPurpose: 'sell',
   });
   const [addCities, setAddCities] = useState<any[]>([]);
   const [addAreas, setAddAreas] = useState<any[]>([]);
@@ -151,6 +153,7 @@ export default function SellersInventory() {
     furnishing: '',
     balconies: '',
     propertyAge: '',
+    listingPurpose: 'sell',
   });
   const [editCities, setEditCities] = useState<any[]>([]);
   const [editAreas, setEditAreas] = useState<any[]>([]);
@@ -350,6 +353,7 @@ export default function SellersInventory() {
           property_age: addForm.propertyAge || null,
           notes: addForm.notes.trim() || null,
           status: 'new_lead',
+          listing_purpose: addForm.listingPurpose,
         })
         .select('*')
         .single();
@@ -379,6 +383,7 @@ export default function SellersInventory() {
         balconies: '',
         propertyAge: '',
         notes: '',
+        listingPurpose: 'sell',
       });
     } catch (err: any) {
       setAddError(err.message || 'Failed to add seller lead.');
@@ -431,6 +436,7 @@ export default function SellersInventory() {
       furnishing: seller.furnishing || '',
       balconies: seller.balconies || '',
       propertyAge: seller.property_age || '',
+      listingPurpose: seller.listing_purpose || 'sell',
     });
     setSaveError(null);
   };
@@ -472,6 +478,7 @@ export default function SellersInventory() {
           property_age: editForm.propertyAge || null,
           notes: editForm.notes || null,
           follow_up_date: editForm.follow_up_date ? new Date(editForm.follow_up_date).toISOString() : null,
+          listing_purpose: editForm.listingPurpose,
         })
         .eq('id', editSeller.id);
 
@@ -501,7 +508,8 @@ export default function SellersInventory() {
         balconies: editForm.balconies || undefined,
         property_age: editForm.propertyAge || undefined,
         notes: editForm.notes || undefined,
-        follow_up_date: editForm.follow_up_date || null
+        follow_up_date: editForm.follow_up_date || null,
+        listing_purpose: editForm.listingPurpose
       } as Seller : s));
       setEditSeller(null);
     } catch (err: any) {
@@ -525,7 +533,8 @@ export default function SellersInventory() {
         .eq('state', seller.state)
         .eq('city', seller.city)
         .ilike('area', `%${cleanArea}%`)
-        .eq('property_type', seller.property_type);
+        .eq('property_type', seller.property_type)
+        .eq('listing_purpose', seller.listing_purpose || 'sell');
 
       if (error) throw error;
       setMatches(data || []);
@@ -761,6 +770,7 @@ export default function SellersInventory() {
                   </th>
                   <th className="px-6 py-4">Seller Detail</th>
                   <th className="px-6 py-4">Property Location</th>
+                  <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
                   <th className="px-6 py-4">Expected Price</th>
                   <th className="px-6 py-4">Status</th>
@@ -790,6 +800,9 @@ export default function SellersInventory() {
                     <td className="px-6 py-4 capitalize font-bold text-slate-700">
                       <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-slate-400" />{seller.area.split(',')[0].trim()}</div>
                       <div className="text-xs text-slate-400 font-medium mt-0.5">{seller.city}, {seller.state}</div>
+                    </td>
+                    <td className="px-6 py-4 capitalize font-bold">
+                      {seller.listing_purpose === 'rent' ? <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md text-xs border border-purple-200">Rent Out</span> : <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-md text-xs border border-indigo-200">Sell</span>}
                     </td>
                     <td className="px-6 py-4 capitalize text-slate-750 font-medium">
                       <div className="flex items-center gap-1.5"><Building className="w-4 h-4 text-slate-400" />{seller.property_type.replace(/_/g, ' ')}</div>
@@ -939,6 +952,13 @@ export default function SellersInventory() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Email Address</label>
                   <input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" placeholder="e.g. email@example.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Listing Purpose *</label>
+                  <select required value={addForm.listingPurpose} onChange={e => setAddForm(p => ({ ...p, listingPurpose: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                    <option value="sell">Sell</option>
+                    <option value="rent">Rent Out</option>
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Property Type *</label>
@@ -1091,6 +1111,13 @@ export default function SellersInventory() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Email Address</label>
                   <input type="email" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Listing Purpose *</label>
+                  <select value={editForm.listingPurpose} onChange={e => setEditForm(p => ({ ...p, listingPurpose: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                    <option value="sell">Sell</option>
+                    <option value="rent">Rent Out</option>
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Property Type *</label>

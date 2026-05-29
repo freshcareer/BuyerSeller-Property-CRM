@@ -23,7 +23,7 @@ const buildWaLink = (phone: string, message: string) =>
   `https://wa.me/${formatPhone(phone)}?text=${encodeURIComponent(message)}`;
 
 const DEFAULT_BUYER_MSG = (b: any) =>
-  `Hello ${b.name}! 🏠\n\nWe have some excellent options in ${b.area} that match your ${b.property_type.replace(/_/g, ' ')} requirement.\n\nWould you be available for a site visit? Please let us know.\n\n- PropConnect Team`;
+  `Hello ${b.name}, this is PropConnect, Ahmedabad's premium property matchmakers. 🏠\n\nWe have highly verified options in ${b.area} that perfectly match your ${b.property_type.replace(/_/g, ' ')} requirement.\n\nWould you be available for a site visit today? Let's find your dream property stress-free.\n\n- Team PropConnect`;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +53,7 @@ interface Buyer {
   property_age?: string;
   follow_up_date?: string | null;
   user_id?: string | null;
+  listing_purpose?: string;
   created_at: string;
 }
 
@@ -143,6 +144,7 @@ export default function BuyersDemand() {
     balconies: '',
     propertyAge: '',
     notes: '',
+    listingPurpose: 'buy',
   });
   const [addCities, setAddCities] = useState<any[]>([]);
   const [addAreas, setAddAreas] = useState<any[]>([]);
@@ -175,6 +177,7 @@ export default function BuyersDemand() {
     furnishing: '',
     balconies: '',
     propertyAge: '',
+    listingPurpose: 'buy',
   });
   const [editCities, setEditCities] = useState<any[]>([]);
   const [editAreas, setEditAreas] = useState<any[]>([]);
@@ -374,6 +377,7 @@ export default function BuyersDemand() {
           property_age: addForm.propertyAge || null,
           notes: addForm.notes.trim() || null,
           status: 'new_lead',
+          listing_purpose: addForm.listingPurpose,
         })
         .select('*')
         .single();
@@ -403,6 +407,7 @@ export default function BuyersDemand() {
         balconies: '',
         propertyAge: '',
         notes: '',
+        listingPurpose: 'buy',
       });
     } catch (err: any) {
       setAddError(err.message || 'Failed to add buyer lead.');
@@ -455,6 +460,7 @@ export default function BuyersDemand() {
       furnishing: buyer.furnishing || '',
       balconies: buyer.balconies || '',
       propertyAge: buyer.property_age || '',
+      listingPurpose: buyer.listing_purpose || 'buy',
     });
     setSaveError(null);
   };
@@ -496,6 +502,7 @@ export default function BuyersDemand() {
           property_age: editForm.propertyAge || null,
           notes: editForm.notes || null,
           follow_up_date: editForm.follow_up_date ? new Date(editForm.follow_up_date).toISOString() : null,
+          listing_purpose: editForm.listingPurpose,
         })
         .eq('id', editBuyer.id);
 
@@ -525,7 +532,8 @@ export default function BuyersDemand() {
         balconies: editForm.balconies || undefined,
         property_age: editForm.propertyAge || undefined,
         notes: editForm.notes || undefined,
-        follow_up_date: editForm.follow_up_date || null
+        follow_up_date: editForm.follow_up_date || null,
+        listing_purpose: editForm.listingPurpose
       } as Buyer : b));
       setEditBuyer(null);
     } catch (err: any) {
@@ -549,7 +557,8 @@ export default function BuyersDemand() {
         .eq('state', buyer.state)
         .eq('city', buyer.city)
         .ilike('area', `%${cleanArea}%`)
-        .eq('property_type', buyer.property_type);
+        .eq('property_type', buyer.property_type)
+        .eq('listing_purpose', buyer.listing_purpose || 'buy');
 
       if (error) throw error;
       setMatches(data || []);
@@ -786,6 +795,7 @@ export default function BuyersDemand() {
                   </th>
                   <th className="px-6 py-4">Client Detail</th>
                   <th className="px-6 py-4">Preferred Location</th>
+                  <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
                   <th className="px-6 py-4">Budget Range</th>
                   <th className="px-6 py-4">Status</th>
@@ -815,6 +825,9 @@ export default function BuyersDemand() {
                     <td className="px-6 py-4 capitalize font-bold text-slate-700">
                       <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-slate-400" />{buyer.area.split(',')[0].trim()}</div>
                       <div className="text-xs text-slate-400 font-medium mt-0.5">{buyer.city}, {buyer.state}</div>
+                    </td>
+                    <td className="px-6 py-4 capitalize font-bold">
+                      {buyer.listing_purpose === 'rent' ? <span className="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-md text-xs border border-purple-200">Rent</span> : <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md text-xs border border-blue-200">Buy</span>}
                     </td>
                     <td className="px-6 py-4 capitalize text-slate-750 font-medium">
                       <div className="flex items-center gap-1.5"><Building className="w-4 h-4 text-slate-400" />{buyer.property_type.replace(/_/g, ' ')}</div>
@@ -964,6 +977,13 @@ export default function BuyersDemand() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Email Address</label>
                   <input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" placeholder="e.g. email@example.com" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Requirement Purpose *</label>
+                  <select required value={addForm.listingPurpose} onChange={e => setAddForm(p => ({ ...p, listingPurpose: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                    <option value="buy">Buy</option>
+                    <option value="rent">Rent</option>
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block">Property Type *</label>
@@ -1118,6 +1138,13 @@ export default function BuyersDemand() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Email Address</label>
                   <input type="email" value={editForm.email} onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Requirement Purpose *</label>
+                  <select value={editForm.listingPurpose} onChange={e => setEditForm(p => ({ ...p, listingPurpose: e.target.value }))} className="w-full border rounded-lg px-3 py-2 text-sm text-slate-900">
+                    <option value="buy">Buy</option>
+                    <option value="rent">Rent</option>
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-555 uppercase tracking-wider block">Property Type *</label>

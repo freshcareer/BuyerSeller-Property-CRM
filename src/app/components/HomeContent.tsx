@@ -41,11 +41,11 @@ export default function HomeContent({ options, listings }: Props) {
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6 animate-in fade-in slide-in-from-bottom-3 duration-700 delay-100">
           Finding a house is easy. <br className="hidden sm:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-            Finding a Home is hard.
+            Finding a Home in Ahmedabad is hard.
           </span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-          We know that buying, selling, or renting a property is one of the biggest emotional and financial decisions of your life. Let us guide you through the entire journey, completely stress-free. <strong className="text-slate-800">Zero upfront fees.</strong>
+          Ahmedabad's premier property matchmakers. Whether you're buying, selling, or renting, let our experts handle the hassle. <strong className="text-slate-800">Zero registration fees. Fair success fee.</strong>
         </p>
       </div>
 
@@ -139,8 +139,8 @@ export default function HomeContent({ options, listings }: Props) {
             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-3">100% Verified Leads</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed">No spam, no window shoppers. We use both <strong>social media marketing</strong> and <strong>physical groundwork</strong> to verify every buyer, seller, and tenant before connecting you.</p>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">100% Verified Ahmedabad Leads</h3>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">No spam, no window shoppers. Our local agents personally verify every buyer, seller, and tenant before connecting you.</p>
           </div>
           
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow text-center relative overflow-hidden">

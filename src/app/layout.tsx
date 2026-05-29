@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PropConnect | Real Estate Platform",
-  description: "Secure, dynamic real estate matching portal for premium buyers and sellers.",
+  title: "PropConnect | Premium Ahmedabad Real Estate Brokerage",
+  description: "Find your dream home or the perfect buyer in Ahmedabad with zero upfront fees. 100% verified properties and genuine leads.",
 };
 
 export const viewport = {

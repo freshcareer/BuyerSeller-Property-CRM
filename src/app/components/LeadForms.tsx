@@ -135,6 +135,14 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           .order('name', { ascending: true });
         if (error) throw error;
         setDbStates(data || []);
+        
+        // Auto-select Gujarat for Ahmedabad locking
+        if (data && !editModeId) {
+          const gujarat = data.find(s => s.name.toLowerCase() === 'gujarat');
+          if (gujarat && !formData.state) {
+            setFormData(prev => ({ ...prev, state: gujarat.id }));
+          }
+        }
       } catch (e) {
         console.error('Error loading states:', e);
       }
@@ -158,8 +166,16 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           .order('name', { ascending: true });
         if (error) throw error;
         setDbCities(data || []);
-        // Reset city/area selects if they aren't part of an edit trigger
-        if (!editModeId) {
+        
+        // Auto-select Ahmedabad
+        if (data && !editModeId) {
+          const ahmedabad = data.find(c => c.name.toLowerCase() === 'ahmedabad');
+          if (ahmedabad && !formData.city) {
+            setFormData(prev => ({ ...prev, city: ahmedabad.id, area: '' }));
+          } else if (!formData.city) {
+            setFormData(prev => ({ ...prev, city: '', area: '' }));
+          }
+        } else if (!editModeId && !formData.city) {
           setFormData(prev => ({ ...prev, city: '', area: '' }));
         }
       } catch (e) {
@@ -778,13 +794,13 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-3.5 h-3.5 text-blue-600" />
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">Location</span>
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">Location (Ahmedabad, Gujarat)</span>
             <span className="text-rose-500 text-xs">*</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-            {/* State */}
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            {/* State (Hidden for Ahmedabad lock) */}
+            <div className="hidden">
               <label className={labelCls}><Globe className="w-3.5 h-3.5" /> State</label>
               <select
                 name="state"
@@ -801,8 +817,8 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               {renderFieldError('state')}
             </div>
 
-            {/* City */}
-            <div className="space-y-1">
+            {/* City (Hidden for Ahmedabad lock) */}
+            <div className="hidden">
               <label className={`${labelCls} ${!formData.state ? 'opacity-50' : ''}`}>
                 <Building className="w-3.5 h-3.5" /> City
               </label>

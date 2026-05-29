@@ -23,10 +23,12 @@ export default function AdminDashboard() {
     newBuyers: 0,
     contactedBuyers: 0,
     visitsBuyers: 0,
+    closedBuyers: 0,
     totalSellers: 0,
     newSellers: 0,
     contactedSellers: 0,
     visitsSellers: 0,
+    closedSellers: 0,
   });
   const [recentBuyers, setRecentBuyers] = useState<any[]>([]);
   const [recentSellers, setRecentSellers] = useState<any[]>([]);
@@ -58,11 +60,13 @@ export default function AdminDashboard() {
           newBuyers: bData.filter(b => b.status === 'new_lead').length,
           contactedBuyers: bData.filter(b => b.status === 'contacted').length,
           visitsBuyers: bData.filter(b => b.status === 'visit_done' || b.status === 'site_visit').length,
+          closedBuyers: bData.filter(b => b.status === 'closed_won').length,
           
           totalSellers: sData.length,
           newSellers: sData.filter(s => s.status === 'new_lead').length,
           contactedSellers: sData.filter(s => s.status === 'contacted').length,
           visitsSellers: sData.filter(s => s.status === 'visit_done' || s.status === 'site_visit').length,
+          closedSellers: sData.filter(s => s.status === 'closed_won').length,
         });
 
         // Fetch 5 most recent buyers
@@ -147,22 +151,22 @@ export default function AdminDashboard() {
               <span className="text-xs text-amber-600 font-bold uppercase tracking-wide block">Contacted</span>
               <span className="text-2xl font-extrabold text-amber-700 block mt-1">{stats.contactedBuyers}</span>
             </div>
-            <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-              <span className="text-xs text-emerald-600 font-bold uppercase tracking-wide block">Visits</span>
-              <span className="text-2xl font-extrabold text-emerald-700 block mt-1">{stats.visitsBuyers}</span>
+            <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+              <span className="text-xs text-purple-600 font-bold uppercase tracking-wide block">Deals Closed</span>
+              <span className="text-2xl font-extrabold text-purple-700 block mt-1">{stats.closedBuyers}</span>
             </div>
           </div>
 
           {/* Conversion Funnel Bar */}
           <div className="pt-2">
             <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
-              <span>Lead Conversion (Site Visits)</span>
-              <span className="text-emerald-600">{stats.totalBuyers > 0 ? Math.round((stats.visitsBuyers / stats.totalBuyers) * 100) : 0}%</span>
+              <span>Brokerage Conversion Rate</span>
+              <span className="text-purple-600">{stats.totalBuyers > 0 ? Math.round((stats.closedBuyers / stats.totalBuyers) * 100) : 0}%</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
               <div 
-                className="bg-emerald-500 h-2.5 rounded-full transition-all duration-1000" 
-                style={{ width: `${stats.totalBuyers > 0 ? Math.round((stats.visitsBuyers / stats.totalBuyers) * 100) : 0}%` }}
+                className="bg-purple-500 h-2.5 rounded-full transition-all duration-1000" 
+                style={{ width: `${stats.totalBuyers > 0 ? Math.round((stats.closedBuyers / stats.totalBuyers) * 100) : 0}%` }}
               />
             </div>
           </div>
@@ -201,22 +205,22 @@ export default function AdminDashboard() {
               <span className="text-xs text-amber-600 font-bold uppercase tracking-wide block">Contacted</span>
               <span className="text-2xl font-extrabold text-amber-700 block mt-1">{stats.contactedSellers}</span>
             </div>
-            <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-              <span className="text-xs text-emerald-600 font-bold uppercase tracking-wide block">Visits</span>
-              <span className="text-2xl font-extrabold text-emerald-700 block mt-1">{stats.visitsSellers}</span>
+            <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+              <span className="text-xs text-purple-600 font-bold uppercase tracking-wide block">Deals Closed</span>
+              <span className="text-2xl font-extrabold text-purple-700 block mt-1">{stats.closedSellers}</span>
             </div>
           </div>
 
           {/* Conversion Funnel Bar */}
           <div className="pt-2">
             <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
-              <span>Lead Conversion (Site Visits)</span>
-              <span className="text-emerald-600">{stats.totalSellers > 0 ? Math.round((stats.visitsSellers / stats.totalSellers) * 100) : 0}%</span>
+              <span>Brokerage Conversion Rate</span>
+              <span className="text-purple-600">{stats.totalSellers > 0 ? Math.round((stats.closedSellers / stats.totalSellers) * 100) : 0}%</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden flex">
               <div 
-                className="bg-emerald-500 h-2.5 rounded-full transition-all duration-1000" 
-                style={{ width: `${stats.totalSellers > 0 ? Math.round((stats.visitsSellers / stats.totalSellers) * 100) : 0}%` }}
+                className="bg-purple-500 h-2.5 rounded-full transition-all duration-1000" 
+                style={{ width: `${stats.totalSellers > 0 ? Math.round((stats.closedSellers / stats.totalSellers) * 100) : 0}%` }}
               />
             </div>
           </div>

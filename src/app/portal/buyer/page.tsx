@@ -16,6 +16,24 @@ export default function BuyerDashboard() {
 
       const userId = session.user.id;
 
+      // Sync guest listings
+      const localListingsRaw = localStorage.getItem('myBuyerListings');
+      if (localListingsRaw) {
+        try {
+          const localIds = JSON.parse(localListingsRaw);
+          if (Array.isArray(localIds) && localIds.length > 0) {
+            await supabase
+              .from('buyers_demand')
+              .update({ user_id: userId })
+              .in('id', localIds)
+              .is('user_id', null);
+            localStorage.removeItem('myBuyerListings'); // Clear after sync
+          }
+        } catch (e) {
+          console.error('Failed to sync guest buyer listings:', e);
+        }
+      }
+
       // Fetch Demands
       const { data: demandsData } = await supabase
         .from('buyers_demand')
