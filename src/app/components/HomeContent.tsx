@@ -45,7 +45,7 @@ export default function HomeContent({ options, listings }: Props) {
           </span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-          Ahmedabad&apos;s premier property matchmakers. Whether you&apos;re buying, selling, or renting, let our experts handle the hassle. <strong className="text-slate-800">Zero registration fees. Fair success fee.</strong>
+          Ahmedabad&apos;s premier property matchmakers. <span className="hidden sm:inline">Whether you&apos;re buying, selling, or renting, let our experts handle the hassle.</span> <strong className="text-slate-800">Zero registration fees. Fair success fee.</strong>
         </p>
       </div>
 
@@ -139,8 +139,8 @@ export default function HomeContent({ options, listings }: Props) {
             <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-3">100% Verified Ahmedabad Leads</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed">No spam, no window shoppers. Our local agents personally verify every buyer, seller, and tenant before connecting you.</p>
+            <h3 className="text-lg font-bold text-slate-900 sm:mb-3">100% Verified Ahmedabad Leads</h3>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed hidden sm:block">No spam, no window shoppers. Our local agents personally verify every buyer, seller, and tenant before connecting you.</p>
           </div>
           
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow text-center relative overflow-hidden">
@@ -148,16 +148,16 @@ export default function HomeContent({ options, listings }: Props) {
             <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Building className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-3">End-to-End Assistance</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed">From property visits to negotiating the best price, legal paperwork, and loan assistance, we handle everything.</p>
+            <h3 className="text-lg font-bold text-slate-900 sm:mb-3">End-to-End Assistance</h3>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed hidden sm:block">From property visits to negotiating the best price, legal paperwork, and loan assistance, we handle everything.</p>
           </div>
 
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow text-center">
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <MapPin className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-3">Fair Success Fee</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed">Zero registration charges, zero hidden costs. You only pay a transparent, mutually agreed <strong>fair commission</strong> if the deal successfully closes. No success, no fee.</p>
+            <h3 className="text-lg font-bold text-slate-900 sm:mb-3">Fair Success Fee</h3>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed hidden sm:block">Zero registration charges, zero hidden costs. You only pay a transparent, mutually agreed <strong>fair commission</strong> if the deal successfully closes. No success, no fee.</p>
           </div>
         </div>
       </div>
@@ -177,32 +177,32 @@ export default function HomeContent({ options, listings }: Props) {
             <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-sm text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
               <FileText className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">1. Share Details</h3>
-            <p className="text-sm text-slate-600">Fill out our quick form to let us know your exact requirements.</p>
+            <h3 className="font-bold text-slate-900 sm:mb-2">1. Share Details</h3>
+            <p className="text-sm text-slate-600 hidden sm:block">Fill out our quick form to let us know your exact requirements.</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-sm text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
               <Search className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">2. We Verify & Match</h3>
-            <p className="text-sm text-slate-600">We personally verify the properties or buyers/tenants and find the perfect match.</p>
+            <h3 className="font-bold text-slate-900 sm:mb-2">2. We Verify & Match</h3>
+            <p className="text-sm text-slate-600 hidden sm:block">We personally verify the properties or buyers/tenants and find the perfect match.</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-sm text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
               <Building className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">3. Site Visit & Legal</h3>
-            <p className="text-sm text-slate-600">We arrange visits and handle all negotiations and legal paperwork.</p>
+            <h3 className="font-bold text-slate-900 sm:mb-2">3. Site Visit & Legal</h3>
+            <p className="text-sm text-slate-600 hidden sm:block">We arrange visits and handle all negotiations and legal paperwork.</p>
           </div>
           
           <div className="text-center">
             <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-sm text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
               <Handshake className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-900 mb-2">4. Deal Closes</h3>
-            <p className="text-sm text-slate-600">You only pay our transparent commission once the deal is 100% closed.</p>
+            <h3 className="font-bold text-slate-900 sm:mb-2">4. Deal Closes</h3>
+            <p className="text-sm text-slate-600 hidden sm:block">You only pay our transparent commission once the deal is 100% closed.</p>
           </div>
         </div>
       </div>
