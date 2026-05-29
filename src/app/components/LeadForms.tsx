@@ -588,7 +588,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
             }`}
           >
-            <Building className="w-5 h-5" /> I Want to Buy
+            <Building className="w-5 h-5" /> Buy / Rent
           </button>
           <button
             type="button"
@@ -599,7 +599,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-100/50'
             }`}
           >
-            <MapPin className="w-5 h-5" /> I Want to Sell
+            <MapPin className="w-5 h-5" /> Sell / Rent Out
           </button>
         </div>
       )}
@@ -646,10 +646,10 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-bold text-slate-900">
             {activeTab === 'buy' 
-              ? 'Submit your buying requirement' 
+              ? (formData.listingPurpose === 'rent' ? 'Submit Rental Requirement' : 'Submit Buying Requirement')
               : editModeId 
                 ? 'Edit Property Listing' 
-                : 'List your property for sale'}
+                : (formData.listingPurpose === 'rent' ? 'List your property for rent' : 'List your property for sale')}
           </h3>
           {editModeId && (
             <button type="button" onClick={cancelEdit} className="text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">

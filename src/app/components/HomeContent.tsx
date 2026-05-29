@@ -45,7 +45,7 @@ export default function HomeContent({ options, listings }: Props) {
           </span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-          We know that buying or selling a property is one of the biggest emotional and financial decisions of your life. Let us guide you through the entire journey, completely stress-free. <strong className="text-slate-800">Zero upfront fees.</strong>
+          We know that buying, selling, or renting a property is one of the biggest emotional and financial decisions of your life. Let us guide you through the entire journey, completely stress-free. <strong className="text-slate-800">Zero upfront fees.</strong>
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Search className="w-4 h-4" /> Find a Property
+          <Search className="w-4 h-4" /> Buy or Rent Property
         </button>
         <button
           type="button"
@@ -71,7 +71,7 @@ export default function HomeContent({ options, listings }: Props) {
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Building className="w-4 h-4" /> List a Property
+          <Building className="w-4 h-4" /> Sell or Rent Out Property
         </button>
       </div>
 
@@ -93,7 +93,7 @@ export default function HomeContent({ options, listings }: Props) {
                 Fast & Secure
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
-                List Your Property, Find the Right Buyer
+                List Your Property, Find the Right Buyer or Tenant
               </h1>
               <p className="text-slate-600 text-sm font-medium max-w-sm mx-auto lg:mx-0 leading-relaxed">
                 Your property will be visible directly on our platform. However, your name and contact details will remain 100% private to prevent spam.
@@ -111,7 +111,7 @@ export default function HomeContent({ options, listings }: Props) {
                   <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-bold text-slate-800">Verified Matchmaking</p>
-                    <p className="text-xs font-medium text-slate-500 mt-0.5">We connect you exclusively with verified, genuine buyers.</p>
+                    <p className="text-xs font-medium text-slate-500 mt-0.5">We connect you exclusively with verified, genuine buyers and tenants.</p>
                   </div>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function HomeContent({ options, listings }: Props) {
               <CheckCircle2 className="w-7 h-7" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 mb-3">100% Verified Leads</h3>
-            <p className="text-slate-600 text-sm font-medium leading-relaxed">No spam, no window shoppers. We use both <strong>social media marketing</strong> and <strong>physical groundwork</strong> to verify every buyer and seller before connecting you.</p>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">No spam, no window shoppers. We use both <strong>social media marketing</strong> and <strong>physical groundwork</strong> to verify every buyer, seller, and tenant before connecting you.</p>
           </div>
           
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow text-center relative overflow-hidden">
@@ -186,7 +186,7 @@ export default function HomeContent({ options, listings }: Props) {
               <Search className="w-7 h-7" />
             </div>
             <h3 className="font-bold text-slate-900 mb-2">2. We Verify & Match</h3>
-            <p className="text-sm text-slate-600">We personally verify the properties or buyers and find the perfect match.</p>
+            <p className="text-sm text-slate-600">We personally verify the properties or buyers/tenants and find the perfect match.</p>
           </div>
           
           <div className="text-center">
