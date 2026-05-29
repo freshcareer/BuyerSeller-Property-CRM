@@ -5,7 +5,7 @@ import {
   MapPin, Building, DollarSign, Search, Filter, X,
   CheckCircle2, Loader2, Phone, ChevronRight, Home,
   Layers, ArrowDown, User, Globe, Bed, Bath, Expand,
-  Key, Compass, Tag, Car, Heart
+  Key, Compass, Tag, Car, Heart, Image as ImageIcon, ShieldCheck
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -282,198 +282,165 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(!isExpanded); } }}
       className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
     >
-      {/* Color top bar */}
-      <div className={`h-1.5 w-full ${color.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
-
-      <div className="p-4 space-y-3 flex-1 flex flex-col">
-        {/* Type & Purpose badges */}
-        <div className="flex items-center justify-between gap-2 relative z-10">
-          <div className="flex gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${color.bg} ${color.text}`}>
+      {/* Premium Image Placeholder */}
+      <div className={`relative h-48 w-full bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden flex items-center justify-center`}>
+        <div className={`absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity ${color.bg}`} />
+        <ImageIcon className="w-12 h-12 text-slate-300 mb-2" />
+        
+        {/* Badges on Image */}
+        <div className="absolute top-3 w-full px-3 flex justify-between items-start z-10">
+          <div className="flex flex-col gap-1.5">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm backdrop-blur-md bg-white/90 ${color.text}`}>
               <Building className="w-3 h-3" />
               {fmtPropType(listing.property_type)}
             </span>
             {listing.listing_purpose && (
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                listing.listing_purpose === 'rent' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-md uppercase tracking-wider ${
+                listing.listing_purpose === 'rent' ? 'bg-orange-500/90 text-white' : 'bg-emerald-500/90 text-white'
               }`}>
                 {listing.listing_purpose === 'rent' ? 'For Rent' : 'For Sale'}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-medium">🔒 Private</span>
+          <div className="flex flex-col gap-1.5 items-end">
+            <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm text-[10px] font-bold text-slate-600">
+              <ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified
+            </span>
             <button
-              onClick={onToggleWatchlist}
-              className={`p-1.5 rounded-full transition-colors ${isWatchlisted ? 'bg-rose-50 text-rose-500 hover:bg-rose-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+              onClick={(e) => { e.stopPropagation(); onToggleWatchlist(e); }}
+              className={`p-1.5 rounded-full shadow-sm backdrop-blur-md transition-colors ${isWatchlisted ? 'bg-rose-500 text-white' : 'bg-white/90 text-slate-400 hover:text-rose-500'}`}
               title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
             >
               <Heart className={`w-4 h-4 ${isWatchlisted ? 'fill-current' : ''}`} />
             </button>
           </div>
         </div>
+        
+        {/* Bottom Image Gradient overlay for text legibility if we add real images later */}
+        <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
 
-        {/* Title / Description */}
+      <div className="p-4 space-y-4 flex-1 flex flex-col bg-white z-10 relative">
+        {/* Title & Price */}
         <div>
-          <p className="font-bold text-slate-800 text-sm leading-snug">
-            {listing.builtup_area && `${listing.builtup_area} `}
-            {beds && `${beds} Bedroom `}
-            {fmtPropType(listing.property_type)} in {fmtArea(listing.area)}
-          </p>
-          <p className="text-xs text-slate-400 mt-0.5 flex justify-between items-center">
-            <span>Listing ID: #{listing.id.substring(0, 8).toUpperCase()}</span>
-            <span>Updated {timeAgo(listing.created_at)}</span>
-          </p>
+          <div className="flex justify-between items-start gap-2 mb-1">
+            <p className="font-extrabold text-slate-800 text-base leading-tight line-clamp-2">
+              {listing.builtup_area && `${listing.builtup_area} `}
+              {beds && `${beds} Bedroom `}
+              {fmtPropType(listing.property_type)} in {fmtArea(listing.area)}
+            </p>
+            <div className="text-right shrink-0">
+              <div className="font-black text-indigo-700 text-lg leading-none">{fmtPrice(listing.price)}</div>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-slate-400 mt-1.5 font-medium">
+             <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {fmtArea(listing.area).split(',')[0]}</span>
+             <span>{timeAgo(listing.created_at)}</span>
+          </div>
         </div>
 
-        {/* Key Features */}
-        {(beds || baths || listing.builtup_area) && (
-          <div className="flex flex-wrap items-center gap-2 mt-1 mb-1 text-xs font-semibold text-slate-600">
-            {beds && (
-              <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                <Bed className="w-3 h-3 text-slate-400" /> {beds} Beds
-              </span>
-            )}
-            {baths && (
-              <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                <Bath className="w-3 h-3 text-slate-400" /> {baths} Baths
-              </span>
-            )}
-            {listing.builtup_area && (
-              <span className="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                <Expand className="w-3 h-3 text-slate-400" /> {listing.builtup_area}
-              </span>
-            )}
+        {/* Essential Features Grid */}
+        <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100">
+          <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
+            <Bed className="w-4 h-4 text-slate-400 mb-0.5" />
+            <span className="text-xs font-bold text-slate-700">{beds || '-'}</span>
+            <span className="text-[9px] text-slate-400 uppercase tracking-wide">Beds</span>
           </div>
-        )}
-
-        {/* Price */}
-        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <DollarSign className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="font-extrabold text-emerald-700 text-sm">{fmtPrice(listing.price)}</span>
+          <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
+            <Bath className="w-4 h-4 text-slate-400 mb-0.5" />
+            <span className="text-xs font-bold text-slate-700">{baths || '-'}</span>
+            <span className="text-[9px] text-slate-400 uppercase tracking-wide">Baths</span>
           </div>
-          {poss && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">{poss}</span>}
+          <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg text-center">
+            <Expand className="w-4 h-4 text-slate-400 mb-0.5" />
+            <span className="text-xs font-bold text-slate-700 truncate w-full">{listing.builtup_area || '-'}</span>
+            <span className="text-[9px] text-slate-400 uppercase tracking-wide">Area</span>
+          </div>
         </div>
 
         {/* Highlight Tags */}
         {listing.tags && (
           <div className="flex flex-wrap gap-1.5">
-            {listing.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => (
-              <span key={t} className="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Tag className="w-2.5 h-2.5" /> {t}
+            {listing.tags.split(',').slice(0, 3).map(t => (
+              <span key={t.trim()} className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                {t.trim()}
               </span>
             ))}
+            {listing.tags.split(',').length > 3 && (
+              <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md">+{listing.tags.split(',').length - 3}</span>
+            )}
           </div>
         )}
 
-        {/* Advanced Grid (Hidden by default) */}
-        {isExpanded && (beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
-          <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-300">
-            {listing.builtup_area && (
-              <div className="flex items-start gap-1.5">
-                <Expand className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Area</p>
-                  <p className="text-xs font-medium text-slate-700">{listing.builtup_area}</p>
-                </div>
-              </div>
-            )}
-            {beds && (
-              <div className="flex items-start gap-1.5">
-                <Bed className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bedroom</p>
-                  <p className="text-xs font-medium text-slate-700">{beds}</p>
-                </div>
-              </div>
-            )}
-            {baths && (
-              <div className="flex items-start gap-1.5">
-                <Bath className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Bath</p>
-                  <p className="text-xs font-medium text-slate-700">{baths}</p>
-                </div>
-              </div>
-            )}
+        {/* Advanced Details (Hidden by default) */}
+        {isExpanded && (
+          <div className="grid grid-cols-2 gap-y-3 gap-x-2 mt-2 p-3 bg-slate-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
             {listing.additional_spaces && (
-              <div className="flex items-start gap-1.5">
-                <Home className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Add. Spaces</p>
-                  <p className="text-xs font-medium text-slate-700">{listing.additional_spaces}</p>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Additional Spaces</span>
+                <span className="text-xs font-medium text-slate-700 truncate">{listing.additional_spaces}</span>
               </div>
             )}
             {facing && (
-              <div className="flex items-start gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">View/Facing</p>
-                  <p className="text-xs font-medium text-slate-700">{facing}</p>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Facing</span>
+                <span className="text-xs font-medium text-slate-700">{facing}</span>
               </div>
             )}
             {listing.parking && (
-              <div className="flex items-start gap-1.5">
-                <Car className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Parking</p>
-                  <p className="text-xs font-medium text-slate-700">{listing.parking}</p>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Parking</span>
+                <span className="text-xs font-medium text-slate-700">{listing.parking}</span>
               </div>
             )}
             {furnishing && (
-              <div className="flex items-start gap-1.5">
-                <Home className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Furnishing</p>
-                  <p className="text-xs font-medium text-slate-700">{furnishing}</p>
-                </div>
-              </div>
-            )}
-            {balconies && (
-              <div className="flex items-start gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Balconies</p>
-                  <p className="text-xs font-medium text-slate-700">{balconies}</p>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Furnishing</span>
+                <span className="text-xs font-medium text-slate-700">{furnishing}</span>
               </div>
             )}
             {propertyAge && (
-              <div className="flex items-start gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-400 mt-0.5" />
-                <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Age</p>
-                  <p className="text-xs font-medium text-slate-700">{propertyAge}</p>
-                </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Property Age</span>
+                <span className="text-xs font-medium text-slate-700">{propertyAge}</span>
+              </div>
+            )}
+            {balconies && (
+              <div className="flex flex-col">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Balconies</span>
+                <span className="text-xs font-medium text-slate-700">{balconies}</span>
+              </div>
+            )}
+            
+            {(listing.description || listing.notes) && (
+              <div className="col-span-2 mt-2 pt-2 border-t border-slate-200">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Description</span>
+                <p className="text-xs text-slate-600 italic font-medium mt-0.5 line-clamp-4">
+                  {listing.description || listing.notes}
+                </p>
               </div>
             )}
           </div>
-        )}
-
-        {/* Description / Notes (Hidden by default) */}
-        {isExpanded && (listing.description || listing.notes) && (
-          <p className="text-xs text-slate-500 line-clamp-3 italic font-medium flex-1 pt-2 animate-in fade-in duration-300">
-            {listing.description || listing.notes}
-          </p>
         )}
 
         {/* CTA */}
         <div className="mt-auto pt-2 flex flex-col gap-2">
-          {!isExpanded && (beds || baths || listing.builtup_area || listing.additional_spaces || facing || listing.parking || furnishing || balconies || propertyAge) && (
-            <div className="text-[10px] text-center font-bold text-slate-400 group-hover:text-blue-500 transition-colors">
-              Click to quick view advanced details ▼
-            </div>
-          )}
-          <button 
-            onClick={(e) => { e.stopPropagation(); onInterest(); }}
-            className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-indigo-600/20"
-          >
-            I am Interested <ChevronRight className="w-4 h-4" />
-          </button>
+          {!isExpanded && <div className="h-2" /> /* Spacer when collapsed */}
+          <div className="flex gap-2">
+            <button 
+              onClick={(e) => { e.stopPropagation(); onInterest(); }}
+              className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-blue-600/20"
+            >
+              Contact Agent
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-colors shrink-0"
+            >
+              {isExpanded ? 'Less' : 'More'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

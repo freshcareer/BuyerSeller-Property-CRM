@@ -20,11 +20,7 @@ interface LeadFormsProps {
   hideTabs?: boolean;
 }
 
-// ── Constants for Quick Select ────────────────────────────────────────────────
-const PARKING_OPTIONS = ['None', '1 Covered', '2 Covered', '3+ Covered', '1 Open', '2 Open'];
-const ADDITIONAL_SPACES_OPTIONS = ['Pooja Room', 'Servant Room', 'Study Room', 'Store Room', 'Balcony', 'Terrace'];
-const TAG_OPTIONS = ['Vastu Compliant', 'Gated Society', 'Corner Property', 'Park Facing', 'Main Road Facing', 'Premium Interiors', 'Newly Renovated'];
-const AREA_SUGGESTIONS = ['500 Sq.Ft.', '1000 Sq.Ft.', '1500 Sq.Ft.', '2000 Sq.Ft.', '50 Sq.Yd.', '100 Sq.Yd.', '200 Sq.Yd.'];
+// Dynamic options are now fetched from DB
 
 // ── Validation Rules ──────────────────────────────────────────────────────────
 
@@ -365,6 +361,10 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const furnishingOptions = options.filter((o) => o.category === 'furnishing');
   const balconyOptions = options.filter((o) => o.category === 'balconies');
   const propertyAgeOptions = options.filter((o) => o.category === 'property_age');
+  const parkingOptions = options.filter((o) => o.category === 'parking');
+  const additionalSpacesOptions = options.filter((o) => o.category === 'additional_spaces');
+  const tagOptions = options.filter((o) => o.category === 'tags');
+  const areaSuggestionsOptions = options.filter((o) => o.category === 'area_suggestions');
 
   const touch = (field: FieldKey) => setTouched((prev) => ({ ...prev, [field]: true }));
 
@@ -900,14 +900,14 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               <label className={labelCls}><Expand className="w-3.5 h-3.5" /> Built-up Area</label>
               <input type="text" name="builtupArea" value={formData.builtupArea} onChange={handleChange} placeholder="e.g. 1500 Sq.Ft." className={getInputCls('builtupArea' as any)} />
               <div className="flex flex-wrap gap-1.5 mt-1.5">
-                {AREA_SUGGESTIONS.map(s => (
+                {areaSuggestionsOptions.map(s => (
                   <button
-                    key={s}
+                    key={s.value}
                     type="button"
-                    onClick={() => setFormData(p => ({...p, builtupArea: s}))}
-                    className={`px-2 py-1 text-xs font-medium rounded border transition-colors ${formData.builtupArea === s ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                    onClick={() => setFormData(p => ({...p, builtupArea: s.value}))}
+                    className={`px-2 py-1 text-xs font-medium rounded border transition-colors ${formData.builtupArea === s.value ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
                   >
-                    {s}
+                    {s.display_name}
                   </button>
                 ))}
               </div>
@@ -939,14 +939,14 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
             <div className="space-y-1">
               <label className={labelCls}><Car className="w-3.5 h-3.5" /> Parking</label>
               <div className="flex flex-wrap gap-1.5">
-                {PARKING_OPTIONS.map(opt => (
+                {parkingOptions.map(opt => (
                   <button
-                    key={opt}
+                    key={opt.value}
                     type="button"
-                    onClick={() => selectSingle('parking', opt)}
-                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.parking === opt ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
+                    onClick={() => selectSingle('parking', opt.value)}
+                    className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${formData.parking === opt.value ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300 hover:bg-blue-50'}`}
                   >
-                    {opt}
+                    {opt.display_name}
                   </button>
                 ))}
               </div>
@@ -993,37 +993,33 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
              <div className="space-y-1">
                <label className={labelCls}><Home className="w-3.5 h-3.5" /> Additional Spaces</label>
                <div className="flex flex-wrap gap-1.5 mb-1.5">
-                 {ADDITIONAL_SPACES_OPTIONS.map(opt => {
-                   const isSelected = formData.additionalSpaces.includes(opt);
-                   return (
-                     <button
-                       key={opt}
-                       type="button"
-                       onClick={() => toggleMultiSelect('additionalSpaces', opt)}
-                       className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'}`}
-                     >
-                       {isSelected && <CheckCircle2 className="w-3 h-3 inline-block mr-1" />}
-                       {opt}
-                     </button>
-                   );
-                 })}
+                {additionalSpacesOptions.map(opt => {
+                  const isSel = (formData.additionalSpaces || '').split(',').map(s => s.trim()).includes(opt.value);
+                  return (
+                    <button key={opt.value} type="button" onClick={() => toggleMultiSelect('additionalSpaces', opt.value)}
+                      className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${isSel ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'}`}
+                    >
+                      {opt.display_name}
+                    </button>
+                  );
+                })}
                </div>
                <input type="text" name="additionalSpaces" value={formData.additionalSpaces} onChange={handleChange} placeholder="Custom (comma separated)" className={getInputCls('additionalSpaces' as any) + ' mt-1'} />
              </div>
              <div className="space-y-1">
                <label className={labelCls}><Tag className="w-3.5 h-3.5" /> Highlight Tags</label>
                <div className="flex flex-wrap gap-1.5 mb-1.5">
-                 {TAG_OPTIONS.map(opt => {
-                   const isSelected = formData.tags.includes(opt);
+                 {tagOptions.map(opt => {
+                   const isSelected = formData.tags.includes(opt.value);
                    return (
                      <button
-                       key={opt}
+                       key={opt.value}
                        type="button"
-                       onClick={() => toggleMultiSelect('tags', opt)}
+                       onClick={() => toggleMultiSelect('tags', opt.value)}
                        className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-all ${isSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50'}`}
                      >
                        {isSelected && <CheckCircle2 className="w-3 h-3 inline-block mr-1" />}
-                       {opt}
+                       {opt.display_name}
                      </button>
                    );
                  })}
