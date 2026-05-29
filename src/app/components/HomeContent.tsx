@@ -36,7 +36,7 @@ export default function HomeContent({ options, listings }: Props) {
       {/* ── Premium Hero Section ─────────────────────────────────────────────── */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 pt-8 sm:pt-12">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase tracking-widest mb-6 border border-blue-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-700">
-          <Star className="w-4 h-4 fill-blue-600 text-blue-600" /> Gujarat's Most Trusted Property Network
+          <Star className="w-4 h-4 fill-blue-600 text-blue-600" /> Gujarat&apos;s Most Trusted Property Network
         </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6 animate-in fade-in slide-in-from-bottom-3 duration-700 delay-100">
           Finding a house is easy. <br className="hidden sm:block" />
@@ -45,7 +45,7 @@ export default function HomeContent({ options, listings }: Props) {
           </span>
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-          Ahmedabad's premier property matchmakers. Whether you're buying, selling, or renting, let our experts handle the hassle. <strong className="text-slate-800">Zero registration fees. Fair success fee.</strong>
+          Ahmedabad&apos;s premier property matchmakers. Whether you&apos;re buying, selling, or renting, let our experts handle the hassle. <strong className="text-slate-800">Zero registration fees. Fair success fee.</strong>
         </p>
       </div>
 
