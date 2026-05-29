@@ -340,7 +340,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
   const cancelEdit = () => {
     setEditModeId(null);
-    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '' });
+    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
     setTouched({});
     setSubmitError(null);
   };
@@ -353,8 +353,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   });
 
   // Supabase system_settings options
+  const isRent = formData.listingPurpose === 'rent';
+  const isCommercial = formData.propertyType === 'commercial_shop' || formData.propertyType === 'office_space' || formData.propertyType === 'warehouse';
+
   const propertyTypes = options.filter((o) => o.category === 'property_type');
-  const budgetRanges = options.filter((o) => o.category === 'budget_range');
+  const budgetRanges = options.filter((o) => o.category === (isRent ? 'rent_range' : 'budget_range'));
   const bedroomOptions = options.filter((o) => o.category === 'bedrooms');
   const bathroomOptions = options.filter((o) => o.category === 'bathrooms');
   const facingOptions = options.filter((o) => o.category === 'facing');
@@ -514,7 +517,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       }
 
       setSuccess(true);
-      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '' });
+      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
       setTouched({});
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -749,7 +752,11 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
           <div className="space-y-2">
             <label className={labelCls}>
-              <DollarSign className="w-3.5 h-3.5" /> {activeTab === 'buy' ? 'Budget' : 'Expected Price'} <span className="text-rose-500">*</span>
+              <DollarSign className="w-3.5 h-3.5" /> 
+              {isRent 
+                ? (activeTab === 'buy' ? 'Rental Budget' : 'Expected Rent') 
+                : (activeTab === 'buy' ? 'Budget' : 'Expected Price')} 
+              <span className="text-rose-500">*</span>
             </label>
             <div className="flex flex-wrap gap-1.5">
               {budgetRanges.map(opt => (
@@ -866,7 +873,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
             <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <label className={labelCls}><Bed className="w-3.5 h-3.5" /> Bedrooms</label>
+              <label className={labelCls}><Bed className="w-3.5 h-3.5" /> {isCommercial ? 'Cabins / Rooms' : 'Bedrooms'}</label>
               <div className="flex flex-wrap gap-1.5">
                 {bedroomOptions.map(opt => (
                   <button key={opt.value} type="button" onClick={() => selectSingle('bedrooms', opt.value)}
@@ -878,7 +885,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
               </div>
             </div>
             <div className="space-y-1">
-              <label className={labelCls}><Bath className="w-3.5 h-3.5" /> Bathrooms</label>
+              <label className={labelCls}><Bath className="w-3.5 h-3.5" /> {isCommercial ? 'Washrooms' : 'Bathrooms'}</label>
               <div className="flex flex-wrap gap-1.5">
                 {bathroomOptions.map(opt => (
                   <button key={opt.value} type="button" onClick={() => selectSingle('bathrooms', opt.value)}
