@@ -26,6 +26,7 @@ import {
   Armchair,
   Layers,
   Clock,
+  Eye,
 } from 'lucide-react';
 
 interface SettingItem {
@@ -1023,6 +1024,7 @@ export default function SettingsManager() {
       case 'furnishing': return 'Furnishing';
       case 'balconies': return 'Balconies';
       case 'property_age': return 'Property Age';
+      case 'card_visibility': return 'Card Visibility';
       default: return category;
     }
   };
@@ -1040,12 +1042,13 @@ export default function SettingsManager() {
       case 'furnishing': return Armchair;
       case 'balconies': return Layers;
       case 'property_age': return Clock;
+      case 'card_visibility': return Eye;
       default: return Settings;
     }
   };
 
   const filteredSettings = settingsList.filter(s => s.category === activeTab);
-  const categories = ['property_type', 'budget_range', 'lead_status', 'location_settings', 'bedrooms', 'bathrooms', 'facing', 'possession_status', 'furnishing', 'balconies', 'property_age'];
+  const categories = ['property_type', 'budget_range', 'lead_status', 'location_settings', 'card_visibility', 'bedrooms', 'bathrooms', 'facing', 'possession_status', 'furnishing', 'balconies', 'property_age'];
 
   const inputCls = 'w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-200';
 

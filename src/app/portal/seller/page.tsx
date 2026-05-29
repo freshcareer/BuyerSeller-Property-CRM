@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Building2, MapPin, Tag, AlertCircle } from 'lucide-react';
+import { Loader2, Building2, MapPin, Tag, AlertCircle, Plus, Trash2, Edit2 } from 'lucide-react';
 
 export default function SellerDashboard() {
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,22 @@ export default function SellerDashboard() {
     fetchData();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+    try {
+      await supabase.from('sellers_inventory').delete().eq('id', id);
+      setInventory(prev => prev.filter(i => i.id !== id));
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete property');
+    }
+  };
+
+  const handleAddProperty = () => {
+    // Navigating back to homepage with #sell so they can fill the robust form
+    window.location.href = '/#sell';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center p-12">
@@ -40,9 +56,17 @@ export default function SellerDashboard() {
     <div className="space-y-10">
       
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <Building2 className="w-6 h-6 text-indigo-600" />
-          <h2 className="text-2xl font-extrabold text-slate-900">My Listed Properties</h2>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-indigo-600" />
+            <h2 className="text-2xl font-extrabold text-slate-900">My Listed Properties</h2>
+          </div>
+          <button 
+            onClick={handleAddProperty}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Property
+          </button>
         </div>
 
         {inventory.length === 0 ? (
@@ -52,7 +76,13 @@ export default function SellerDashboard() {
               <Building2 className="w-8 h-8 text-indigo-300" />
             </div>
             <h3 className="text-xl font-extrabold text-slate-900 mb-2 relative z-10">No properties listed yet</h3>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto relative z-10">Ready to sell? Submit your property details on the home page and we will connect you with verified buyers.</p>
+            <p className="text-slate-500 font-medium max-w-sm mx-auto relative z-10 mb-6">Ready to sell? Submit your property details and we will connect you with verified buyers.</p>
+            <button 
+              onClick={handleAddProperty}
+              className="relative z-10 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition-colors inline-flex items-center gap-2 shadow-md"
+            >
+              <Plus className="w-5 h-5" /> Add New Property
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -82,6 +112,14 @@ export default function SellerDashboard() {
 
                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                   <span>Listed on {new Date(prop.created_at).toLocaleDateString()}</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => alert('Editing requires Admin approval. Please contact support.')} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {prop.status === 'new_lead' && (

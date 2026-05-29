@@ -274,6 +274,40 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
     return `${diff} days ago`;
   };
 
+  // Build visibility config from dbOptions
+  const vis = useMemo(() => {
+    const config: Record<string, boolean> = {
+      show_bedrooms: true, show_bathrooms: true, show_facing: true,
+      show_property_age: true, show_balconies: true, show_furnishing: true,
+      show_tags: true, show_parking: true, show_additional_spaces: true
+    };
+    dbOptions.filter(o => o.category === 'card_visibility').forEach(o => {
+      // If it exists in system_settings, it means it's considered TRUE by default if it was added. 
+      // Wait, in settings, they add options. The presence of an option means it's in the list.
+      // But how do they turn it off? They delete it from the list. 
+      // So if it's NOT in the list, it's false.
+    });
+    // Wait, the query fetches all settings. If an admin deletes 'show_tags' from settings, it won't be in dbOptions.
+    // So we should map the presence of the key in dbOptions to true.
+    const presentKeys = new Set(dbOptions.filter(o => o.category === 'card_visibility').map(o => o.value));
+    
+    // Only apply DB config if there are actually card_visibility settings (to prevent all hiding on empty DB)
+    if (presentKeys.size > 0) {
+      return {
+        show_bedrooms: presentKeys.has('show_bedrooms'),
+        show_bathrooms: presentKeys.has('show_bathrooms'),
+        show_facing: presentKeys.has('show_facing'),
+        show_property_age: presentKeys.has('show_property_age'),
+        show_balconies: presentKeys.has('show_balconies'),
+        show_furnishing: presentKeys.has('show_furnishing'),
+        show_tags: presentKeys.has('show_tags'),
+        show_parking: presentKeys.has('show_parking'),
+        show_additional_spaces: presentKeys.has('show_additional_spaces'),
+      };
+    }
+    return config; // Fallback to all true
+  }, [dbOptions]);
+
   return (
     <div
       onClick={() => setIsExpanded(!isExpanded)}
@@ -326,7 +360,7 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
           <div className="flex justify-between items-start gap-2 mb-1">
             <p className="font-extrabold text-slate-800 text-base leading-tight line-clamp-2">
               {listing.builtup_area && `${listing.builtup_area} `}
-              {beds && `${beds} Bedroom `}
+              {beds && vis.show_bedrooms && `${beds} Bedroom `}
               {fmtPropType(listing.property_type)} in {fmtArea(listing.area)}
             </p>
             <div className="text-right shrink-0">
@@ -342,16 +376,20 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
 
         {/* Essential Features Grid */}
         <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-100">
-          <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
-            <Bed className="w-4 h-4 text-slate-400 mb-0.5" />
-            <span className="text-xs font-bold text-slate-700">{beds || '-'}</span>
-            <span className="text-[9px] text-slate-400 uppercase tracking-wide">Beds</span>
-          </div>
-          <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
-            <Bath className="w-4 h-4 text-slate-400 mb-0.5" />
-            <span className="text-xs font-bold text-slate-700">{baths || '-'}</span>
-            <span className="text-[9px] text-slate-400 uppercase tracking-wide">Baths</span>
-          </div>
+          {vis.show_bedrooms && (
+            <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
+              <Bed className="w-4 h-4 text-slate-400 mb-0.5" />
+              <span className="text-xs font-bold text-slate-700">{beds || '-'}</span>
+              <span className="text-[9px] text-slate-400 uppercase tracking-wide">Beds</span>
+            </div>
+          )}
+          {vis.show_bathrooms && (
+            <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg">
+              <Bath className="w-4 h-4 text-slate-400 mb-0.5" />
+              <span className="text-xs font-bold text-slate-700">{baths || '-'}</span>
+              <span className="text-[9px] text-slate-400 uppercase tracking-wide">Baths</span>
+            </div>
+          )}
           <div className="flex flex-col items-center justify-center p-1.5 bg-slate-50 rounded-lg text-center">
             <Expand className="w-4 h-4 text-slate-400 mb-0.5" />
             <span className="text-xs font-bold text-slate-700 truncate w-full">{listing.builtup_area || '-'}</span>
@@ -360,7 +398,7 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
         </div>
 
         {/* Highlight Tags */}
-        {listing.tags && (
+        {listing.tags && vis.show_tags && (
           <div className="flex flex-wrap gap-1.5">
             {listing.tags.split(',').slice(0, 3).map(t => (
               <span key={t.trim()} className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -376,37 +414,37 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
         {/* Advanced Details (Hidden by default) */}
         {isExpanded && (
           <div className="grid grid-cols-2 gap-y-3 gap-x-2 mt-2 p-3 bg-slate-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-            {listing.additional_spaces && (
+            {listing.additional_spaces && vis.show_additional_spaces && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Additional Spaces</span>
                 <span className="text-xs font-medium text-slate-700 truncate">{listing.additional_spaces}</span>
               </div>
             )}
-            {facing && (
+            {facing && vis.show_facing && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Facing</span>
                 <span className="text-xs font-medium text-slate-700">{facing}</span>
               </div>
             )}
-            {listing.parking && (
+            {listing.parking && vis.show_parking && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Parking</span>
                 <span className="text-xs font-medium text-slate-700">{listing.parking}</span>
               </div>
             )}
-            {furnishing && (
+            {furnishing && vis.show_furnishing && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Furnishing</span>
                 <span className="text-xs font-medium text-slate-700">{furnishing}</span>
               </div>
             )}
-            {propertyAge && (
+            {propertyAge && vis.show_property_age && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Property Age</span>
                 <span className="text-xs font-medium text-slate-700">{propertyAge}</span>
               </div>
             )}
-            {balconies && (
+            {balconies && vis.show_balconies && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Balconies</span>
                 <span className="text-xs font-medium text-slate-700">{balconies}</span>

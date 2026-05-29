@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Heart, Search, MapPin, Building, Calendar, AlertCircle } from 'lucide-react';
+import { Loader2, Heart, Search, MapPin, Building, Calendar, AlertCircle, Plus, Trash2, Edit2 } from 'lucide-react';
 
 export default function BuyerDashboard() {
   const [loading, setLoading] = useState(true);
@@ -52,8 +52,24 @@ export default function BuyerDashboard() {
   }, []);
 
   const removeWatchlist = async (watchlistId: string) => {
+    if (!confirm('Remove this property from your saved list?')) return;
     await supabase.from('buyer_watchlists').delete().eq('id', watchlistId);
     setWatchlist(prev => prev.filter(w => w.watchlist_id !== watchlistId));
+  };
+
+  const handleDeleteDemand = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this requirement?')) return;
+    try {
+      await supabase.from('buyers_demand').delete().eq('id', id);
+      setDemands(prev => prev.filter(d => d.id !== id));
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete requirement');
+    }
+  };
+
+  const handleAddRequirement = () => {
+    window.location.href = '/#buy';
   };
 
   if (loading) {
@@ -117,9 +133,17 @@ export default function BuyerDashboard() {
 
       {/* Demands Section */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <Search className="w-6 h-6 text-blue-600" />
-          <h2 className="text-2xl font-extrabold text-slate-900">My Buying Requests</h2>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Search className="w-6 h-6 text-blue-600" />
+            <h2 className="text-2xl font-extrabold text-slate-900">My Buying Requests</h2>
+          </div>
+          <button 
+            onClick={handleAddRequirement}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Add Request
+          </button>
         </div>
 
         {demands.length === 0 ? (
@@ -129,7 +153,13 @@ export default function BuyerDashboard() {
               <Search className="w-8 h-8 text-blue-300" />
             </div>
             <h3 className="text-xl font-extrabold text-slate-900 mb-2 relative z-10">No requests submitted</h3>
-            <p className="text-slate-500 font-medium max-w-sm mx-auto relative z-10">Looking for something specific? Submit a requirement on the home page and our team will find exact matches for you.</p>
+            <p className="text-slate-500 font-medium max-w-sm mx-auto relative z-10 mb-6">Looking for something specific? Submit a requirement and our team will find exact matches for you.</p>
+            <button 
+              onClick={handleAddRequirement}
+              className="relative z-10 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl transition-colors inline-flex items-center gap-2 shadow-md"
+            >
+              <Plus className="w-5 h-5" /> Submit a Requirement
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -150,8 +180,18 @@ export default function BuyerDashboard() {
                   <div className="font-medium text-slate-900 text-right">{demand.area}, {demand.city}</div>
                   <div className="text-slate-500">Budget:</div>
                   <div className="font-medium text-slate-900 text-right">{demand.budget.replace(/_/g, ' ')}</div>
-                  <div className="text-slate-500">Submitted on:</div>
-                  <div className="font-medium text-slate-900 text-right">{new Date(demand.created_at).toLocaleDateString()}</div>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <span>Requested on {new Date(demand.created_at).toLocaleDateString()}</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => alert('Editing requires Admin approval. Please contact support.')} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDeleteDemand(demand.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Delete">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 
                 {demand.status === 'new_lead' && (
