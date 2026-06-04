@@ -246,7 +246,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
 
 // ── Property Card ─────────────────────────────────────────────────────────────
 
-function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleWatchlist }: { listing: Listing; onInterest: () => void; dbOptions: SettingOption[]; isWatchlisted: boolean; onToggleWatchlist: (e: React.MouseEvent) => void }) {
+function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleWatchlist, isMyAd }: { listing: Listing; onInterest: () => void; dbOptions: SettingOption[]; isWatchlisted: boolean; onToggleWatchlist: (e: React.MouseEvent) => void; isMyAd?: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const color = typeColors[listing.property_type] || defaultColor;
 
@@ -336,18 +336,26 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
               </span>
             )}
           </div>
-          <div className="flex flex-col gap-1.5 items-end">
-            <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm text-[10px] font-bold text-slate-600">
-              <ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified
+        </div>
+
+        <div className="absolute top-4 left-4 flex gap-2 z-20">
+          <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm text-[10px] font-bold text-slate-600">
+            <ShieldCheck className="w-3 h-3 text-emerald-500" /> Verified
+          </span>
+          {isMyAd && (
+            <span className="inline-flex items-center gap-1 bg-indigo-600/90 backdrop-blur-md px-2 py-1 rounded-md shadow-sm text-[10px] font-bold text-white">
+              <User className="w-3 h-3 text-white" /> Your Ad
             </span>
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleWatchlist(e); }}
-              className={`p-1.5 rounded-full shadow-sm backdrop-blur-md transition-colors ${isWatchlisted ? 'bg-rose-500 text-white' : 'bg-white/90 text-slate-400 hover:text-rose-500'}`}
-              title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
-            >
-              <Heart className={`w-4 h-4 ${isWatchlisted ? 'fill-current' : ''}`} />
-            </button>
-          </div>
+          )}
+        </div>
+        <div className="absolute top-4 right-4 z-20">
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleWatchlist(e); }}
+            className={`p-1.5 rounded-full shadow-sm backdrop-blur-md transition-colors ${isWatchlisted ? 'bg-rose-500 text-white' : 'bg-white/90 text-slate-400 hover:text-rose-500'}`}
+            title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
+          >
+            <Heart className={`w-4 h-4 ${isWatchlisted ? 'fill-current' : ''}`} />
+          </button>
         </div>
         
         {/* Bottom Image Gradient overlay for text legibility if we add real images later */}
@@ -747,23 +755,43 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [watchlistIds, setWatchlistIds] = useState<Set<string>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
+  const [myAdsIds, setMyAdsIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchWatchlist = async () => {
+    const fetchWatchlistAndAds = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      setUserId(session.user.id);
       
-      const { data } = await supabase
-        .from('buyer_watchlists')
-        .select('property_id')
-        .eq('user_id', session.user.id);
-        
-      if (data) {
-        setWatchlistIds(new Set(data.map(d => d.property_id)));
+      const storedAds = localStorage.getItem('mySellerListings');
+      let localAds: string[] = [];
+      if (storedAds) {
+        try { localAds = JSON.parse(storedAds); } catch { }
       }
+      const myAdsSet = new Set<string>(localAds);
+
+      if (session) {
+        setUserId(session.user.id);
+        
+        const { data: wdata } = await supabase
+          .from('buyer_watchlists')
+          .select('property_id')
+          .eq('user_id', session.user.id);
+          
+        if (wdata) {
+          setWatchlistIds(new Set(wdata.map(d => d.property_id)));
+        }
+
+        const { data: pdata } = await supabase
+          .from('sellers_inventory')
+          .select('id')
+          .eq('user_id', session.user.id);
+        
+        if (pdata) {
+          pdata.forEach(d => myAdsSet.add(d.id));
+        }
+      }
+      setMyAdsIds(myAdsSet);
     };
-    fetchWatchlist();
+    fetchWatchlistAndAds();
   }, []);
 
   const handleToggleWatchlist = async (e: React.MouseEvent, propertyId: string) => {

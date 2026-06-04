@@ -6,7 +6,7 @@ import { User } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function UserAccountButton() {
-  const [phone, setPhone] = useState<string | null>(null);
+  const [identifier, setIdentifier] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,11 +20,15 @@ export default function UserAccountButton() {
           const email = session.user.email || '';
           
           if (userMetaPhone) {
-            setPhone(userMetaPhone);
-          } else if (email.startsWith('phone_')) {
+            setIdentifier(userMetaPhone.length === 10 ? `+91 ${userMetaPhone}` : userMetaPhone);
+          } else if (email.includes('@user.propconnect.com')) {
             const extracted = email.split('@')[0].replace('phone_', '');
-            setPhone(extracted);
+            setIdentifier(extracted.length === 10 ? `+91 ${extracted}` : extracted);
+          } else {
+            setIdentifier(email.split('@')[0]); // Use first part of email
           }
+        } else {
+          setIdentifier(null);
         }
       } catch (err) {
         console.error('Session check error', err);
@@ -41,13 +45,15 @@ export default function UserAccountButton() {
         const email = session.user.email || '';
         
         if (userMetaPhone) {
-          setPhone(userMetaPhone);
-        } else if (email.startsWith('phone_')) {
+          setIdentifier(userMetaPhone.length === 10 ? `+91 ${userMetaPhone}` : userMetaPhone);
+        } else if (email.includes('@user.propconnect.com')) {
           const extracted = email.split('@')[0].replace('phone_', '');
-          setPhone(extracted);
+          setIdentifier(extracted.length === 10 ? `+91 ${extracted}` : extracted);
+        } else {
+          setIdentifier(email.split('@')[0]);
         }
       } else {
-        setPhone(null);
+        setIdentifier(null);
       }
     });
 
@@ -63,16 +69,14 @@ export default function UserAccountButton() {
     );
   }
 
-  if (phone) {
-    const displayPhone = phone.length === 10 ? `+91 ${phone}` : phone;
-    
+  if (identifier) {
     return (
       <Link
         href="/portal/buyer"
         className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-sm"
         title="Go to Dashboard"
       >
-        <User className="w-4 h-4" /> {displayPhone}
+        <User className="w-4 h-4" /> {identifier}
       </Link>
     );
   }

@@ -81,6 +81,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
     city: '',
     area: '',
     budgetOrPrice: '',
+    customBudget: '',
     bedrooms: '3',
     bathrooms: '3',
     builtupArea: '',
@@ -298,6 +299,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
         city: cityId,
         area: areaId,
         budgetOrPrice: item.price || item.budget,
+        customBudget: '',
         bedrooms: item.bedrooms || '',
         bathrooms: item.bathrooms || '',
         builtupArea: item.builtup_area || '',
@@ -380,6 +382,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       { category: 'rent_range', value: 'Above 1L', display_name: 'Above ₹1L' },
     ];
   }
+  budgetRanges = [...budgetRanges, { category: isRent ? 'rent_range' : 'budget_range', value: 'custom', display_name: 'Custom' }];
   const bedroomOptions = options.filter((o) => o.category === 'bedrooms');
   const bathroomOptions = options.filter((o) => o.category === 'bathrooms');
   const facingOptions = options.filter((o) => o.category === 'facing');
@@ -474,7 +477,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           state: selectedState,
           city: selectedCity,
           area: locationString,
-          budget: formData.budgetOrPrice,
+          budget: formData.budgetOrPrice === 'custom' ? formData.customBudget.trim() : formData.budgetOrPrice,
           bedrooms: formData.bedrooms || null,
           bathrooms: formData.bathrooms || null,
           builtup_area: formData.builtupArea.trim() || null,
@@ -502,7 +505,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
           state: selectedState,
           city: selectedCity,
           area: locationString,
-          price: formData.budgetOrPrice,
+          price: formData.budgetOrPrice === 'custom' ? formData.customBudget.trim() : formData.budgetOrPrice,
           bedrooms: formData.bedrooms || null,
           bathrooms: formData.bathrooms || null,
           builtup_area: formData.builtupArea.trim() || null,
@@ -543,7 +546,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
       }
 
       setSuccess(true);
-      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
+      setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', customBudget: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
       setTouched({});
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -796,6 +799,18 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
                 </button>
               ))}
             </div>
+            {formData.budgetOrPrice === 'custom' && (
+              <div className="mt-3 animate-in slide-in-from-top-1">
+                <input
+                  type="text"
+                  placeholder={isRent ? "e.g. 15,000" : "e.g. 55 Lakhs"}
+                  value={formData.customBudget}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customBudget: e.target.value }))}
+                  className={getInputCls('customBudget')}
+                  required
+                />
+              </div>
+            )}
             {renderFieldError('budgetOrPrice')}
           </div>
         </div>
