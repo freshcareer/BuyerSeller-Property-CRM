@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import HomeContent from '@/app/components/HomeContent';
+import UserAccountButton from '@/app/components/UserAccountButton';
 import { ShieldCheck, ArrowUpRight, Lock, Database, User, Phone, Mail } from 'lucide-react';
 
 export const revalidate = 0;
@@ -67,12 +68,7 @@ export default async function Home() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <Link
-              href="/portal/login"
-              className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-sm"
-            >
-              <User className="w-4 h-4" /> My Account
-            </Link>
+            <UserAccountButton />
             <Link
               href="/login"
               className="hidden sm:flex items-center gap-1.5 px-4 py-2 bg-white/50 backdrop-blur-sm border border-slate-200 hover:bg-white text-slate-700 hover:text-blue-600 hover:border-blue-200 font-semibold rounded-xl text-xs sm:text-sm transition-all shadow-sm hover:shadow-md"

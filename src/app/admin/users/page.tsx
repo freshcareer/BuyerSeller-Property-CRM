@@ -134,7 +134,7 @@ export default function AdminUsersPage() {
                           <Phone className="w-3.5 h-3.5 text-slate-400" /> {user.phone}
                         </div>
                       )}
-                      {user.email && (
+                      {user.email && !user.email.includes('@user.propconnect.com') && (
                         <div className="flex items-center gap-1.5 text-slate-600 font-medium">
                           <Mail className="w-3.5 h-3.5 text-slate-400" /> {user.email}
                         </div>

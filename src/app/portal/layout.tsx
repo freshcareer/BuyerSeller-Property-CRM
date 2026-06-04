@@ -76,7 +76,11 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-slate-500 hidden md:block">{userEmail}</span>
+            <span className="text-sm font-medium text-slate-500 hidden md:block">
+              {userEmail?.includes('@user.propconnect.com') 
+                ? `+91 ${userEmail.split('@')[0].replace('phone_', '')}` 
+                : userEmail}
+            </span>
             <button 
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"

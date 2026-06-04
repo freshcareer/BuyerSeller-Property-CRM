@@ -369,7 +369,17 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
   const isCommercial = formData.propertyType === 'commercial_shop' || formData.propertyType === 'office_space' || formData.propertyType === 'warehouse';
 
   const propertyTypes = options.filter((o) => o.category === 'property_type');
-  const budgetRanges = options.filter((o) => o.category === (isRent ? 'rent_range' : 'budget_range'));
+  let budgetRanges = options.filter((o) => o.category === (isRent ? 'rent_range' : 'budget_range'));
+  if (isRent && budgetRanges.length === 0) {
+    budgetRanges = [
+      { category: 'rent_range', value: 'Under 10k', display_name: 'Under ₹10k' },
+      { category: 'rent_range', value: '10k - 20k', display_name: '₹10k - ₹20k' },
+      { category: 'rent_range', value: '20k - 30k', display_name: '₹20k - ₹30k' },
+      { category: 'rent_range', value: '30k - 50k', display_name: '₹30k - ₹50k' },
+      { category: 'rent_range', value: '50k - 1L', display_name: '₹50k - ₹1L' },
+      { category: 'rent_range', value: 'Above 1L', display_name: 'Above ₹1L' },
+    ];
+  }
   const bedroomOptions = options.filter((o) => o.category === 'bedrooms');
   const bathroomOptions = options.filter((o) => o.category === 'bathrooms');
   const facingOptions = options.filter((o) => o.category === 'facing');
