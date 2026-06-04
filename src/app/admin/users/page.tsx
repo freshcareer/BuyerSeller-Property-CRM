@@ -59,7 +59,10 @@ export default function AdminUsersPage() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ role: newRole })
+        .update({ 
+          role: newRole,
+          is_super_admin: newRole === 'super_admin' 
+        })
         .eq('id', userId);
       if (error) throw error;
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
@@ -181,7 +184,7 @@ export default function AdminUsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {currentUserRole === 'super_admin' ? (
+                      {(currentUserRole === 'super_admin' || currentUserRole === 'admin') ? (
                         <select
                           value={user.role}
                           onChange={(e) => handleRoleChange(user.id, e.target.value)}
