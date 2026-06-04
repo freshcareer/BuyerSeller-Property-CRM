@@ -91,44 +91,54 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-16">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-600/20">
-              <Users className="w-6 h-6 sm:w-7 sm:h-7" />
+      {/* Premium Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 p-8 sm:p-10 text-white shadow-2xl shadow-indigo-900/20">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 shadow-inner">
+              <Users className="w-8 h-8 text-blue-200" />
             </div>
-            User Management
-          </h1>
-          <p className="text-slate-500 text-sm mt-2 font-medium max-w-xl">
-            View and manage all registered users on the PropConnect platform.
-          </p>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-2">
+                User Management
+              </h1>
+              <p className="text-blue-200/80 text-sm sm:text-base font-medium max-w-xl">
+                View, manage, and assign roles to registered users on the PropConnect platform.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className="bg-white/70 backdrop-blur-xl p-5 rounded-3xl shadow-xl shadow-slate-200/40 border border-white flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1 group">
+          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
           <input
             type="text"
             placeholder="Search by name, email, or phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-white/50 border-2 border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
           />
         </div>
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-        >
-          <option value="all">All Roles</option>
-          <option value="user">Standard User</option>
-          <option value="admin">Admin</option>
-          <option value="super_admin">Super Admin</option>
-        </select>
+        <div className="relative">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="w-full md:w-48 appearance-none bg-white/50 border-2 border-slate-100 text-slate-700 rounded-2xl px-5 py-3 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 hover:border-slate-200 transition-all cursor-pointer"
+          >
+            <option value="all">All Roles</option>
+            <option value="user">Standard User</option>
+            <option value="admin">Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
       </div>
 
-      <div className="bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden">
+      <div className="bg-white/80 backdrop-blur-xl border border-white shadow-2xl shadow-slate-200/50 rounded-3xl overflow-hidden">
         {filteredUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center py-24 px-4 bg-gradient-to-br from-white to-blue-50/30 relative overflow-hidden">
             <div className="absolute top-0 right-1/4 w-40 h-40 bg-blue-400/5 rounded-full blur-3xl" />
@@ -144,14 +154,14 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-650 font-bold uppercase tracking-wide text-xs">
-                  <th className="px-6 py-4">User Details</th>
-                  <th className="px-6 py-4">Contact Info</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Joined Date</th>
+                <tr className="border-b-2 border-slate-100 bg-gradient-to-r from-slate-50 to-white text-slate-500 font-extrabold uppercase tracking-widest text-[10px]">
+                  <th className="px-6 py-5">User Details</th>
+                  <th className="px-6 py-5">Contact Info</th>
+                  <th className="px-6 py-5">Role</th>
+                  <th className="px-6 py-5">Joined Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-50 bg-transparent">
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
