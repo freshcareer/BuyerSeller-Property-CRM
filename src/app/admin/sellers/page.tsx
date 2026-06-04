@@ -772,7 +772,7 @@ export default function SellersInventory() {
                   <th className="px-6 py-4">Property Location</th>
                   <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
-                  <th className="px-6 py-4">Expected Price</th>
+                  <th className="px-6 py-4">Expected Price / Rent</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>

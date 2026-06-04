@@ -29,6 +29,7 @@ export default function AdminLayout({
   const [authorized, setAuthorized] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
+  const [adminRole, setAdminRole] = useState('admin');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,11 +43,11 @@ export default function AdminLayout({
         // Query profile for admin status
         const { data: profile, error } = await supabase
           .from('profiles')
-          .select('is_super_admin, email')
+          .select('is_super_admin, role, email')
           .eq('id', session.user.id)
           .single();
 
-        if (error || !profile || !profile.is_super_admin) {
+        if (error || !profile || (!profile.is_super_admin && profile.role !== 'admin' && profile.role !== 'super_admin')) {
           console.warn('Unauthorized admin access attempt:', session.user.email);
           await supabase.auth.signOut();
           router.push('/login');
@@ -54,6 +55,7 @@ export default function AdminLayout({
         }
 
         setAdminEmail(profile.email);
+        setAdminRole(profile.role || (profile.is_super_admin ? 'super_admin' : 'admin'));
         setAuthorized(true);
       } catch (err) {
         console.error('Auth verification error:', err);
@@ -188,9 +190,18 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-right">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Logged in as</p>
-              <p className="text-sm text-slate-700 font-bold">{adminEmail}</p>
+            <div className="hidden sm:flex flex-col items-end text-right">
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Logged in as</p>
+                <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded shadow-sm ${
+                  adminRole === 'super_admin' 
+                    ? 'bg-amber-100 text-amber-700 border border-amber-200' 
+                    : 'bg-blue-100 text-blue-700 border border-blue-200'
+                }`}>
+                  {adminRole === 'super_admin' ? 'Super Admin' : 'Admin'}
+                </span>
+              </div>
+              <p className="text-sm text-slate-800 font-extrabold mt-0.5">{adminEmail}</p>
             </div>
             <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
             <button

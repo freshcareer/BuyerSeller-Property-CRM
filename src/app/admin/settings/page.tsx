@@ -1052,365 +1052,381 @@ export default function SettingsManager() {
 
   const inputCls = 'w-full bg-slate-50 border border-slate-200 hover:border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-slate-900 font-medium rounded-lg px-4 py-2.5 placeholder-slate-400 text-sm outline-none transition-all duration-200';
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 w-full pb-16">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full pb-16">
       
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-3 pb-1">
-          <div className="p-2 sm:p-2.5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/20">
-            <Settings className="w-6 h-6 sm:w-7 sm:h-7" />
-          </div>
-          Settings Manager
-        </h1>
-        <p className="text-slate-500 text-sm mt-1.5 font-medium">
-          Dynamically configure dropdown lists, forms, and lead status categories. No hardcoded choices.
-        </p>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="flex bg-white/60 backdrop-blur-md p-1.5 rounded-2xl max-w-full mx-auto shadow-sm border border-slate-200/60 overflow-x-auto relative z-10">
-        {categories.map((cat) => {
-          const Icon = getCategoryIcon(cat);
-          const isActive = activeTab === cat;
-          return (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveTab(cat);
-                setError(null);
-                setSuccess(null);
-                cancelEdit();
-                setDeleteConfirmId(null);
-              }}
-              className={`flex-1 min-w-[120px] py-3 text-center font-bold text-[13px] sm:text-sm transition-all duration-300 flex items-center justify-center gap-2 rounded-xl relative z-10 ${
-                isActive
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50 border border-transparent'
-              }`}
-            >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : ''}`} />
-              <span className="hidden sm:inline">{getCategoryLabel(cat)}</span>
-              <span className="sm:hidden capitalize">{cat.split('_')[0]}</span>
-            </button>
-          );
-        })}
+      <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 rounded-3xl p-8 sm:p-10 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-blue-500 rounded-full blur-[100px] opacity-30 animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-indigo-500 rounded-full blur-[80px] opacity-20"></div>
+        
+        <div className="relative z-10">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight flex items-center gap-4">
+            <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-inner border border-white/20">
+              <Settings className="w-7 h-7 sm:w-9 sm:h-9 text-blue-100" />
+            </div>
+            Settings Manager
+          </h1>
+          <p className="text-blue-200 text-sm sm:text-base mt-4 font-medium max-w-2xl leading-relaxed">
+            Configure dropdown lists, forms, and system parameters dynamically. Your changes will reflect instantly across the public platform and admin dashboards.
+          </p>
+        </div>
       </div>
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 font-medium rounded-lg text-sm flex items-start gap-2">
-          <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-2xl text-sm flex items-start gap-3 shadow-sm animate-in slide-in-from-top-2">
+          <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
           {error}
         </div>
       )}
       {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium rounded-lg text-sm flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold rounded-2xl text-sm flex items-center gap-3 shadow-sm animate-in slide-in-from-top-2">
           <Check className="w-5 h-5 text-emerald-600 shrink-0" /> {success}
         </div>
       )}
 
-      {/* Main Panel */}
-      {activeTab === 'location_settings' ? (
-        <LocationSettingsManager setError={setError} setSuccess={setSuccess} />
-      ) : (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        {/* Left: Options List */}
-        <div className="lg:col-span-7 bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-3xl p-6 space-y-5">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 rounded-xl text-blue-600 border border-blue-100">
-                {activeTab === 'property_type' && <Building className="w-5 h-5" />}
-                {activeTab === 'budget_range' && <DollarSign className="w-5 h-5" />}
-                {activeTab === 'lead_status' && <Activity className="w-5 h-5" />}
-                {activeTab === 'bedrooms' && <Bed className="w-5 h-5" />}
-                {activeTab === 'bathrooms' && <Bath className="w-5 h-5" />}
-                {activeTab === 'facing' && <Compass className="w-5 h-5" />}
-                {activeTab === 'possession_status' && <Key className="w-5 h-5" />}
-              </div>
-              <h3 className="font-extrabold text-slate-900 text-lg">Active {getCategoryLabel(activeTab)}</h3>
-            </div>
-            <span className="text-xs text-blue-700 bg-blue-50 px-3 py-1 rounded-full font-extrabold uppercase tracking-wider border border-blue-100 shadow-sm">
-              {filteredSettings.length} Options
-            </span>
+      {/* Main Layout: Sidebar + Content */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start w-full relative">
+        
+        {/* Left Sidebar: Navigation */}
+        <div className="w-full lg:w-72 shrink-0 bg-white/70 backdrop-blur-2xl border border-slate-200/80 shadow-2xl shadow-slate-200/50 rounded-3xl p-4 sticky top-24 flex flex-col gap-1.5 z-20">
+          <div className="px-4 py-3 mb-2">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Configuration</h3>
           </div>
+          {categories.map((cat) => {
+            const Icon = getCategoryIcon(cat);
+            const isActive = activeTab === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveTab(cat);
+                  setError(null);
+                  setSuccess(null);
+                  cancelEdit();
+                  setDeleteConfirmId(null);
+                }}
+                className={`w-full text-left px-4 py-3.5 font-bold text-sm transition-all duration-300 flex items-center gap-3 rounded-2xl group ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 translate-x-1'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:translate-x-1 border border-transparent'
+                }`}
+              >
+                <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-slate-200 text-slate-500'}`}>
+                   <Icon className="w-4 h-4 shrink-0" />
+                </div>
+                <span className="truncate">{getCategoryLabel(cat)}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-10">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
-              <p className="text-slate-500 font-medium text-sm">Loading options...</p>
-            </div>
-          ) : filteredSettings.length === 0 ? (
-            <div className="text-center py-10 text-slate-500">
-              <p className="font-bold text-sm">No options configured in this category.</p>
-              <p className="text-xs mt-1 font-medium">Use the panel on the right to add options.</p>
-            </div>
+        {/* Right Content Area */}
+        <div className="flex-1 w-full space-y-6 min-w-0 z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {activeTab === 'location_settings' ? (
+            <LocationSettingsManager setError={setError} setSuccess={setSuccess} />
           ) : (
-            <div className="max-h-[520px] overflow-y-auto pr-1 space-y-2.5 pt-1">
-              {filteredSettings.map((item) => {
-                const isEditing = editingItem?.id === item.id;
-                const isDeleteConfirm = deleteConfirmId === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    className={`p-4 border rounded-xl transition-all duration-200 ${
-                      isEditing
-                        ? 'bg-blue-50 border-blue-300 shadow-md'
-                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-blue-200 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-start sm:items-center justify-between gap-3">
-                      {/* Info */}
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2.5">
-                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isEditing ? 'bg-blue-500' : 'bg-blue-400'}`} />
-                          <span className="text-slate-900 font-extrabold text-sm truncate">{item.display_name}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 font-medium pl-5">
-                          <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-700">
-                            Key: <code className="text-blue-700 font-bold">{item.value}</code>
-                          </span>
-                          <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-700">
-                            Order: <code className="text-slate-900 font-bold">{item.sort_order}</code>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {isDeleteConfirm ? (
-                          /* Delete confirm buttons */
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleDeleteSetting(item.id, item.display_name)}
-                              disabled={deleting}
-                              className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 transition-all"
-                            >
-                              {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirmId(null)}
-                              className="px-2 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold rounded-lg transition-all"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            {/* Edit Button */}
-                            <button
-                              onClick={() => isEditing ? cancelEdit() : openEdit(item)}
-                              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                                isEditing
-                                  ? 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                  : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                              }`}
-                              title={isEditing ? 'Cancel edit' : 'Edit option'}
-                            >
-                              {isEditing ? <><X className="w-3.5 h-3.5" /> Cancel</> : <><Pencil className="w-3.5 h-3.5" /> Edit</>}
-                            </button>
-
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => { setDeleteConfirmId(item.id); if (isEditing) cancelEdit(); }}
-                              className="flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all"
-                              title="Delete option"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">Delete</span>
-                            </button>
-                          </>
-                        )}
-                      </div>
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+              
+              {/* Options List */}
+              <div className="xl:col-span-7 bg-white/80 backdrop-blur-2xl border border-slate-200/80 shadow-2xl shadow-slate-200/40 rounded-3xl p-6 sm:p-8 space-y-6">
+                <div className="flex items-center justify-between pb-5 border-b border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm text-blue-600">
+                      {activeTab === 'property_type' && <Building className="w-6 h-6" />}
+                      {activeTab === 'budget_range' && <DollarSign className="w-6 h-6" />}
+                      {activeTab === 'lead_status' && <Activity className="w-6 h-6" />}
+                      {activeTab === 'bedrooms' && <Bed className="w-6 h-6" />}
+                      {activeTab === 'bathrooms' && <Bath className="w-6 h-6" />}
+                      {activeTab === 'facing' && <Compass className="w-6 h-6" />}
+                      {activeTab === 'possession_status' && <Key className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xl">{getCategoryLabel(activeTab)}</h3>
+                      <p className="text-slate-500 text-xs font-bold mt-1 tracking-wide uppercase">Active Options</p>
                     </div>
                   </div>
-                );
-              })}
+                  <span className="text-xs text-indigo-700 bg-indigo-50 px-3.5 py-1.5 rounded-full font-black uppercase tracking-widest border border-indigo-100 shadow-sm">
+                    {filteredSettings.length} Items
+                  </span>
+                </div>
+
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+                    <p className="text-slate-500 font-bold text-sm">Loading options...</p>
+                  </div>
+                ) : filteredSettings.length === 0 ? (
+                  <div className="text-center py-16 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                    <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                      <Settings className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="font-black text-slate-700 text-lg">No options configured</p>
+                    <p className="text-sm mt-2 font-medium text-slate-500 max-w-xs mx-auto">Use the panel on the right to add your first option to this category.</p>
+                  </div>
+                ) : (
+                  <div className="max-h-[600px] overflow-y-auto pr-2 space-y-3 pt-2 custom-scrollbar">
+                    {filteredSettings.map((item) => {
+                      const isEditing = editingItem?.id === item.id;
+                      const isDeleteConfirm = deleteConfirmId === item.id;
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-5 rounded-2xl transition-all duration-300 border ${
+                            isEditing
+                              ? 'bg-blue-50/50 border-blue-400 shadow-lg shadow-blue-100/50 scale-[1.02]'
+                              : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 hover:shadow-md'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            {/* Info */}
+                            <div className="space-y-2 flex-1 min-w-0">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full shrink-0 shadow-inner ${isEditing ? 'bg-blue-500 animate-pulse' : 'bg-slate-300'}`} />
+                                <span className="text-slate-900 font-black text-base truncate">{item.display_name}</span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold pl-6">
+                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-slate-500 border border-slate-200 shadow-sm">
+                                  KEY <span className="text-blue-600 font-mono ml-1">{item.value}</span>
+                                </span>
+                                <span className="bg-slate-100 px-2.5 py-1 rounded-md text-slate-500 border border-slate-200 shadow-sm">
+                                  SORT <span className="text-slate-900 ml-1">{item.sort_order}</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {isDeleteConfirm ? (
+                                <div className="flex items-center gap-2 bg-rose-50 p-1.5 rounded-xl border border-rose-100">
+                                  <button
+                                    onClick={() => handleDeleteSetting(item.id, item.display_name)}
+                                    disabled={deleting}
+                                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-lg flex items-center gap-1.5 transition-all shadow-sm shadow-rose-200"
+                                  >
+                                    {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                    Confirm
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold rounded-lg transition-all"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => isEditing ? cancelEdit() : openEdit(item)}
+                                    className={`flex items-center justify-center p-2 rounded-xl transition-all ${
+                                      isEditing
+                                        ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                    }`}
+                                    title={isEditing ? 'Cancel edit' : 'Edit option'}
+                                  >
+                                    {isEditing ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                                  </button>
+                                  <button
+                                    onClick={() => { setDeleteConfirmId(item.id); if (isEditing) cancelEdit(); }}
+                                    className="flex items-center justify-center p-2 bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                    title="Delete option"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Right panel: Add/Edit Form */}
+              <div className="xl:col-span-5 bg-white/80 backdrop-blur-2xl border border-slate-200/80 shadow-2xl shadow-slate-200/40 rounded-3xl overflow-hidden sticky top-24">
+                
+                {/* Panel Header */}
+                <div className={`p-6 border-b border-slate-100 ${editingItem ? 'bg-gradient-to-r from-blue-50 to-indigo-50' : 'bg-white'}`}>
+                  {editingItem ? (
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-black text-blue-900 text-lg flex items-center gap-2.5">
+                          <Pencil className="w-5 h-5 text-blue-600" /> Edit Option
+                        </h3>
+                        <p className="text-xs text-blue-600/70 mt-1.5 font-bold uppercase tracking-widest">
+                          Editing: <span className="text-blue-800">{editingItem.display_name}</span>
+                        </p>
+                      </div>
+                      <button
+                        onClick={cancelEdit}
+                        className="p-2 bg-white/60 hover:bg-white rounded-xl text-slate-400 transition-colors shadow-sm"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 className="font-black text-slate-900 text-lg flex items-center gap-2.5">
+                        <Plus className="w-5 h-5 text-indigo-600 bg-indigo-50 p-1 rounded-lg" /> Create Option
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                        Add a new item to this category. Changes apply immediately.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-6">
+                  {editingItem ? (
+                    /* ── Edit Form ── */
+                    <form onSubmit={handleSaveEdit} className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Display Name <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editForm.display_name}
+                          onChange={(e) => setEditForm(p => ({ ...p, display_name: e.target.value }))}
+                          placeholder="e.g. Waterfront Apartment"
+                          className={inputCls}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Value Key
+                        </label>
+                        <input
+                          type="text"
+                          value={editForm.value}
+                          onChange={(e) => setEditForm(p => ({ ...p, value: e.target.value }))}
+                          placeholder="e.g. waterfront_apt"
+                          className={inputCls}
+                        />
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 mt-2">
+                          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+                          <p className="text-xs text-amber-800 font-bold leading-relaxed">
+                            Warning: Modifying the value key may disconnect this option from existing records.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Sort Order (Index)
+                        </label>
+                        <input
+                          type="number"
+                          value={editForm.sort_order}
+                          onChange={(e) => setEditForm(p => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))}
+                          className={inputCls}
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-3">
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="flex-1 py-3.5 bg-white border-2 border-slate-200 text-slate-600 font-black rounded-2xl text-sm hover:bg-slate-50 hover:border-slate-300 transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={editSaving}
+                          className="flex-[2] py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 active:scale-95"
+                        >
+                          {editSaving ? (
+                            <><Loader2 className="w-5 h-5 animate-spin" /> Saving</>
+                          ) : (
+                            <><Save className="w-5 h-5" /> Save Changes</>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    /* ── Add New Form ── */
+                    <form onSubmit={handleAddSetting} className="space-y-5">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Display Name <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newDisplayName}
+                          onChange={(e) => setNewDisplayName(e.target.value)}
+                          placeholder="e.g. Waterfront Apartment"
+                          className={inputCls}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Value Key (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={newValue}
+                          onChange={(e) => setNewValue(e.target.value)}
+                          placeholder="Auto-generated if empty"
+                          className={inputCls}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block">
+                          Sort Order (Index)
+                        </label>
+                        <input
+                          type="number"
+                          value={newSortOrder}
+                          onChange={(e) => setNewSortOrder(parseInt(e.target.value) || 0)}
+                          placeholder="e.g. 1"
+                          className={inputCls}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="w-full mt-2 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20 active:scale-95"
+                      >
+                        {saving ? (
+                          <><Loader2 className="w-5 h-5 animate-spin" /> Adding...</>
+                        ) : (
+                          <><Plus className="w-5 h-5" /> Add Option</>
+                        )}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+
             </div>
           )}
         </div>
-
-        {/* Right: Add Form */}
-        <div className="lg:col-span-5 bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 rounded-3xl p-6 space-y-5 sticky top-24">
-
-          {/* Panel Header — switches between Add and Edit */}
-          <div className={`p-5 border-b border-slate-100 ${editingItem ? 'bg-blue-50' : 'bg-white'}`}>
-            {editingItem ? (
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                    <Pencil className="w-4 h-4 text-blue-600" /> Edit Option
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1 font-medium">
-                    Editing: <span className="text-blue-700 font-bold">{editingItem.display_name}</span>
-                  </p>
-                </div>
-                <button
-                  onClick={cancelEdit}
-                  className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-blue-600" /> Add New Option
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 font-medium">
-                  This choice will instantly show up in the public forms and admin drop-downs.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="p-5">
-            {editingItem ? (
-              /* ── Edit Form ── */
-              <form onSubmit={handleSaveEdit} className="space-y-4">
-                {/* Display Name */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Display Name <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.display_name}
-                    onChange={(e) => setEditForm(p => ({ ...p, display_name: e.target.value }))}
-                    placeholder="e.g. Waterfront Apartment"
-                    className={inputCls}
-                  />
-                </div>
-
-                {/* Value Key */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Value Key
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.value}
-                    onChange={(e) => setEditForm(p => ({ ...p, value: e.target.value }))}
-                    placeholder="e.g. waterfront_apt"
-                    className={inputCls}
-                  />
-                  <p className="text-xs text-amber-700 font-medium flex items-start gap-1">
-                    <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 text-amber-600" />
-                    Changing the value key may break existing leads using this option.
-                  </p>
-                </div>
-
-                {/* Sort Order */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Sort Order (Index)
-                  </label>
-                  <input
-                    type="number"
-                    value={editForm.sort_order}
-                    onChange={(e) => setEditForm(p => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))}
-                    className={inputCls}
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={cancelEdit}
-                    className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-sm hover:bg-slate-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={editSaving}
-                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
-                  >
-                    {editSaving ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>
-                    ) : (
-                      <><Save className="w-4 h-4" /> Save Changes</>
-                    )}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              /* ── Add New Form ── */
-              <form onSubmit={handleAddSetting} className="space-y-4">
-                {/* Display Name */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Display Name <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={newDisplayName}
-                    onChange={(e) => setNewDisplayName(e.target.value)}
-                    placeholder="e.g. Waterfront Apartment"
-                    className={inputCls}
-                  />
-                </div>
-
-                {/* Value Key */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Value Key (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={newValue}
-                    onChange={(e) => setNewValue(e.target.value)}
-                    placeholder="e.g. waterfront_apt (auto-generated if empty)"
-                    className={inputCls}
-                  />
-                </div>
-
-                {/* Sort Order */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                    Sort Order (Index)
-                  </label>
-                  <input
-                    type="number"
-                    value={newSortOrder}
-                    onChange={(e) => setNewSortOrder(parseInt(e.target.value) || 0)}
-                    placeholder="e.g. 1"
-                    className={inputCls}
-                  />
-                </div>
-
-                {/* Warning */}
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5 text-xs text-amber-800 font-medium">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <span>Ensure values are spelled correctly. Deleting settings while active leads use them can lead to display issues.</span>
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-sm shadow-blue-200"
-                >
-                  {saving ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Adding...</>
-                  ) : (
-                    <><Plus className="w-4 h-4" /> Add Option</>
-                  )}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-
       </div>
-      )}
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1;
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 }

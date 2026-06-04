@@ -797,7 +797,7 @@ export default function BuyersDemand() {
                   <th className="px-6 py-4">Preferred Location</th>
                   <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
-                  <th className="px-6 py-4">Budget Range</th>
+                  <th className="px-6 py-4">Budget / Rent</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>

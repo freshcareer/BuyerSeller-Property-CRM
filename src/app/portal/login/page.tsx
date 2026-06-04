@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { UserCircle, Lock, Loader2, ArrowLeft, Phone } from 'lucide-react';
+import { UserCircle, Lock, Loader2, ArrowLeft, Phone, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 import { Suspense } from 'react';
@@ -34,37 +34,16 @@ function PortalLoginForm() {
     checkSession();
   }, [router, redirectPath]);
 
-  // Helper to format 10-digit phone number securely
-  const getFormattedEmail = (input: string) => {
-    // Check if input consists of only numbers and optional spaces/dashes/plus
-    const cleaned = input.replace(/\D/g, '');
-    const isOnlyDigitsAndPhoneChars = /^[\d\s\-\+]+$/.test(input);
-    
-    if (cleaned.length >= 10 && isOnlyDigitsAndPhoneChars) {
-      // Use the last 10 digits to support +91 formats
-      const tenDigits = cleaned.slice(-10);
-      return `phone_${tenDigits}@user.propconnect.com`;
-    }
-    return input;
-  };
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccessMsg(null);
 
-    const authEmail = getFormattedEmail(identifier);
-    const isPhone = authEmail.includes('@user.propconnect.com');
+    const authEmail = identifier.trim();
 
     try {
       if (isForgotPassword) {
-        if (isPhone) {
-          setError('Since you registered with a mobile number, please contact your Admin on WhatsApp to reset your password securely.');
-          setLoading(false);
-          return;
-        }
-
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(authEmail);
         if (resetError) throw resetError;
         setSuccessMsg('If your email is registered, you will receive a password reset link shortly.');
@@ -72,11 +51,6 @@ function PortalLoginForm() {
         const { error: authError } = await supabase.auth.signUp({
           email: authEmail,
           password,
-          options: {
-            data: {
-              phone: isPhone ? identifier.replace(/\D/g, '') : null,
-            }
-          }
         });
         if (authError) throw authError;
         setSuccessMsg('Registration successful! You can now log in.');
@@ -141,10 +115,10 @@ function PortalLoginForm() {
           <form onSubmit={handleAuth} className="space-y-5">
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wide flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5" /> Mobile Number or Email
+                <Mail className="w-3.5 h-3.5" /> Email Address
               </label>
               <input
-                type="text"
+                type="email"
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}

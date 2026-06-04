@@ -19,9 +19,24 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
+  const [currentUserRole, setCurrentUserRole] = useState<string>('admin');
+
   useEffect(() => {
+    fetchCurrentUserRole();
     fetchUsers();
   }, []);
+
+  const fetchCurrentUserRole = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      if (data) setCurrentUserRole(data.role);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -37,6 +52,20 @@ export default function AdminUsersPage() {
       console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', userId);
+      if (error) throw error;
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    } catch (err) {
+      console.error('Error updating role:', err);
+      alert('Failed to update role.');
     }
   };
 
@@ -95,6 +124,7 @@ export default function AdminUsersPage() {
           <option value="all">All Roles</option>
           <option value="user">Standard User</option>
           <option value="admin">Admin</option>
+          <option value="super_admin">Super Admin</option>
         </select>
       </div>
 
@@ -141,13 +171,29 @@ export default function AdminUsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize ${
-                        user.role === 'admin' 
-                          ? 'bg-purple-100 text-purple-700 border border-purple-200' 
-                          : 'bg-slate-100 text-slate-700 border border-slate-200'
-                      }`}>
-                        {user.role}
-                      </span>
+                      {currentUserRole === 'super_admin' ? (
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          className={`text-xs font-bold rounded-lg px-2 py-1 border transition-all ${
+                            user.role === 'super_admin' ? 'bg-amber-100 text-amber-700 border-amber-300' :
+                            user.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                            'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                          <option value="super_admin">Super Admin</option>
+                        </select>
+                      ) : (
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold capitalize ${
+                          user.role === 'super_admin' ? 'bg-amber-100 text-amber-700 border border-amber-300' :
+                          user.role === 'admin' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                          'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          {user.role === 'super_admin' ? 'Super Admin' : user.role}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-slate-600 font-medium flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-slate-400" />
