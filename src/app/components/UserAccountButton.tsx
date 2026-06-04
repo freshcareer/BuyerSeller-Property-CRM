@@ -21,7 +21,7 @@ export default function UserAccountButton() {
           
           if (userMetaPhone) {
             setIdentifier(userMetaPhone.length === 10 ? `+91 ${userMetaPhone}` : userMetaPhone);
-          } else if (email.includes('@user.propconnect.com')) {
+          } else if (email.includes('@user.propconnect.com') || email.includes('@crm.com')) {
             const extracted = email.split('@')[0].replace('phone_', '');
             setIdentifier(extracted.length === 10 ? `+91 ${extracted}` : extracted);
           } else {
@@ -46,7 +46,7 @@ export default function UserAccountButton() {
         
         if (userMetaPhone) {
           setIdentifier(userMetaPhone.length === 10 ? `+91 ${userMetaPhone}` : userMetaPhone);
-        } else if (email.includes('@user.propconnect.com')) {
+        } else if (email.includes('@user.propconnect.com') || email.includes('@crm.com')) {
           const extracted = email.split('@')[0].replace('phone_', '');
           setIdentifier(extracted.length === 10 ? `+91 ${extracted}` : extracted);
         } else {
