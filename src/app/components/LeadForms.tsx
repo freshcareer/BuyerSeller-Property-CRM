@@ -49,6 +49,7 @@ const validators = {
   city: (v: string) => (!v ? 'Please select your city.' : ''),
   area: (v: string) => (!v ? 'Please select your preferred area.' : ''),
   budgetOrPrice: (v: string) => (!v ? 'Please select a budget / price range.' : ''),
+  customBudget: (v: string) => '',
 };
 
 type FieldKey = keyof typeof validators;
