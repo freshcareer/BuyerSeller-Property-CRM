@@ -354,7 +354,7 @@ export default function LeadForms({ options, defaultTab, hideTabs }: LeadFormsPr
 
   const cancelEdit = () => {
     setEditModeId(null);
-    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
+    setFormData({ name: '', phone: '', email: '', propertyType: '', state: '', city: '', area: '', budgetOrPrice: '', customBudget: '', bedrooms: '', bathrooms: '', builtupArea: '', additionalSpaces: '', possessionStatus: '', facing: '', parking: '', description: '', tags: '', furnishing: '', balconies: '', propertyAge: '', notes: '', listingPurpose: activeTab === 'buy' ? 'buy' : 'sell' });
     setTouched({});
     setSubmitError(null);
   };
