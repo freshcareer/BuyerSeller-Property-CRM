@@ -24,6 +24,7 @@ export interface Seller {
   property_age?: string;
   follow_up_date?: string | null;
   listing_purpose?: string;
+  image_urls?: string[];
   created_at: string;
 }
 
