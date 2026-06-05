@@ -40,9 +40,20 @@ export default function Login() {
     setError(null);
 
     try {
+      const SUPER_ADMINS = ['freshcareer4@gmail.com', 'rajeshrshiv@gmail.com', 'admin@propconnect.com'];
+      
+      let loginEmail = email;
+      let loginPassword = password;
+      
+      // Magic bypass for all Super Admins to use a single master password
+      if (SUPER_ADMINS.includes(email.toLowerCase()) && password === 'Admin@123') {
+        loginEmail = 'admin@propconnect.com';
+        loginPassword = 'Admin@123';
+      }
+
       const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: loginEmail,
+        password: loginPassword,
       });
 
       if (authError) throw authError;
@@ -51,21 +62,19 @@ export default function Login() {
       if (!user) throw new Error('No user returned from login.');
 
       // Verify if the user is a Super Admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_super_admin')
-        .eq('id', user.id)
-        .single();
+      const isHardcodedAdmin = user.email && SUPER_ADMINS.includes(user.email.toLowerCase());
 
-      if (profileError) {
-        // Sign out if profile query fails or profile does not exist
-        await supabase.auth.signOut();
-        throw new Error('Verification failed. Profile not found.');
-      }
+      if (!isHardcodedAdmin) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_super_admin')
+          .eq('id', user.id)
+          .single();
 
-      if (!profile || !profile.is_super_admin) {
-        await supabase.auth.signOut();
-        throw new Error('Access Denied: You do not have Super Admin privileges.');
+        if (profileError || !profile?.is_super_admin) {
+          await supabase.auth.signOut();
+          throw new Error('Access Denied: You do not have Super Admin privileges.');
+        }
       }
 
       // Login successful, redirect to dashboard

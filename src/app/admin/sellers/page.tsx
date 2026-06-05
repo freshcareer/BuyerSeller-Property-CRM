@@ -8,8 +8,9 @@ import {
   DollarSign, Check, Loader2, X, RefreshCw, Pencil, Trash2,
   MessageCircle, Send, CheckSquare, Square, AlertTriangle,
   ChevronDown, Users, Download, Plus, Globe,
-  Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock
+  Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock, List, Layout, Printer
 } from 'lucide-react';
+import Link from 'next/link';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -25,41 +26,8 @@ const buildWaLink = (phone: string, message: string) =>
 const DEFAULT_SELLER_MSG = (s: any) =>
   `Hello ${s.name}, this is PropConnect, Ahmedabad's premium property matchmakers. 🏢\n\nWe have highly verified buyers actively looking for a ${s.property_type.replace(/_/g, ' ')} property in ${s.area}.\n\nCould we arrange a quick call or visit to close a deal for you? Zero registration fees.\n\n- Team PropConnect`;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Seller {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  property_type: string;
-  state: string;
-  city: string;
-  area: string;
-  price: string;
-  status: string;
-  notes?: string;
-  bedrooms?: string;
-  bathrooms?: string;
-  builtup_area?: string;
-  additional_spaces?: string;
-  possession_status?: string;
-  facing?: string;
-  parking?: string;
-  description?: string;
-  tags?: string;
-  furnishing?: string;
-  balconies?: string;
-  property_age?: string;
-  follow_up_date?: string | null;
-  listing_purpose?: string;
-  created_at: string;
-}
-
-interface SettingOption {
-  value: string;
-  display_name: string;
-}
+import KanbanBoard from './KanbanBoard';
+import { Seller, SettingOption } from './types';
 
 export default function SellersInventory() {
   const [sellers, setSellers] = useState<Seller[]>([]);
@@ -96,6 +64,9 @@ export default function SellersInventory() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
 
+  // View mode
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
+
   // Add Modal State
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -121,6 +92,7 @@ export default function SellersInventory() {
     propertyAge: '',
     notes: '',
     listingPurpose: 'sell',
+    follow_up_date: '',
   });
   const [addCities, setAddCities] = useState<any[]>([]);
   const [addAreas, setAddAreas] = useState<any[]>([]);
@@ -354,6 +326,7 @@ export default function SellersInventory() {
           notes: addForm.notes.trim() || null,
           status: 'new_lead',
           listing_purpose: addForm.listingPurpose,
+          follow_up_date: addForm.follow_up_date ? new Date(addForm.follow_up_date).toISOString() : null,
         })
         .select('*')
         .single();
@@ -384,6 +357,7 @@ export default function SellersInventory() {
         propertyAge: '',
         notes: '',
         listingPurpose: 'sell',
+        follow_up_date: '',
       });
     } catch (err: any) {
       setAddError(err.message || 'Failed to add seller lead.');
@@ -734,6 +708,10 @@ export default function SellersInventory() {
             </button>
           )}
         </div>
+        <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm shrink-0 self-end sm:self-auto">
+          <button onClick={() => setViewMode('list')} className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400'}`}><List className="w-4 h-4" /></button>
+          <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded ${viewMode === 'kanban' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+        </div>
       </div>
 
       {/* Main Table */}
@@ -752,6 +730,21 @@ export default function SellersInventory() {
             <p className="text-slate-500 max-w-sm mx-auto text-sm font-medium">
               No matching properties in the system.
             </p>
+          </div>
+        ) : viewMode === 'kanban' ? (
+          <div className="p-4 bg-slate-100 rounded-b-2xl">
+            <KanbanBoard 
+              sellers={filteredSellers}
+              statuses={statuses}
+              onStatusChange={handleStatusChange}
+              onEdit={openEdit}
+              onMatch={handleFindMatches}
+              onDeleteConfirm={setDeleteConfirmId}
+              deleteConfirmId={deleteConfirmId}
+              deletingId={deletingId}
+              onDelete={handleDelete}
+              actionStatus={actionStatus}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -773,6 +766,7 @@ export default function SellersInventory() {
                   <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
                   <th className="px-6 py-4">Expected Price / Rent</th>
+                  <th className="px-6 py-4">Next Follow-up</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
@@ -814,32 +808,40 @@ export default function SellersInventory() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <select
-                            value={seller.status}
-                            onChange={(e) => handleStatusChange(seller.id, e.target.value)}
-                            className={`appearance-none bg-white border text-xs font-bold rounded-lg pl-2.5 pr-7 py-1.5 outline-none transition-all duration-300 cursor-pointer shadow-sm ${
-                              seller.status === 'new_lead' ? 'border-indigo-200 text-indigo-700' :
-                              seller.status === 'contacted' ? 'border-amber-200 text-amber-700' :
-                              seller.status === 'closed_won' ? 'border-emerald-200 text-emerald-700' :
-                              seller.status === 'closed_lost' ? 'border-rose-200 text-rose-700' :
-                              'border-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {statuses.map((s) => (
-                              <option key={s.value} value={s.value}>{s.display_name}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+                      {seller.follow_up_date ? (
+                        <div className={`flex items-center gap-1 text-xs font-bold ${new Date(seller.follow_up_date) <= new Date() ? 'text-rose-600' : 'text-blue-600'}`}>
+                          <Clock className="w-3.5 h-3.5" />
+                          {new Date(seller.follow_up_date).toLocaleDateString()}
                         </div>
-                        {actionStatus.id === seller.id && (
-                          <span className="text-xs">
-                            {actionStatus.status === 'success' && <Check className="w-4 h-4 text-emerald-605" />}
-                            {actionStatus.status === 'error' && <span className="text-rose-500">❌</span>}
-                          </span>
-                        )}
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">Not set</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="relative">
+                        <select
+                          value={seller.status}
+                          onChange={(e) => handleStatusChange(seller.id, e.target.value)}
+                          className={`appearance-none bg-white border text-xs font-bold rounded-lg pl-2.5 pr-7 py-1.5 outline-none transition-all duration-300 cursor-pointer shadow-sm ${
+                            seller.status === 'new_lead' ? 'border-indigo-200 text-indigo-700' :
+                            seller.status === 'contacted' ? 'border-amber-200 text-amber-700' :
+                            seller.status === 'closed_won' ? 'border-emerald-200 text-emerald-700' :
+                            seller.status === 'closed_lost' ? 'border-rose-200 text-rose-700' :
+                            'border-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {statuses.map((s) => (
+                            <option key={s.value} value={s.value}>{s.display_name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
                       </div>
+                      {actionStatus.id === seller.id && (
+                        <span className="text-xs">
+                          {actionStatus.status === 'success' && <Check className="w-4 h-4 text-emerald-605" />}
+                          {actionStatus.status === 'error' && <span className="text-rose-500">❌</span>}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-1.5 flex-wrap">
@@ -866,9 +868,14 @@ export default function SellersInventory() {
                             </button>
                           </div>
                         ) : (
-                          <button onClick={() => setDeleteConfirmId(seller.id)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <Link href={`/print/property/${seller.id}`} target="_blank" className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 text-xs font-bold rounded-lg transition-all" title="Print Brochure">
+                              <Printer className="w-3.5 h-3.5" />
+                            </Link>
+                            <button onClick={() => setDeleteConfirmId(seller.id)} className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-lg transition-all" title="Delete Property">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -932,9 +939,9 @@ export default function SellersInventory() {
 
       {/* ── Add Lead Modal ── */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <form onSubmit={handleAddSubmit} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[92vh]">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <form onSubmit={handleAddSubmit} className="w-full max-w-2xl bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-350">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-2"><Plus className="w-5 h-5 text-indigo-650" /> Add Property Listing</h3>
               <button type="button" onClick={() => setAddModalOpen(false)} className="text-slate-400"><X className="w-5 h-5" /></button>
             </div>
@@ -1091,9 +1098,9 @@ export default function SellersInventory() {
 
       {/* ── Edit Seller Modal ── */}
       {editSeller && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[92vh]">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-2xl bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-350">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-2"><Pencil className="w-5 h-5 text-indigo-650" /> Edit Property Listing</h3>
               <button onClick={() => setEditSeller(null)} className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400"><X className="w-5 h-5" /></button>
             </div>

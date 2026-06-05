@@ -15,8 +15,11 @@ import {
   Loader2,
   CalendarDays,
   Zap,
+  KeyRound,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GlobalSearch } from '@/components/GlobalSearch';
+import { RealtimeToasts } from '@/components/RealtimeToasts';
 
 export default function AdminLayout({
   children,
@@ -106,6 +109,8 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/50 text-slate-900 flex">
+      <RealtimeToasts />
+
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-white/70 backdrop-blur-xl border-r border-slate-200/50 p-5 space-y-6 shadow-xl shadow-indigo-900/5 z-20">
         <div className="flex items-center gap-3 px-2 py-3 border-b border-slate-200/50">
@@ -189,6 +194,10 @@ export default function AdminLayout({
             <span className="md:hidden font-bold text-lg text-slate-900">PropConnect Admin</span>
           </div>
 
+          <div className="flex-1 flex justify-center px-4 md:px-8">
+            <GlobalSearch />
+          </div>
+
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end text-right">
               <div className="flex items-center gap-2">
@@ -204,13 +213,15 @@ export default function AdminLayout({
               <p className="text-sm text-slate-800 font-extrabold mt-0.5">{adminEmail}</p>
             </div>
             <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-sm transition-all duration-300"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-sm transition-all duration-300"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            </div>
           </div>
         </header>
 

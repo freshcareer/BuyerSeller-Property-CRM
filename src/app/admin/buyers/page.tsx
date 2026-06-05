@@ -8,7 +8,7 @@ import {
   DollarSign, Check, Loader2, X, RefreshCw, Pencil, Trash2,
   MessageCircle, Send, CheckSquare, Square, AlertTriangle,
   ChevronDown, Download, Plus, Globe, Heart,
-  Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock
+  Bed, Bath, Compass, Key, Expand, Car, Tag, FileText, Armchair, Layers, Clock, List, Layout
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -25,42 +25,8 @@ const buildWaLink = (phone: string, message: string) =>
 const DEFAULT_BUYER_MSG = (b: any) =>
   `Hello ${b.name}, this is PropConnect, Ahmedabad's premium property matchmakers. 🏠\n\nWe have highly verified options in ${b.area} that perfectly match your ${b.property_type.replace(/_/g, ' ')} requirement.\n\nWould you be available for a site visit today? Let's find your dream property stress-free.\n\n- Team PropConnect`;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Buyer {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  property_type: string;
-  state: string;
-  city: string;
-  area: string;
-  budget: string;
-  status: string;
-  notes?: string;
-  bedrooms?: string;
-  bathrooms?: string;
-  builtup_area?: string;
-  additional_spaces?: string;
-  possession_status?: string;
-  facing?: string;
-  parking?: string;
-  description?: string;
-  tags?: string;
-  furnishing?: string;
-  balconies?: string;
-  property_age?: string;
-  follow_up_date?: string | null;
-  user_id?: string | null;
-  listing_purpose?: string;
-  created_at: string;
-}
-
-interface SettingOption {
-  value: string;
-  display_name: string;
-}
+import KanbanBoard from './KanbanBoard';
+import { Buyer, SettingOption } from './types';
 
 export default function BuyersDemand() {
   const [buyers, setBuyers] = useState<Buyer[]>([]);
@@ -96,6 +62,9 @@ export default function BuyersDemand() {
   const [selectedBuyer, setSelectedBuyer] = useState<Buyer | null>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
+  
+  // View mode
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
 
   // Recommend to Watchlist
   const handleRecommend = async (propertyId: string, buyer: Buyer) => {
@@ -145,6 +114,7 @@ export default function BuyersDemand() {
     propertyAge: '',
     notes: '',
     listingPurpose: 'buy',
+    follow_up_date: '',
   });
   const [addCities, setAddCities] = useState<any[]>([]);
   const [addAreas, setAddAreas] = useState<any[]>([]);
@@ -378,6 +348,7 @@ export default function BuyersDemand() {
           notes: addForm.notes.trim() || null,
           status: 'new_lead',
           listing_purpose: addForm.listingPurpose,
+          follow_up_date: addForm.follow_up_date ? new Date(addForm.follow_up_date).toISOString() : null,
         })
         .select('*')
         .single();
@@ -408,6 +379,7 @@ export default function BuyersDemand() {
         propertyAge: '',
         notes: '',
         listingPurpose: 'buy',
+        follow_up_date: '',
       });
     } catch (err: any) {
       setAddError(err.message || 'Failed to add buyer lead.');
@@ -703,60 +675,66 @@ export default function BuyersDemand() {
         </div>
 
         {/* Filter Toolbar */}
-        <div className="flex gap-2 items-center overflow-x-auto pb-1 scrollbar-none">
-          <select 
-            value={filterStatus} 
-            onChange={e => setFilterStatus(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="all">All Statuses</option>
-            {statuses.map(s => <option key={s.value} value={s.value}>{s.display_name}</option>)}
-          </select>
-          
-          <select 
-            value={filterState} 
-            onChange={e => setFilterState(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="all">All States</option>
-            {dbStates.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-          </select>
-
-          <select 
-            value={filterCity} 
-            onChange={e => setFilterCity(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="all">All Cities</option>
-            {dbCities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-          </select>
-          
-          <select 
-            value={filterPropertyType} 
-            onChange={e => setFilterPropertyType(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="all">All Property Types</option>
-            {propertyTypes.map(p => <option key={p.value} value={p.value}>{p.display_name}</option>)}
-          </select>
-
-          <select 
-            value={filterBudget} 
-            onChange={e => setFilterBudget(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
-          >
-            <option value="all">All Budgets</option>
-            {budgets.map(b => <option key={b.value} value={b.value}>{b.display_name}</option>)}
-          </select>
-
-          {(filterStatus !== 'all' || filterState !== 'all' || filterCity !== 'all' || filterPropertyType !== 'all' || filterBudget !== 'all') && (
-            <button 
-              onClick={() => { setFilterStatus('all'); setFilterState('all'); setFilterCity('all'); setFilterPropertyType('all'); setFilterBudget('all'); }} 
-              className="text-xs text-blue-600 font-bold px-3 py-2 hover:bg-blue-50 rounded-lg transition-colors border border-transparent"
+        <div className="flex justify-between items-center gap-4 flex-col sm:flex-row">
+          <div className="flex gap-2 items-center overflow-x-auto pb-1 scrollbar-none w-full">
+            <select 
+              value={filterStatus} 
+              onChange={e => setFilterStatus(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
             >
-              Clear Filters
-            </button>
-          )}
+              <option value="all">All Statuses</option>
+              {statuses.map(s => <option key={s.value} value={s.value}>{s.display_name}</option>)}
+            </select>
+            
+            <select 
+              value={filterState} 
+              onChange={e => setFilterState(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="all">All States</option>
+              {dbStates.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+            </select>
+
+            <select 
+              value={filterCity} 
+              onChange={e => setFilterCity(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="all">All Cities</option>
+              {dbCities.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+            
+            <select 
+              value={filterPropertyType} 
+              onChange={e => setFilterPropertyType(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="all">All Property Types</option>
+              {propertyTypes.map(p => <option key={p.value} value={p.value}>{p.display_name}</option>)}
+            </select>
+
+            <select 
+              value={filterBudget} 
+              onChange={e => setFilterBudget(e.target.value)}
+              className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-sm font-bold shadow-sm outline-none hover:border-blue-300 focus:border-blue-500 transition-all cursor-pointer"
+            >
+              <option value="all">All Budgets</option>
+              {budgets.map(b => <option key={b.value} value={b.value}>{b.display_name}</option>)}
+            </select>
+
+            {(filterStatus !== 'all' || filterState !== 'all' || filterCity !== 'all' || filterPropertyType !== 'all' || filterBudget !== 'all') && (
+              <button 
+                onClick={() => { setFilterStatus('all'); setFilterState('all'); setFilterCity('all'); setFilterPropertyType('all'); setFilterBudget('all'); }} 
+                className="text-xs text-blue-600 font-bold px-3 py-2 hover:bg-blue-50 rounded-lg transition-colors border border-transparent"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+          <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-50 text-blue-600' : 'text-slate-400'}`}><List className="w-4 h-4" /></button>
+            <button onClick={() => setViewMode('kanban')} className={`p-1.5 rounded ${viewMode === 'kanban' ? 'bg-blue-50 text-blue-600' : 'text-slate-400'}`}><Layout className="w-4 h-4" /></button>
+          </div>
         </div>
       </div>
 
@@ -778,6 +756,21 @@ export default function BuyersDemand() {
               It looks like there are no matching buyers. You can clear your filters or manually add a new buyer lead to get started.
             </p>
           </div>
+        ) : viewMode === 'kanban' ? (
+          <div className="p-4 bg-slate-100 rounded-b-2xl">
+            <KanbanBoard 
+              buyers={filteredBuyers}
+              statuses={statuses}
+              onStatusChange={handleStatusChange}
+              onEdit={openEdit}
+              onMatch={handleFindMatches}
+              onDeleteConfirm={setDeleteConfirmId}
+              deleteConfirmId={deleteConfirmId}
+              deletingId={deletingId}
+              onDelete={handleDelete}
+              actionStatus={actionStatus}
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -798,6 +791,7 @@ export default function BuyersDemand() {
                   <th className="px-6 py-4">Purpose</th>
                   <th className="px-6 py-4">Property Type</th>
                   <th className="px-6 py-4">Budget / Rent</th>
+                  <th className="px-6 py-4">Next Follow-up</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
@@ -837,6 +831,16 @@ export default function BuyersDemand() {
                         <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
                         {buyer.budget.replace(/_/g, ' ').replace('under ', '< ').replace('plus', '+')}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {buyer.follow_up_date ? (
+                        <div className={`flex items-center gap-1 text-xs font-bold ${new Date(buyer.follow_up_date) <= new Date() ? 'text-rose-600' : 'text-blue-600'}`}>
+                          <Clock className="w-3.5 h-3.5" />
+                          {new Date(buyer.follow_up_date).toLocaleDateString()}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">Not set</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -957,9 +961,9 @@ export default function BuyersDemand() {
 
       {/* ── Add Lead Modal ── */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <form onSubmit={handleAddSubmit} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[92vh]">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <form onSubmit={handleAddSubmit} className="w-full max-w-2xl bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-350">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50">
               <h3 className="font-extrabold text-slate-900 flex items-center gap-2"><Plus className="w-5 h-5 text-blue-600" /> Add Buyer Requirement</h3>
               <button type="button" onClick={() => setAddModalOpen(false)} className="text-slate-400"><X className="w-5 h-5" /></button>
             </div>
@@ -1019,6 +1023,10 @@ export default function BuyersDemand() {
                     <option value="">Select range</option>
                     {budgets.map(b => <option key={b.value} value={b.value}>{b.display_name}</option>)}
                   </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-655 uppercase tracking-wider block text-blue-600">Next Follow-up Date</label>
+                  <input type="date" value={addForm.follow_up_date} onChange={e => setAddForm(p => ({ ...p, follow_up_date: e.target.value }))} className="w-full border border-blue-200 focus:border-blue-500 rounded-lg px-3 py-2 text-sm text-slate-900 shadow-sm" />
                 </div>
                 {/* Advanced Property Details */}
                 <div className="sm:col-span-2 pt-4 border-t border-slate-100">
@@ -1116,9 +1124,9 @@ export default function BuyersDemand() {
 
       {/* ── Edit Buyer Modal ── */}
       {editBuyer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[92vh]">
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="w-full max-w-2xl bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-350">
+            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-blue-50">
               <div>
                 <h3 className="font-extrabold text-slate-900 flex items-center gap-2"><Pencil className="w-5 h-5 text-blue-600" /> Edit Buyer</h3>
               </div>

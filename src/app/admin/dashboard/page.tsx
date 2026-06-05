@@ -13,9 +13,24 @@ import {
   Settings,
   Calendar,
   Layers,
-  ArrowRight
+  ArrowRight,
+  PieChart as PieChartIcon,
+  BarChart as BarChartIcon
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -32,6 +47,7 @@ export default function AdminDashboard() {
   });
   const [recentBuyers, setRecentBuyers] = useState<any[]>([]);
   const [recentSellers, setRecentSellers] = useState<any[]>([]);
+  const [todayFollowups, setTodayFollowups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,6 +101,15 @@ export default function AdminDashboard() {
 
         setRecentBuyers(recBuyers || []);
         setRecentSellers(recSellers || []);
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { data: bFollow } = await supabase.from('buyers_demand').select('id, name, phone, follow_up_date').lte('follow_up_date', todayStr);
+        const { data: sFollow } = await supabase.from('sellers_inventory').select('id, name, phone, follow_up_date').lte('follow_up_date', todayStr);
+        const mergedFollowups = [
+          ...(bFollow || []).map(b => ({ ...b, type: 'Buyer Demand' })),
+          ...(sFollow || []).map(s => ({ ...s, type: 'Seller Inventory' }))
+        ].sort((a, b) => new Date(a.follow_up_date).getTime() - new Date(b.follow_up_date).getTime());
+        setTodayFollowups(mergedFollowups);
 
       } catch (err) {
         console.error('Error fetching dashboard statistics:', err);
@@ -226,6 +251,135 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Follow-ups & Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Today's Follow-ups Panel */}
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xl shadow-slate-900/5 lg:col-span-1 flex flex-col h-full">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900">Today's Follow-ups</h3>
+              <p className="text-slate-500 text-xs font-medium">Pending tasks & due calls</p>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+            {todayFollowups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <CheckCircle2 className="w-10 h-10 text-emerald-300 mb-2" />
+                <p className="text-slate-500 text-sm font-bold">All caught up!</p>
+                <p className="text-slate-400 text-xs font-medium">No pending follow-ups for today.</p>
+              </div>
+            ) : (
+              todayFollowups.map((task) => (
+                <div key={task.id} className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                      {task.name}
+                      {new Date(task.follow_up_date) < new Date(new Date().setHours(0,0,0,0)) && (
+                        <span className="bg-rose-100 text-rose-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Overdue</span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-slate-600 font-medium mt-0.5">{task.phone}</p>
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1 block">{task.type}</span>
+                  </div>
+                  <Link href={task.type === 'Buyer Demand' ? '/admin/buyers' : '/admin/sellers'} className="shrink-0 p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:text-blue-600 transition-colors shadow-sm">
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Analytics Charts Section */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Sales Funnel Bar Chart */}
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl shadow-indigo-900/5">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+              <BarChartIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900">Lead Conversion Funnel</h3>
+              <p className="text-slate-500 text-xs font-medium">Comparison of Buyers vs Sellers at each stage</p>
+            </div>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: 'Total Leads', Buyers: stats.totalBuyers, Sellers: stats.totalSellers },
+                  { name: 'New', Buyers: stats.newBuyers, Sellers: stats.newSellers },
+                  { name: 'Contacted', Buyers: stats.contactedBuyers, Sellers: stats.contactedSellers },
+                  { name: 'Visits', Buyers: stats.visitsBuyers, Sellers: stats.visitsSellers },
+                  { name: 'Closed', Buyers: stats.closedBuyers, Sellers: stats.closedSellers },
+                ]}
+                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', fontWeight: 'bold' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '10px' }} />
+                <Bar dataKey="Buyers" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
+                <Bar dataKey="Sellers" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Portfolio Distribution Pie Chart */}
+        <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl shadow-indigo-900/5">
+          <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
+              <PieChartIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-900">Portfolio Distribution</h3>
+              <p className="text-slate-500 text-xs font-medium">Market share between Demand and Supply</p>
+            </div>
+          </div>
+          <div className="h-[300px] w-full flex items-center justify-center">
+            {stats.totalBuyers === 0 && stats.totalSellers === 0 ? (
+              <p className="text-slate-400 font-medium">No data available for distribution.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Active Buyers', value: stats.totalBuyers },
+                      { name: 'Active Sellers', value: stats.totalSellers },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={110}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    <Cell fill="#3b82f6" />
+                    <Cell fill="#6366f1" />
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', fontWeight: 'bold' }}
+                    itemStyle={{ color: '#1e293b' }}
+                  />
+                  <Legend iconType="circle" verticalAlign="bottom" wrapperStyle={{ fontSize: '13px', fontWeight: 'bold' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+        </div>
       </div>
 
       {/* Quick Access Actions */}
