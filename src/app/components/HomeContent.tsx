@@ -193,8 +193,8 @@ export default function HomeContent({ options, listings }: Props) {
             <div className="w-16 h-16 bg-white border-2 border-slate-100 shadow-sm text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
               <Building className="w-7 h-7" />
             </div>
-            <h3 className="font-bold text-slate-900 sm:mb-2">3. Site Visit & Legal</h3>
-            <p className="text-sm text-slate-600 hidden sm:block">We arrange visits and handle all negotiations and legal paperwork.</p>
+            <h3 className="font-bold text-slate-900 sm:mb-2">3. Direct Connection</h3>
+            <p className="text-sm text-slate-600 hidden sm:block">We connect genuine clients directly with verified property dealers online for a smooth matching process.</p>
           </div>
           
           <div className="text-center">
