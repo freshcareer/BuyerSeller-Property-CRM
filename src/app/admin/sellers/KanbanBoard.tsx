@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Seller, SettingOption } from './types';
-import { MapPin, Building, DollarSign, GitCompare, Pencil, Trash2, Check, Loader2, X, MessageCircle } from 'lucide-react';
+import {  MapPin, Building, DollarSign, GitCompare, Pencil, Trash2, Check, Loader2, X, MessageCircle  } from 'lucide-react';
+import ImageSlider from '@/app/components/ImageSlider';
 
 const formatPhone = (raw: string): string => {
   const digits = raw.replace(/\D/g, '');
@@ -76,8 +77,12 @@ export default function KanbanBoard({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`bg-white border rounded-xl shadow-sm p-3 transition-shadow ${snapshot.isDragging ? 'shadow-lg border-indigo-400 rotate-2' : 'border-slate-200 hover:border-indigo-300 hover:shadow-md'}`}
+                          className={`bg-white border rounded-xl shadow-sm transition-shadow ${snapshot.isDragging ? 'shadow-lg border-indigo-400 rotate-2' : 'border-slate-200 hover:border-indigo-300 hover:shadow-md'}`}
                         >
+                          <div className="h-32 mb-3">
+                            <ImageSlider urls={seller.image_urls || []} />
+                          </div>
+                          <div className="p-3 pt-0">
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="font-bold text-sm text-slate-900">{seller.name}</p>
@@ -141,6 +146,7 @@ export default function KanbanBoard({
                               {actionStatus.status === 'error' && <span className="text-rose-500 bg-white rounded-full">❌</span>}
                             </div>
                           )}
+                        </div>
                         </div>
                       )}
                     </Draggable>

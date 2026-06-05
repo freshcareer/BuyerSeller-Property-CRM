@@ -247,8 +247,7 @@ function InterestModal({ listing, onClose }: { listing: Listing; onClose: () => 
 // ── Property Card ─────────────────────────────────────────────────────────────
 
 function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleWatchlist, isMyAd }: { listing: Listing; onInterest: () => void; dbOptions: SettingOption[]; isWatchlisted: boolean; onToggleWatchlist: (e: React.MouseEvent) => void; isMyAd?: boolean }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const color = typeColors[listing.property_type] || defaultColor;
+    const color = typeColors[listing.property_type] || defaultColor;
 
   const getOptionName = (cat: string, val: string | null | undefined) => {
     if (!val) return null;
@@ -310,10 +309,10 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
 
   return (
     <div
-      onClick={() => setIsExpanded(!isExpanded)}
+      
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsExpanded(!isExpanded); } }}
+      
       className="group w-full text-left bg-white border border-slate-100 hover:border-indigo-300 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-indigo-900/10 hover:-translate-y-1 transition-all duration-300 flex flex-col focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
     >
       {/* Premium Image Placeholder */}
@@ -420,8 +419,7 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
         )}
 
         {/* Advanced Details (Hidden by default) */}
-        {isExpanded && (
-          <div className="grid grid-cols-2 gap-y-3 gap-x-2 mt-2 p-3 bg-slate-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="grid grid-cols-2 gap-y-3 gap-x-2 mt-2 p-3 bg-slate-50 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
             {listing.additional_spaces && vis.show_additional_spaces && (
               <div className="flex flex-col">
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide">Additional Spaces</span>
@@ -468,23 +466,15 @@ function PropertyCard({ listing, onInterest, dbOptions, isWatchlisted, onToggleW
               </div>
             )}
           </div>
-        )}
 
         {/* CTA */}
         <div className="mt-auto pt-2 flex flex-col gap-2">
-          {!isExpanded && <div className="h-2" /> /* Spacer when collapsed */}
           <div className="flex gap-2">
             <button 
               onClick={(e) => { e.stopPropagation(); onInterest(); }}
               className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md hover:shadow-blue-600/20"
             >
               Contact Agent
-            </button>
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-colors shrink-0"
-            >
-              {isExpanded ? 'Less' : 'More'}
             </button>
           </div>
         </div>
@@ -921,7 +911,7 @@ export default function PropertyListings({ listings, dbOptions }: Props) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
           {filtered.map(l => (
             <PropertyCard 
               key={l.id} 

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Building2, MapPin, Tag, AlertCircle, Plus, Trash2, Edit2 } from 'lucide-react';
+import {  Loader2, Building2, MapPin, Tag, AlertCircle, Plus, Trash2, Edit2  } from 'lucide-react';
+import ImageSlider from '@/app/components/ImageSlider';
 
 export default function SellerDashboard() {
   const [loading, setLoading] = useState(true);
@@ -105,7 +106,9 @@ export default function SellerDashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {inventory.map((prop) => (
-              <div key={prop.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col h-full">
+              <div key={prop.id} className="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col h-full">
+                <ImageSlider urls={prop.image_urls || []} />
+                <div className="p-6 flex flex-col flex-1">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-extrabold text-lg text-slate-900 capitalize">{prop.property_type.replace('_', ' ')}</h3>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -146,6 +149,7 @@ export default function SellerDashboard() {
                     <p className="text-xs text-indigo-800 font-medium leading-relaxed">Your property is under review. Our team will contact you to verify details before making it public.</p>
                   </div>
                 )}
+              </div>
               </div>
             ))}
           </div>
